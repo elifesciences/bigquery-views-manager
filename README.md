@@ -1,0 +1,1 @@
+# BigQuery Views Manager
