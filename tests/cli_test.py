@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-from bigquery_views.cli import load_view_mapping
-from bigquery_views.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
+from bigquery_views_manager.cli import load_view_mapping
+from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 VIEW_1 = "view1,dataset1"
 VIEW_2 = "view2,dataset2"

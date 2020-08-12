@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-import bigquery_views.materialize_views as materialize_views_module
-from bigquery_views.materialize_views import get_select_all_from_query, materialize_view
+import bigquery_views_manager.materialize_views as materialize_views_module
+from bigquery_views_manager.materialize_views import get_select_all_from_query, materialize_view
 
 PROJECT_1 = "project1"
 SOURCE_DATASET_1 = "dataset1"

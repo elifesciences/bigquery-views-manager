@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from typing import List, Tuple
 
-from bigquery_views.view_list import (
+from bigquery_views_manager.view_list import (
     get_referenced_table_names_for_query,
     determine_insert_order_for_view_names_and_referenced_tables,
     DATASET_NAME_KEY,

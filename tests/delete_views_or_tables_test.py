@@ -4,9 +4,9 @@ from collections import OrderedDict
 
 from google.cloud import bigquery
 
-from bigquery_views.delete_views_or_tables import delete_views_or_tables
+from bigquery_views_manager.delete_views_or_tables import delete_views_or_tables
 
-from bigquery_views.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
+from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 
 PROJECT_1 = "project1"

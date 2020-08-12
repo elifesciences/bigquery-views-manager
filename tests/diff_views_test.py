@@ -4,9 +4,9 @@ from unittest.mock import patch
 
 import pytest
 
-from bigquery_views.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
-import bigquery_views.diff_views as diff_views_module
-from bigquery_views.diff_views import get_diff_result
+from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
+import bigquery_views_manager.diff_views as diff_views_module
+from bigquery_views_manager.diff_views import get_diff_result
 
 PROJECT_1 = "project1"
 DATASET_1 = "dataset1"

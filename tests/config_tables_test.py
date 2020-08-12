@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-import bigquery_views.config_tables as config_tables_module
-from bigquery_views.config_tables import update_or_create_table_from_csv
+import bigquery_views_manager.config_tables as config_tables_module
+from bigquery_views_manager.config_tables import update_or_create_table_from_csv
 
 PROJECT_1 = "project1"
 DATASET_1 = "dataset1"

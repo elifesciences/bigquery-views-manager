@@ -1,4 +1,4 @@
-from bigquery_views.views import get_view_template_file
+from bigquery_views_manager.views import get_view_template_file
 
 
 class TestGetViewTemplateFile:

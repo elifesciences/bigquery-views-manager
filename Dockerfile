@@ -10,7 +10,7 @@ ARG PROJECT_HOME=/opt/bigquery-views-manager
 WORKDIR ${PROJECT_HOME}
 
 COPY *.sh pytest.ini .pylintrc .flake8 ./
-COPY bigquery_views bigquery_views
+COPY bigquery_views_manager bigquery_views_manager
 
 # tests
 COPY tests tests

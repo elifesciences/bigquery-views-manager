@@ -1,4 +1,4 @@
-from bigquery_views.view_template import ViewTemplate
+from bigquery_views_manager.view_template import ViewTemplate
 
 TEMPLATE_1 = "SELECT * FROM `{project}.{dataset}.table1"
 

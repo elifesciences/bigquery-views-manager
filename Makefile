@@ -35,11 +35,11 @@ dev-venv: venv-create dev-install
 
 
 dev-flake8:
-	$(PYTHON) -m flake8 bigquery_views tests
+	$(PYTHON) -m flake8 bigquery_views_manager tests
 
 
 dev-pylint:
-	$(PYTHON) -m pylint bigquery_views tests
+	$(PYTHON) -m pylint bigquery_views_manager tests
 
 
 dev-lint: dev-flake8 dev-pylint
@@ -70,11 +70,11 @@ build-dev: build
 
 
 flake8:
-	$(RUN_DEV) flake8 bigquery_views tests
+	$(RUN_DEV) flake8 bigquery_views_manager tests
 
 
 pylint:
-	$(RUN_DEV) pylint bigquery_views tests
+	$(RUN_DEV) pylint bigquery_views_manager tests
 
 
 lint: flake8 pylint

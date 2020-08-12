@@ -4,13 +4,13 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-import bigquery_views.update_views as update_views_module
-from bigquery_views.update_views import (
+import bigquery_views_manager.update_views as update_views_module
+from bigquery_views_manager.update_views import (
     get_create_or_replace_view_query,
     update_or_create_view,
     update_or_create_views,
 )
-from bigquery_views.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
+from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 PROJECT_1 = "project1"
 DATASET_1 = "dataset1"
