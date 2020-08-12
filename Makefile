@@ -96,8 +96,10 @@ test: lint pytest
 
 
 ci-build-and-test:
-	# TODO
-	echo "build placeholder: IMAGE_TAG=$(IMAGE_TAG)"
+	make DOCKER_COMPOSE="$(DOCKER_COMPOSE_CI)" \
+		build \
+		build-dev \
+		test
 
 ci-clean:
 	# TODO
