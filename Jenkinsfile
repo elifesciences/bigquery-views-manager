@@ -18,10 +18,12 @@ elifePipeline {
 
         elifePullRequestOnly { prNumber ->
             stage 'Create and delete views', {
-                updateDataset(
-                    'bigquery_views_manager_ci',
-                    commit
-                )
+                withBigQueryViewsManagerGcpCredentials {
+                    updateDataset(
+                        'bigquery_views_manager_ci',
+                        commit
+                    )
+                }
             }
         }
     }
@@ -37,4 +39,13 @@ def updateDataset(dataset, commit) {
         "--dataset=${dataset} create-or-replace-views --materialize  --disable-view-name-mapping",
         commit
     )
+}
+
+def withBigQueryViewsManagerGcpCredentials(doSomething) {
+    try {
+        sh 'vault.sh kv get -field credentials secret/containers/bigquery-views-manager/gcp > credentials.json'
+        doSomething()
+    } finally {
+        sh 'echo > credentials.json'
+    }
 }
