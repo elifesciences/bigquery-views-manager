@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+    venv:
+        build:
+            context: .
+            dockerfile: Dockerfile.venv
+            args:
+                install_dev: y
+                python_base_image_tag: ${PYTHON_BASE_IMAGE_TAG}
+        image: elifesciences/bigquery-views-manager_venv:${IMAGE_TAG}
+
+    bigquery-views:
+        build:
+            context: .
+            args:
+                venv_image: elifesciences/bigquery-views-manager_venv:${IMAGE_TAG}
+                python_base_image_tag: ${PYTHON_BASE_IMAGE_TAG}
+        image: elifesciences/bigquery-views-manager:${IMAGE_TAG}
+        command: ''
+        depends_on:
+            - venv

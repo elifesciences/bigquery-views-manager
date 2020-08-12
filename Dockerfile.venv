@@ -1,0 +1,19 @@
+ARG python_base_image_tag
+FROM python:${python_base_image_tag}
+
+RUN python3 -m venv /.venv
+ENV VIRTUAL_ENV=/.venv PYTHONUSERBASE=/.venv PATH=/.venv/bin:$PATH
+WORKDIR /pipfiles
+
+COPY requirements.build.txt ./
+RUN pip install --disable-pip-version-check -r requirements.build.txt
+
+COPY requirements.txt ./
+RUN pip install --disable-pip-version-check -r requirements.txt
+
+ARG install_dev
+COPY requirements.dev.txt ./
+RUN pip install --disable-pip-version-check -r requirements.dev.txt
+RUN if [ "${install_dev}" = "y" ]; then \
+    pip install --disable-pip-version-check -r requirements.dev.txt; \
+fi
