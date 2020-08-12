@@ -28,11 +28,7 @@ elifePipeline {
 }
 
 def viewsCli(args, commit) {
-    dockerComposeRun(
-        "bigquery-views",
-        "python -m bigquery_views.cli ${args}",
-        commit
-    )
+    sh "make IMAGE_TAG=${commit} REVISION=${commit} ci-views-manager-cli ARGS='${args}'"
 }
 
 def updateDataset(dataset, commit) {

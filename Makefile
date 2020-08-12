@@ -10,6 +10,8 @@ PYTHON = $(VENV)/bin/python
 
 RUN_DEV = $(DOCKER_COMPOSE) run --rm bigquery-views
 
+ARGS =
+
 
 venv-clean:
 	@if [ -d "$(VENV)" ]; then \
@@ -87,11 +89,22 @@ pytest:
 test: lint pytest
 
 
+views-manager-cli:
+	$(RUN_DEV) python -m bigquery_views.cli \
+		$(ARGS)
+
+
 ci-build-and-test:
 	make DOCKER_COMPOSE="$(DOCKER_COMPOSE_CI)" \
 		build \
 		build-dev \
 		test
 
+
+ci-views-manager-cli:
+	make DOCKER_COMPOSE="$(DOCKER_COMPOSE_CI)" \
+		views-manager-cli
+
+
 ci-clean:
-	# TODO
+	docker-compose down -v
