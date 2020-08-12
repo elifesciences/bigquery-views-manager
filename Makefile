@@ -60,14 +60,6 @@ dev-watch-slow:
 dev-test: dev-lint dev-pytest
 
 
-build-venv:
-	$(DOCKER_COMPOSE) build venv
-
-
-build-bigquery-views:
-	$(DOCKER_COMPOSE) build bigquery-views
-
-
 .PHONY: build
 build:
 	$(DOCKER_COMPOSE) build venv bigquery-views
