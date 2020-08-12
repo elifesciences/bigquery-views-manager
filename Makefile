@@ -90,7 +90,7 @@ test: lint pytest
 
 
 views-manager-cli:
-	$(RUN_DEV) python -m bigquery_views.cli \
+	$(RUN_DEV) python -m bigquery_views_manager.cli \
 		$(ARGS)
 
 
