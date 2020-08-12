@@ -1,6 +1,14 @@
+#!/usr/bin/make -f
+
+DOCKER_COMPOSE_DEV = docker-compose
+DOCKER_COMPOSE_CI = docker-compose -f docker-compose.yml
+DOCKER_COMPOSE = $(DOCKER_COMPOSE_DEV)
+
 VENV = venv
 PIP = $(VENV)/bin/pip
 PYTHON = $(VENV)/bin/python
+
+RUN_DEV = $(DOCKER_COMPOSE) run --rm bigquery-views
 
 
 venv-clean:
@@ -18,20 +26,20 @@ venv-link:
 
 
 dev-install:
-	$(PIP) install -r requirements.build.txt
-	$(PIP) install -r requirements.txt
-	$(PIP) install -r requirements.dev.txt
+	$(PIP) install --disable-pip-version-check -r requirements.build.txt
+	$(PIP) install --disable-pip-version-check -r requirements.txt
+	$(PIP) install --disable-pip-version-check -r requirements.dev.txt
 
 
 dev-venv: venv-create dev-install
 
 
 dev-flake8:
-	$(PYTHON) -m flake8 bigquery_views tests view_tests
+	$(PYTHON) -m flake8 bigquery_views tests
 
 
 dev-pylint:
-	$(PYTHON) -m pylint bigquery_views tests view_tests
+	$(PYTHON) -m pylint bigquery_views tests
 
 
 dev-lint: dev-flake8 dev-pylint
@@ -50,6 +58,41 @@ dev-watch-slow:
 
 
 dev-test: dev-lint dev-pytest
+
+
+build-venv:
+	$(DOCKER_COMPOSE) build venv
+
+
+build-bigquery-views:
+	$(DOCKER_COMPOSE) build bigquery-views
+
+
+.PHONY: build
+build:
+	$(DOCKER_COMPOSE) build venv bigquery-views
+
+
+build-dev: build
+	# currently there is no separate dev image
+
+
+flake8:
+	$(RUN_DEV) flake8 bigquery_views tests
+
+
+pylint:
+	$(RUN_DEV) pylint bigquery_views tests
+
+
+lint: flake8 pylint
+
+
+pytest:
+	$(RUN_DEV) pytest
+
+
+test: lint pytest
 
 
 ci-build-and-test:
