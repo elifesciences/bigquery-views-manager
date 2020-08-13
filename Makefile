@@ -176,14 +176,14 @@ ci-example-data-update-dataset: .require-DATASET_NAME
 		example-data-update-dataset
 
 
-ci-push-testpypi:
+ci-push-testpypi: .require-COMMIT
 	$(DOCKER_COMPOSE_CI) run --rm \
 		-v $$PWD/.pypirc:/root/.pypirc \
 		bigquery-views \
 		./docker/push-testpypi-commit-version.sh "$(COMMIT)"
 
 
-ci-push-pypi:
+ci-push-pypi: .require-VERSION
 	$(DOCKER_COMPOSE_CI) run --rm \
 		-v $$PWD/.pypirc:/root/.pypirc \
 		bigquery-views \
