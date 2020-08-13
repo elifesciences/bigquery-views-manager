@@ -14,6 +14,8 @@ echo "version=${version}, repository=${repository}"
 
 cat bigquery_views_manager/__init__.py
 
+python setup.py sdist bdist_wheel
+
 ls -l $HOME/.pypirc
 
 ls -l dist/
