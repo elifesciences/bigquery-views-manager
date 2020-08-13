@@ -1,17 +1,25 @@
 elifePipeline {
     node('containers-jenkins-plugin') {
         def commit
+        def version
 
         stage 'Checkout', {
             checkout scm
             commit = elifeGitRevision()
+            if (env.TAG_NAME) {
+                version = env.TAG_NAME - 'v'
+            } else {
+                version = 'develop'
+            }
         }
 
         stage 'Build and run tests', {
-            try {
-                sh "make IMAGE_TAG=${commit} REVISION=${commit} ci-build-and-test"
-            } finally {
-                sh "make ci-clean"
+            withEnv(["VERSION=${version}"]) {
+                try {
+                    sh "make IMAGE_TAG=${commit} REVISION=${commit} ci-build-and-test"
+                } finally {
+                    sh "make ci-clean"
+                }
             }
         }
 
@@ -39,7 +47,6 @@ elifePipeline {
         elifeTagOnly { tag ->
             stage 'Push release', {
                 withPypiCredentials 'prod', 'pypi', {
-                    def version = tag - 'v'
                     sh "make IMAGE_TAG=${commit} VERSION=${version} NO_BUILD=y ci-push-pypi"
                 }
             }
