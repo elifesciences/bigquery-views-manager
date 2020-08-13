@@ -9,7 +9,7 @@ ENV PYTHONUSERBASE=/.venv PATH=/.venv/bin:$PATH
 ARG PROJECT_HOME=/opt/bigquery-views-manager
 WORKDIR ${PROJECT_HOME}
 
-COPY *.sh *.py *.txt pytest.ini .pylintrc .flake8 ./
+COPY *.sh *.py *.txt README.md pytest.ini .pylintrc .flake8 ./
 COPY bigquery_views_manager bigquery_views_manager
 
 # tests
