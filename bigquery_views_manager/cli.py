@@ -480,20 +480,23 @@ SUB_COMMAND_BY_NAME: Dict[str, SubCommand] = {
 }
 
 
-def parse_args(argv=None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=("Do something with Views"))
-
+def add_common_arguments(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--dataset", type=str, required=True, help="GCP BigQuery dataset"
     )
 
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
 
+
+def parse_args(argv=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=("BigQuery Views Manager"))
+
     subparsers = parser.add_subparsers(dest="command")
     for sub_command in SUB_COMMANDS:
         sub_parser = subparsers.add_parser(
             sub_command.name, help=sub_command.description
         )
+        add_common_arguments(sub_parser)
         sub_command.add_arguments(sub_parser)
 
     return parser.parse_args(argv)
