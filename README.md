@@ -109,8 +109,8 @@ python -m bigquery_views_manager <sub-command> --help
 
 ```bash
 python -m bigquery_views_manager \
-    --dataset=my_dataset \
     create-or-replace-views \
+    --dataset=my_dataset \
     [--view-list-file=/path/to/views.lst] \
     [<view name> [<other view name> ...]]
 ```
@@ -121,8 +121,8 @@ Adding the `--materialize` flag will additionally materialize the views that are
 
 ```bash
 python -m bigquery_views_manager \
-    --dataset=my_dataset \
     materialize-views \
+    --dataset=my_dataset \
     [--view-list-file=/path/to/views.lst] \
     [--materialized-view-list-file=/path/to/materialized-views.lst] \
     [<view name> [<other view name> ...]]
@@ -134,8 +134,8 @@ Show differences between local views and views within BigQuery.
 
 ```bash
 python -m bigquery_views_manager \
-    --dataset=my_dataset \
     diff-views \
+    --dataset=my_dataset \
     [--view-list-file=/path/to/views.lst] \
     [<view name> [<other view name> ...]]
 ```
@@ -148,17 +148,17 @@ To get all of the files listed in `views/views.lst`:
 
 ```bash
 python -m bigquery_views_manager \
+    get-views \
     --dataset=my_dataset \
-    [--view-list-file=/path/to/views.lst] \
-    get-views
+    [--view-list-file=/path/to/views.lst]
 ```
 
 To get a particular view or views:
 
 ```bash
 python -m bigquery_views_manager \
-    --dataset=my_dataset \
     get-views \
+    --dataset=my_dataset \
     [--view-list-file=/path/to/views.lst] \
     <view name> [<other view name> ...]
 ```
@@ -171,8 +171,8 @@ Copy config tables (CSV) to BigQuery. The config tables are by default stored in
 
 ```bash
 python -m bigquery_views_manager \
-    --dataset=my_dataset \
     create-or-replace-config-tables \
+    --dataset=my_dataset \
     [--config-tables-base-dir=/path/to/config-tables] \
     [<table name> ...]
 ```
