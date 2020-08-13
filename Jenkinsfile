@@ -1,35 +1,84 @@
 elifePipeline {
-    def commit
-
     node('containers-jenkins-plugin') {
+        def commit
+        def version
 
         stage 'Checkout', {
             checkout scm
             commit = elifeGitRevision()
+            if (env.TAG_NAME) {
+                version = env.TAG_NAME - 'v'
+            } else {
+                version = 'develop'
+            }
         }
 
         stage 'Build and run tests', {
-            try {
-                sh "make IMAGE_TAG=${commit} REVISION=${commit} ci-build-and-test"
-            } finally {
-                sh "make ci-clean"
+            withEnv(["VERSION=${version}"]) {
+                try {
+                    sh "make IMAGE_TAG=${commit} REVISION=${commit} ci-build-and-test"
+                } finally {
+                    sh "make ci-clean"
+                }
             }
         }
 
         elifePullRequestOnly { prNumber ->
             stage 'Create and delete views', {
                 lock('bigquery-views-manager--ci') {
-                    withBigQueryViewsManagerGcpCredentials {
-                        cleanDataset('bigquery_views_manager_ci', commit)
-                        try {
-                            updateDataset('bigquery_views_manager_ci', commit)
-                        } finally {
+                    withEnv(["VERSION=${version}"]) {
+                        withBigQueryViewsManagerGcpCredentials {
                             cleanDataset('bigquery_views_manager_ci', commit)
+                            try {
+                                updateDataset('bigquery_views_manager_ci', commit)
+                            } finally {
+                                cleanDataset('bigquery_views_manager_ci', commit)
+                            }
                         }
                     }
                 }
             }
+
+            stage 'Push package to test.pypi.org', {
+                withEnv(["VERSION=${version}"]) {
+                    withPypiCredentials 'staging', 'testpypi', {
+                        sh "make IMAGE_TAG=${commit} COMMIT=${commit} NO_BUILD=y ci-push-testpypi"
+                    }
+                }
+            }
         }
+
+        elifeTagOnly { tag ->
+            stage 'Push release', {
+                withEnv(["VERSION=${version}"]) {
+                    withPypiCredentials 'prod', 'pypi', {
+                        sh "make IMAGE_TAG=${commit} NO_BUILD=y ci-push-pypi"
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+import groovy.json.JsonSlurper
+
+@NonCPS
+def jsonToPypirc(String jsonText, String sectionName) {
+    def credentials = new JsonSlurper().parseText(jsonText)
+    echo "Username: ${credentials.username}"
+    return "[${sectionName}]\nusername: ${credentials.username}\npassword: ${credentials.password}"
+}
+
+def withPypiCredentials(String env, String sectionName, doSomething) {
+    try {
+        writeFile(file: '.pypirc', text: jsonToPypirc(sh(
+            script: "vault.sh kv get -format=json secret/containers/pypi/${env} | jq .data.data",
+            returnStdout: true
+        ).trim(), sectionName))
+        doSomething()
+    } finally {
+        sh 'echo > .pypirc'
     }
 }
 
@@ -45,6 +94,8 @@ def updateDataset(dataset, commit) {
 
 def withBigQueryViewsManagerGcpCredentials(doSomething) {
     try {
+        // remove potential credentials.json directory in case it was created by the mount
+        sh 'rm -rf credentials.json || true'
         sh 'vault.sh kv get -format json -field credentials secret/containers/bigquery-views-manager/gcp > credentials.json'
         doSomething()
     } finally {

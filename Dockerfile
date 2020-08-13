@@ -9,8 +9,13 @@ ENV PYTHONUSERBASE=/.venv PATH=/.venv/bin:$PATH
 ARG PROJECT_HOME=/opt/bigquery-views-manager
 WORKDIR ${PROJECT_HOME}
 
-COPY *.sh pytest.ini .pylintrc .flake8 ./
+COPY *.sh *.py *.txt README.md pytest.ini .pylintrc .flake8 ./
 COPY bigquery_views_manager bigquery_views_manager
 
 # tests
 COPY tests tests
+
+ARG version
+ADD docker ./docker
+RUN ls -l && ./docker/set-version.sh "${version}"
+LABEL org.opencontainers.image.version=${version}
