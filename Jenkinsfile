@@ -1,7 +1,6 @@
 elifePipeline {
-    def commit
-
     node('containers-jenkins-plugin') {
+        def commit
 
         stage 'Checkout', {
             checkout scm
