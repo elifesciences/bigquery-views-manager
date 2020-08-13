@@ -59,6 +59,8 @@ def updateDataset(dataset, commit) {
 
 def withBigQueryViewsManagerGcpCredentials(doSomething) {
     try {
+        // remove potential credentials.json directory in case it was created by the mount
+        sh 'rm -rf credentials.json || true'
         sh 'vault.sh kv get -format json -field credentials secret/containers/bigquery-views-manager/gcp > credentials.json'
         doSomething()
     } finally {
