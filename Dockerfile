@@ -14,3 +14,10 @@ COPY bigquery_views_manager bigquery_views_manager
 
 # tests
 COPY tests tests
+
+ARG version
+ADD docker ./docker
+RUN ls -l && ./docker/set-version.sh "${version}"
+LABEL org.opencontainers.image.version=${version}
+
+RUN python setup.py sdist bdist_wheel

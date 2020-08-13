@@ -16,6 +16,7 @@ services:
             args:
                 venv_image: elifesciences/bigquery-views-manager_venv:${IMAGE_TAG}
                 python_base_image_tag: ${PYTHON_BASE_IMAGE_TAG}
+                version: ${VERSION}
         image: elifesciences/bigquery-views-manager:${IMAGE_TAG}
         command: ''
         depends_on:

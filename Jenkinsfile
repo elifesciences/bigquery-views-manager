@@ -29,6 +29,20 @@ elifePipeline {
                     }
                 }
             }
+
+            stage 'Push package to test.pypi.org', {
+                withPypiCredentials 'staging', 'testpypi', {
+                    sh "make IMAGE_TAG=${commit} COMMIT=${commit} NO_BUILD=y ci-push-testpypi"
+                }
+            }
+        }
+
+        elifeTagOnly { tag ->
+            stage 'Push release', {
+                withPypiCredentials 'prod', 'pypi', {
+                    sh "make IMAGE_TAG=${commit} VERSION=${version} NO_BUILD=y ci-push-pypi"
+                }
+            }
         }
     }
 }
