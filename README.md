@@ -96,19 +96,19 @@ See [example-data](https://github.com/elifesciences/bigquery-views-manager/tree/
 To get the command help:
 
 ```bash
-python -m bigquery_views_manager.cli --help
+python -m bigquery_views_manager --help
 ```
 
 Or:
 
 ```bash
-python -m bigquery_views_manager.cli <sub-command> --help
+python -m bigquery_views_manager <sub-command> --help
 ```
 
 ### Create or Replace Views
 
 ```bash
-python -m bigquery_views_manager.cli \
+python -m bigquery_views_manager \
     --dataset=my_dataset \
     create-or-replace-views \
     [--view-list-file=/path/to/views.lst] \
@@ -120,7 +120,7 @@ Adding the `--materialize` flag will additionally materialize the views that are
 ### Materialize Views
 
 ```bash
-python -m bigquery_views_manager.cli \
+python -m bigquery_views_manager \
     --dataset=my_dataset \
     materialize-views \
     [--view-list-file=/path/to/views.lst] \
@@ -133,7 +133,7 @@ python -m bigquery_views_manager.cli \
 Show differences between local views and views within BigQuery.
 
 ```bash
-python -m bigquery_views_manager.cli \
+python -m bigquery_views_manager \
     --dataset=my_dataset \
     diff-views \
     [--view-list-file=/path/to/views.lst] \
@@ -147,7 +147,7 @@ Copy views from BigQuery to the local file system.
 To get all of the files listed in `views/views.lst`:
 
 ```bash
-python -m bigquery_views_manager.cli \
+python -m bigquery_views_manager \
     --dataset=my_dataset \
     [--view-list-file=/path/to/views.lst] \
     get-views
@@ -156,7 +156,7 @@ python -m bigquery_views_manager.cli \
 To get a particular view or views:
 
 ```bash
-python -m bigquery_views_manager.cli \
+python -m bigquery_views_manager \
     --dataset=my_dataset \
     get-views \
     [--view-list-file=/path/to/views.lst] \
@@ -170,7 +170,7 @@ When views are retrieved, the project name and dataset are replaced with placeho
 Copy config tables (CSV) to BigQuery. The config tables are by default stored in `./config-tables`.
 
 ```bash
-python -m bigquery_views_manager.cli \
+python -m bigquery_views_manager \
     --dataset=my_dataset \
     create-or-replace-config-tables \
     [--config-tables-base-dir=/path/to/config-tables] \
