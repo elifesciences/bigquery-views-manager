@@ -103,12 +103,22 @@ views-manager-cli:
 		$(ARGS)
 
 
-example-data-clean-dataset: .require-DATASET_NAME
+example-data-clean-dataset-config-data: .require-DATASET_NAME
+	$(BIGQUERY_VIEWS_MANAGER_CLI) \
+		--dataset=$(DATASET_NAME) \
+		delete-config-tables \
+		--config-tables-base-dir=/tmp/example-data/config-tables
+
+
+example-data-clean-dataset-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		--dataset=$(DATASET_NAME) \
 		delete-views \
 		--view-list-file=/tmp/example-data/views/views.lst \
 		--disable-view-name-mapping
+
+
+example-data-clean-dataset-materialized-tables: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		--dataset=$(DATASET_NAME) \
 		delete-materialized-tables \
@@ -116,7 +126,20 @@ example-data-clean-dataset: .require-DATASET_NAME
 		--disable-view-name-mapping
 
 
-example-data-update-dataset: .require-DATASET_NAME
+example-data-clean-dataset: \
+	example-data-clean-dataset-views \
+	example-data-clean-dataset-materialized-tables \
+	example-data-clean-dataset-config-data
+
+
+example-data-update-dataset-config-data: .require-DATASET_NAME
+	$(BIGQUERY_VIEWS_MANAGER_CLI) \
+		--dataset=$(DATASET_NAME) \
+		create-or-replace-config-tables \
+		--config-tables-base-dir=/tmp/example-data/config-tables
+
+
+example-data-update-dataset-views-and-materialize:
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		--dataset=$(DATASET_NAME) \
 		create-or-replace-views \
@@ -124,6 +147,11 @@ example-data-update-dataset: .require-DATASET_NAME
 		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
 		--materialize \
 		--disable-view-name-mapping
+
+
+example-data-update-dataset: \
+	example-data-update-dataset-config-data \
+	example-data-update-dataset-views-and-materialize
 
 
 ci-build-and-test:
