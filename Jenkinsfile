@@ -18,12 +18,14 @@ elifePipeline {
 
         elifePullRequestOnly { prNumber ->
             stage 'Create and delete views', {
-                withBigQueryViewsManagerGcpCredentials {
-                    cleanDataset('bigquery_views_manager_ci', commit)
-                    try {
-                        updateDataset('bigquery_views_manager_ci', commit)
-                    } finally {
+                lock('bigquery-views-manager--ci') {
+                    withBigQueryViewsManagerGcpCredentials {
                         cleanDataset('bigquery_views_manager_ci', commit)
+                        try {
+                            updateDataset('bigquery_views_manager_ci', commit)
+                        } finally {
+                            cleanDataset('bigquery_views_manager_ci', commit)
+                        }
                     }
                 }
             }
