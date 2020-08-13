@@ -29,20 +29,9 @@ elifePipeline {
     }
 }
 
-def viewsCli(args, commit) {
-    sh "make IMAGE_TAG=${commit} REVISION=${commit} ci-views-manager-cli ARGS='${args}'"
-}
-
 def updateDataset(dataset, commit) {
     echo "updating dataset: ${dataset}"
-    viewsCli(
-        "--dataset=${dataset} create-or-replace-views \
-        --view-list-file=/tmp/example-data/views/views.lst \
-        --materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
-        --materialize \
-        --disable-view-name-mapping",
-        commit
-    )
+    sh "make IMAGE_TAG=${commit} REVISION=${commit} DATASET_NAME=${dataset} ci-example-data-update-dataset"
 }
 
 def withBigQueryViewsManagerGcpCredentials(doSomething) {

@@ -10,7 +10,16 @@ PYTHON = $(VENV)/bin/python
 
 RUN_DEV = $(DOCKER_COMPOSE) run --rm bigquery-views
 
+BIGQUERY_VIEWS_MANAGER_CLI = $(RUN_DEV) python -m bigquery_views_manager.cli
+
 ARGS =
+
+
+.require-%:
+	@ if [ "${${*}}" = "" ]; then \
+			echo "Environment variable $* not set"; \
+			exit 1; \
+	fi
 
 
 venv-clean:
@@ -94,6 +103,16 @@ views-manager-cli:
 		$(ARGS)
 
 
+example-data-update-dataset: .require-DATASET_NAME
+	$(BIGQUERY_VIEWS_MANAGER_CLI) \
+		--dataset=$(DATASET_NAME) \
+		create-or-replace-views \
+		--view-list-file=/tmp/example-data/views/views.lst \
+		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		--materialize \
+		--disable-view-name-mapping
+
+
 ci-build-and-test:
 	make DOCKER_COMPOSE="$(DOCKER_COMPOSE_CI)" \
 		build \
@@ -104,6 +123,11 @@ ci-build-and-test:
 ci-views-manager-cli:
 	make DOCKER_COMPOSE="$(DOCKER_COMPOSE_CI)" \
 		views-manager-cli
+
+
+ci-example-data-update-dataset: .require-DATASET_NAME
+	make DOCKER_COMPOSE="$(DOCKER_COMPOSE_CI)" \
+		example-data-update-dataset
 
 
 ci-clean:
