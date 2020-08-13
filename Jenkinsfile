@@ -19,14 +19,21 @@ elifePipeline {
         elifePullRequestOnly { prNumber ->
             stage 'Create and delete views', {
                 withBigQueryViewsManagerGcpCredentials {
-                    updateDataset(
-                        'bigquery_views_manager_ci',
-                        commit
-                    )
+                    cleanDataset('bigquery_views_manager_ci', commit)
+                    try {
+                        updateDataset('bigquery_views_manager_ci', commit)
+                    } finally {
+                        cleanDataset('bigquery_views_manager_ci', commit)
+                    }
                 }
             }
         }
     }
+}
+
+def cleanDataset(dataset, commit) {
+    echo "cleaning dataset: ${dataset}"
+    sh "make IMAGE_TAG=${commit} REVISION=${commit} DATASET_NAME=${dataset} ci-example-data-clean-dataset"
 }
 
 def updateDataset(dataset, commit) {

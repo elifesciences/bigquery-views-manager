@@ -103,6 +103,19 @@ views-manager-cli:
 		$(ARGS)
 
 
+example-data-clean-dataset: .require-DATASET_NAME
+	$(BIGQUERY_VIEWS_MANAGER_CLI) \
+		--dataset=$(DATASET_NAME) \
+		delete-views \
+		--view-list-file=/tmp/example-data/views/views.lst \
+		--disable-view-name-mapping
+	$(BIGQUERY_VIEWS_MANAGER_CLI) \
+		--dataset=$(DATASET_NAME) \
+		delete-materialized-tables \
+		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		--disable-view-name-mapping
+
+
 example-data-update-dataset: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		--dataset=$(DATASET_NAME) \
@@ -123,6 +136,11 @@ ci-build-and-test:
 ci-views-manager-cli:
 	make DOCKER_COMPOSE="$(DOCKER_COMPOSE_CI)" \
 		views-manager-cli
+
+
+ci-example-data-clean-dataset: .require-DATASET_NAME
+	make DOCKER_COMPOSE="$(DOCKER_COMPOSE_CI)" \
+		example-data-clean-dataset
 
 
 ci-example-data-update-dataset: .require-DATASET_NAME
