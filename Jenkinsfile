@@ -40,7 +40,7 @@ elifePipeline {
         elifeTagOnly { tag ->
             stage 'Push release', {
                 withPypiCredentials 'prod', 'pypi', {
-                    sh "make IMAGE_TAG=${commit} VERSION=${version} NO_BUILD=y ci-push-pypi"
+                    sh "make IMAGE_TAG=${commit} VERSION=${tag} NO_BUILD=y ci-push-pypi"
                 }
             }
         }
