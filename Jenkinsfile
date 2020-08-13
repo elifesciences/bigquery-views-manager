@@ -43,6 +43,7 @@ def updateDataset(dataset, commit) {
 
 def withBigQueryViewsManagerGcpCredentials(doSomething) {
     try {
+        sh 'rm -rf credentials.json || true'
         sh 'vault.sh kv get -format json -field credentials secret/containers/bigquery-views-manager/gcp > credentials.json'
         sh 'head -c50 credentials.json'
         doSomething()
