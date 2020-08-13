@@ -26,28 +26,34 @@ elifePipeline {
         elifePullRequestOnly { prNumber ->
             stage 'Create and delete views', {
                 lock('bigquery-views-manager--ci') {
-                    withBigQueryViewsManagerGcpCredentials {
-                        cleanDataset('bigquery_views_manager_ci', commit)
-                        try {
-                            updateDataset('bigquery_views_manager_ci', commit)
-                        } finally {
+                    withEnv(["VERSION=${version}"]) {
+                        withBigQueryViewsManagerGcpCredentials {
                             cleanDataset('bigquery_views_manager_ci', commit)
+                            try {
+                                updateDataset('bigquery_views_manager_ci', commit)
+                            } finally {
+                                cleanDataset('bigquery_views_manager_ci', commit)
+                            }
                         }
                     }
                 }
             }
 
             stage 'Push package to test.pypi.org', {
-                withPypiCredentials 'staging', 'testpypi', {
-                    sh "make IMAGE_TAG=${commit} COMMIT=${commit} NO_BUILD=y ci-push-testpypi"
+                withEnv(["VERSION=${version}"]) {
+                    withPypiCredentials 'staging', 'testpypi', {
+                        sh "make IMAGE_TAG=${commit} COMMIT=${commit} NO_BUILD=y ci-push-testpypi"
+                    }
                 }
             }
         }
 
         elifeTagOnly { tag ->
             stage 'Push release', {
-                withPypiCredentials 'prod', 'pypi', {
-                    sh "make IMAGE_TAG=${commit} VERSION=${version} NO_BUILD=y ci-push-pypi"
+                withEnv(["VERSION=${version}"]) {
+                    withPypiCredentials 'prod', 'pypi', {
+                        sh "make IMAGE_TAG=${commit} NO_BUILD=y ci-push-pypi"
+                    }
                 }
             }
         }
