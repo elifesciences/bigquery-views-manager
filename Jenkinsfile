@@ -37,8 +37,8 @@ def updateDataset(dataset, commit) {
     echo "updating dataset: ${dataset}"
     viewsCli(
         "--dataset=${dataset} create-or-replace-views \
-        --view-list-file=/tmp/example-views/views.lst \
-        --materialized-view-list-file=/tmp/example-views/materialized-views.lst \
+        --view-list-file=/tmp/example-data/views/views.lst \
+        --materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
         --materialize \
         --disable-view-name-mapping",
         commit
