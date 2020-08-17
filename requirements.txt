@@ -1,2 +1,2 @@
-google-cloud-bigquery~=1.26.0
+google-cloud-bigquery~=1.26.1
 crayons~=0.3.1
