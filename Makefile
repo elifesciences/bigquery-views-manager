@@ -10,7 +10,12 @@ PYTHON = $(VENV)/bin/python
 
 RUN_DEV = $(DOCKER_COMPOSE) run --rm bigquery-views
 
-BIGQUERY_VIEWS_MANAGER_CLI = $(RUN_DEV) python -m bigquery_views_manager.cli
+GOOGLE_CLOUD_PROJECT = bigquery-views-manager
+
+BIGQUERY_VIEWS_MANAGER_CLI_DOCKER = $(RUN_DEV) python -m bigquery_views_manager.cli
+BIGQUERY_VIEWS_MANAGER_CLI_VENV = GOOGLE_CLOUD_PROJECT=$(GOOGLE_CLOUD_PROJECT) \
+	$(PYTHON) -m bigquery_views_manager.cli
+BIGQUERY_VIEWS_MANAGER_CLI = $(BIGQUERY_VIEWS_MANAGER_CLI_DOCKER)
 
 ARGS =
 
@@ -71,6 +76,61 @@ dev-watch-slow:
 dev-test: dev-lint dev-pytest
 
 
+dev-example-data-clean-dataset-config-data:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-clean-dataset-config-data
+
+
+dev-example-data-clean-dataset-views:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-clean-dataset-views
+
+
+dev-example-data-clean-dataset-materialized-tables:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-clean-dataset-materialized-tables
+
+
+dev-example-data-clean-dataset:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-clean-dataset
+
+
+dev-example-data-update-dataset-config-data:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-update-dataset-config-data
+
+
+dev-example-data-update-dataset-views-and-materialize:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-update-dataset-views-and-materialize
+
+
+dev-example-data-materialize-views:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-materialize-views
+
+
+dev-example-data-diff-views:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-diff-views
+
+
+dev-example-data-get-view:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-get-view
+
+
+dev-example-data-get-all-views:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-get-all-views
+
+
+dev-example-data-update-dataset:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-update-dataset
+
+
 .PHONY: build
 build:
 	$(DOCKER_COMPOSE) build venv bigquery-views
@@ -107,14 +167,14 @@ example-data-clean-dataset-config-data: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		delete-config-tables \
 		--dataset=$(DATASET_NAME) \
-		--config-tables-base-dir=/tmp/example-data/config-tables
+		--config-tables-base-dir=./example-data/config-tables
 
 
 example-data-clean-dataset-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		delete-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=/tmp/example-data/views/views.lst \
+		--view-list-file=./example-data/views/views.lst \
 		--disable-view-name-mapping
 
 
@@ -122,7 +182,7 @@ example-data-clean-dataset-materialized-tables: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		delete-materialized-tables \
 		--dataset=$(DATASET_NAME) \
-		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		--materialized-view-list-file=./example-data/views/materialized-views.lst \
 		--disable-view-name-mapping
 
 
@@ -136,15 +196,15 @@ example-data-update-dataset-config-data: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		create-or-replace-config-tables \
 		--dataset=$(DATASET_NAME) \
-		--config-tables-base-dir=/tmp/example-data/config-tables
+		--config-tables-base-dir=./example-data/config-tables
 
 
 example-data-update-dataset-views-and-materialize: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		create-or-replace-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=/tmp/example-data/views/views.lst \
-		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		--view-list-file=./example-data/views/views.lst \
+		--materialized-view-list-file=./example-data/views/materialized-views.lst \
 		--materialize \
 		--disable-view-name-mapping
 
@@ -153,8 +213,8 @@ example-data-materialize-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		materialize-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=/tmp/example-data/views/views.lst \
-		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		--view-list-file=./example-data/views/views.lst \
+		--materialized-view-list-file=./example-data/views/materialized-views.lst \
 		--disable-view-name-mapping
 
 
@@ -162,8 +222,8 @@ example-data-diff-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		diff-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=/tmp/example-data/views/views.lst \
-		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		--view-list-file=./example-data/views/views.lst \
+		--materialized-view-list-file=./example-data/views/materialized-views.lst \
 		$(ARGS)
 
 
@@ -171,8 +231,8 @@ example-data-get-view: .require-DATASET_NAME .require-VIEW_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		get-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=/tmp/example-data/views/views.lst \
-		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		--view-list-file=./example-data/views/views.lst \
+		--materialized-view-list-file=./example-data/views/materialized-views.lst \
 		$(VIEW_NAME) \
 		$(ARGS)
 
@@ -181,8 +241,8 @@ example-data-get-all-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		get-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=/tmp/example-data/views/views.lst \
-		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		--view-list-file=./example-data/views/views.lst \
+		--materialized-view-list-file=./example-data/views/materialized-views.lst \
 		$(ARGS)
 
 

@@ -7,4 +7,4 @@ services:
             GOOGLE_CLOUD_PROJECT: bigquery-views-manager
         volumes:
             - ~/.config/gcloud:/root/.config/gcloud
-            - ./example-data:/tmp/example-data
+            - ./example-data:/opt/bigquery-views-manager/example-data
