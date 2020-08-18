@@ -287,27 +287,29 @@ class DiffViewsSubCommand(SubCommand):
         super().__init__("diff-views", "Show difference between local and remote views")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
-        add_materialized_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
         parser.add_argument(
             "--fail-if-changed", action="store_true", help="Fail if changed"
         )
-        disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
+            args.dataset
         )
-        views_ordered_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
+        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
+
         views_dict = (
             extend_or_subset_mapped_view_subset(
                 views_ordered_dict_all, args.view_names, args.dataset
@@ -330,7 +332,7 @@ class DiffViewsSubCommand(SubCommand):
 
         has_changed = diff_views(
             client,
-            Path(args.view_list_file).parent,
+            Path(args.view_list_config).parent,
             views_dict,
             project=client.project,
             default_dataset=args.dataset,

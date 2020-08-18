@@ -41,6 +41,12 @@ def _materialize_views_mock():
         yield mock
 
 
+@pytest.fixture(name='diff_views_mock', autouse=True)
+def _diff_views_mock():
+    with patch.object(target_module, 'diff_views') as mock:
+        yield mock
+
+
 def get_ordered_dict_view_mapping():
     result = OrderedDict()
     result["view1"] = {DATASET_NAME_KEY: "dataset1", VIEW_OR_TABLE_NAME_KEY: "view1"}
@@ -127,3 +133,21 @@ class TestDeleteMaterializedTablesSubCommand:
             '--view-list-config=%s' % view_config_path
         ])
         delete_views_or_tables_mock.assert_called()
+
+
+class TestDiffViewsSubCommand:
+    def test_should_call_diff_views(
+            self,
+            temp_dir: Path,
+            diff_views_mock: MagicMock):
+        view_config_path = temp_dir / 'views.yml'
+        view_config_path.write_text('\n'.join([
+            '- view1:',
+            '    materialize: true'
+        ]))
+        main([
+            'diff-views',
+            '--dataset=dataset1',
+            '--view-list-config=%s' % view_config_path
+        ])
+        diff_views_mock.assert_called()

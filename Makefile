@@ -194,7 +194,8 @@ example-data-update-dataset-config-data: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		create-or-replace-config-tables \
 		--dataset=$(DATASET_NAME) \
-		--config-tables-base-dir=./example-data/config-tables
+		--config-tables-base-dir=./example-data/config-tables \
+		$(ARGS)
 
 
 example-data-update-dataset-views-and-materialize: .require-DATASET_NAME
@@ -202,22 +203,23 @@ example-data-update-dataset-views-and-materialize: .require-DATASET_NAME
 		create-or-replace-views \
 		--dataset=$(DATASET_NAME) \
 		--view-list-config=./example-data/views/views.yml \
-		--materialize
+		--materialize \
+		$(ARGS)
 
 
 example-data-materialize-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		materialize-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-config=./example-data/views/views.yml
+		--view-list-config=./example-data/views/views.yml \
+		$(ARGS)
 
 
 example-data-diff-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		diff-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=./example-data/views/views.lst \
-		--materialized-view-list-file=./example-data/views/materialized-views.lst \
+		--view-list-config=./example-data/views/views.yml \
 		$(ARGS)
 
 
