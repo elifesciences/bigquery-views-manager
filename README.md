@@ -43,49 +43,55 @@ SELECT *
 FROM `{project}.{dataset}.view1`
 ```
 
-### `views.lst`
+### View List Config `views.yml`
 
-The `views.lst` file contains the list of views that should be processed. It is important that the list of views are in the correct insert order. i.e. if `v_view2` depends on `v_view1` then `v_view1` should appear first.
+The `views.yml` file contains the list of views that should be processed. It is important that the list of views are in the correct insert order. i.e. if `v_view2` depends on `v_view1` then `v_view1` should appear first.
 
-The format is: `view_name[,optional_dataset_name]`
+The format is a yaml file. In the simplest case it will be the list of the views, e.g.:
 
-Where the `view_name` is the name of the view to be created and the `optional_dataset_name` is the name of the dataset inside which the view should be created. If the `optional_dataset_name` is not given, then, the default dataset specified in the `--dataset` argument of the command will be used.
-
-Example:
-
-```text
-v_view1
-v_view2
+```yaml
+- v_view1
+- v_view2
 ```
 
-Or:
+Additional parameters can be added, e.g. to materialize `v_view1`:
 
-```text
-v_view1
-v_view2,target_dataset_1
+```yaml
+- v_view1:
+    materialize: true
+- v_view2
 ```
 
-### `materialized-views.lst`
+Or to materialize `v_view1` to another table name:
 
-The `materialized-views.lst` file contains the list of views that should be materialized. By default it will materialize the view to a table with the `m` prefix, in the same dataset as the view.
-
-The format is `view_name[,optional_dataset_name.optional_materialized_view_name]`
-
-Where the `view_name` is the name of the view to be created and the `optional_dataset_name` is the name of the dataset inside which the view should be created. if the `optional_dataset_name` is not given, then, the default dataset specified in the `--dataset` CLI argument of the command will be used. The `optional_materialized_view_name` is the name of the materialized view to be created if specified, otherwise `'m' + view_name`.
-
-Adding the `--disable-view-name-mapping` CLI argument will disable the use mapping of views to dataset and materialized view specified in the `views/views.lst` and `views/materialized-views.lst`, and will used the default.
-
-Example (only materialize `v_view1` to `mv_view1`):
-
-```text
-v_view1
+```yaml
+- v_view1:
+    materialize: true
+    materialize_as: output_table1
+- v_view2
 ```
 
-Or (only materialize `v_view1` to `target_table1` within the `target_dataset_1` dataset):
+The dataset could also be specified:
 
-```text
-view1,target_dataset_1.target_table1
+```yaml
+- v_view1:
+    materialize: true
+    materialize_as: output_dataset1.output_table1
+- v_view2
 ```
+
+When working with multiple datasets, this can also be conditional:
+
+```yaml
+- v_view1:
+    materialize: true
+    - if:
+        dataset: source_dataset1
+      materialize_as: "output_dataset1.output_table1"
+- v_view2
+```
+
+The condition will depend on the passed in `--dataset`.
 
 ### Config Tables
 
@@ -119,11 +125,11 @@ python -m bigquery_views_manager <sub-command> --help
 python -m bigquery_views_manager \
     create-or-replace-views \
     --dataset=my_dataset \
-    [--view-list-file=/path/to/views.lst] \
+    [--view-list-config=/path/to/views.yml] \
     [<view name> [<other view name> ...]]
 ```
 
-Adding the `--materialize` flag will additionally materialize the views that are in the `views/materialized-views.lst` file. In that case views will be materialized immediately after updating a view.
+Adding the `--materialize` flag will additionally materialize the views (where it has been enabled). In that case views will be materialized immediately after updating a view.
 
 ### Materialize Views
 
@@ -131,8 +137,7 @@ Adding the `--materialize` flag will additionally materialize the views that are
 python -m bigquery_views_manager \
     materialize-views \
     --dataset=my_dataset \
-    [--view-list-file=/path/to/views.lst] \
-    [--materialized-view-list-file=/path/to/materialized-views.lst] \
+    [--view-list-config=/path/to/views.yml] \
     [<view name> [<other view name> ...]]
 ```
 
@@ -144,7 +149,7 @@ Show differences between local views and views within BigQuery.
 python -m bigquery_views_manager \
     diff-views \
     --dataset=my_dataset \
-    [--view-list-file=/path/to/views.lst] \
+    [--view-list-config=/path/to/views.yml] \
     [<view name> [<other view name> ...]]
 ```
 
@@ -152,13 +157,13 @@ python -m bigquery_views_manager \
 
 Copy views from BigQuery to the local file system.
 
-To get all of the files listed in `views/views.lst`:
+To get all of the files listed in `views/views.yml`:
 
 ```bash
 python -m bigquery_views_manager \
     get-views \
     --dataset=my_dataset \
-    [--view-list-file=/path/to/views.lst]
+    [--view-list-config=/path/to/views.yml]
 ```
 
 To get a particular view or views:
@@ -167,7 +172,7 @@ To get a particular view or views:
 python -m bigquery_views_manager \
     get-views \
     --dataset=my_dataset \
-    [--view-list-file=/path/to/views.lst] \
+    [--view-list-config=/path/to/views.yml] \
     <view name> [<other view name> ...]
 ```
 
@@ -189,7 +194,7 @@ python -m bigquery_views_manager \
 
 Add the view to the `views` directory with the view name and `.sql` file extension.
 
-The view name also needs to be added to `views/views.lst` in the correct order (i.e. if a view depends on another view, the other view should appear first).
+The view name also needs to be added to `views/views.yml` in the correct order (i.e. if a view depends on another view, the other view should appear first).
 
 ### Cleanup Sub Commands
 
