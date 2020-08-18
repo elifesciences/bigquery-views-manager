@@ -329,10 +329,31 @@ class ViewConfig:
         return self
 
 
+class ViewListConfig:
+    def __init__(self, view_config_list: List[ViewConfig]):
+        self.view_config_list = view_config_list
+
+    def __len__(self):
+        return len(self.view_config_list)
+
+    def __iter__(self):
+        return iter(self.view_config_list)
+
+    def __getitem__(self, index):
+        return self.view_config_list[index]
+
+    def filter_view_names(self, view_names: List[str]):
+        return ViewListConfig([
+            view
+            for view in self.view_config_list
+            if view.view_name in view_names
+        ])
+
+
 def load_view_list_config(path: str):
     view_list_obj = yaml.load(Path(path).read_text(), Loader=yaml.Loader)
     LOGGER.debug('view_list_obj: %s', view_list_obj)
-    return [
+    return ViewListConfig([
         ViewConfig.from_value(value)
         for value in view_list_obj
-    ]
+    ])

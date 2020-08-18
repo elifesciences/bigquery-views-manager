@@ -9,6 +9,8 @@ from bigquery_views_manager.view_list import (
     determine_insert_order_for_view_names_and_referenced_tables,
     DATASET_NAME_KEY,
     VIEW_OR_TABLE_NAME_KEY,
+    ViewConfig,
+    ViewListConfig,
     load_view_list_config
 )
 
@@ -136,6 +138,21 @@ class TestDetermineInsertOrderForViewNamesAndReferencedTables:
             ),
             materialized_views_ordered_dict=OrderedDict(),
         ) == result
+
+
+class TestViewListConfig:
+    def test_should_filter_view_names(self):
+        view_list_config = ViewListConfig([
+            ViewConfig('view1'),
+            ViewConfig('view2'),
+            ViewConfig('view3')
+        ])
+        assert [
+            view.view_name
+            for view in view_list_config.filter_view_names([
+                'view1', 'view3'
+            ])
+        ] == ['view1', 'view3']
 
 
 class TestLoadViewListConfig:
