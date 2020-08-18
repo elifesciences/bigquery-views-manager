@@ -47,6 +47,18 @@ def _diff_views_mock():
         yield mock
 
 
+@pytest.fixture(name='get_views_mock', autouse=True)
+def _get_views_mock():
+    with patch.object(target_module, 'get_views') as mock:
+        yield mock
+
+
+@pytest.fixture(name='get_bq_view_names_mock', autouse=True)
+def _get_bq_view_names_mock():
+    with patch.object(target_module, 'get_bq_view_names') as mock:
+        yield mock
+
+
 def get_ordered_dict_view_mapping():
     result = OrderedDict()
     result["view1"] = {DATASET_NAME_KEY: "dataset1", VIEW_OR_TABLE_NAME_KEY: "view1"}
@@ -151,3 +163,21 @@ class TestDiffViewsSubCommand:
             '--view-list-config=%s' % view_config_path
         ])
         diff_views_mock.assert_called()
+
+
+class TestGetViewsSubCommand:
+    def test_should_call_get_views(
+            self,
+            temp_dir: Path,
+            get_views_mock: MagicMock):
+        view_config_path = temp_dir / 'views.yml'
+        view_config_path.write_text('\n'.join([
+            '- view1:',
+            '    materialize: true'
+        ]))
+        main([
+            'get-views',
+            '--dataset=dataset1',
+            '--view-list-config=%s' % view_config_path
+        ])
+        get_views_mock.assert_called()

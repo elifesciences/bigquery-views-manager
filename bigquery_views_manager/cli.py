@@ -353,7 +353,7 @@ class GetViewsSubCommand(SubCommand):
         )
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
         parser.add_argument(
             "--all-remote-views",
@@ -366,21 +366,24 @@ class GetViewsSubCommand(SubCommand):
             help="Add any missing views to the view list",
         )
         disable_view_name_mapping_argument(parser)
-        add_materialized_view_list_file_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        views_ordered_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
+            args.dataset
         )
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
+
         if args.all_remote_views:
             view_names = get_bq_view_names(client, dataset=args.dataset)
             views_dict = create_simple_view_mapping_from_view_list(
@@ -395,7 +398,7 @@ class GetViewsSubCommand(SubCommand):
                 else views_ordered_dict_all
             )
 
-        base_dir = Path(args.view_list_file).parent
+        base_dir = Path(args.view_list_config).parent
         get_views(client, base_dir, views_dict, project=client.project)
         if args.all_remote_views:
             for view_template_name, dataset_table_or_view_data in views_dict.items():
