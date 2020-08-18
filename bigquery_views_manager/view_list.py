@@ -60,43 +60,6 @@ def extend_or_subset_mapped_view_subset(
     return views_dict
 
 
-def load_view_mapping(
-        filename: str,
-        should_map_table: bool,
-        default_dataset_name: str,
-        is_materialized_view: bool = False,
-) -> OrderedDict:
-    view_mapping = OrderedDict()
-    view_mapping_as_string = Path(filename).read_text().splitlines()
-    for line in view_mapping_as_string:
-        if line.strip() == "":
-            continue
-        splitted_line = line.split(",")
-        view_template_file_name = splitted_line[0]
-        if len(splitted_line) < 2 or not should_map_table:
-            dataset_name = default_dataset_name
-            table_name = (get_default_destination_table_name_for_view_name(
-                view_template_file_name)
-                          if is_materialized_view else view_template_file_name)
-        else:
-            if is_materialized_view:
-                mapped_full_name = splitted_line[1].split(".")
-                dataset_name = (default_dataset_name
-                                if len(mapped_full_name) < 2 else
-                                mapped_full_name[0].strip())
-                table_name = (mapped_full_name[0] if len(mapped_full_name) < 2
-                              else mapped_full_name[1])
-            else:
-                table_name = view_template_file_name
-                dataset_name = splitted_line[1]
-
-        view_mapping[view_template_file_name] = {
-            DATASET_NAME_KEY: dataset_name,
-            VIEW_OR_TABLE_NAME_KEY: table_name,
-        }
-    return view_mapping
-
-
 def create_simple_view_mapping_from_view_list(dataset: str,
                                               view_name_list: List[str]):
     view_mapping = OrderedDict()
