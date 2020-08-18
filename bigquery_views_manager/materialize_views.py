@@ -25,7 +25,7 @@ def get_select_all_from_query(view_name: str, project: str,
     return f"SELECT * FROM `{project}.{dataset}.{view_name}`"
 
 
-def materialize_view(  # pylint: disable=too-many-arguments
+def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
         client: bigquery.Client,
         source_view_name: str,
         destination_table_name: str,
