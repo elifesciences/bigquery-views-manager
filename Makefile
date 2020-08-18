@@ -203,10 +203,8 @@ example-data-update-dataset-views-and-materialize: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		create-or-replace-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=./example-data/views/views.lst \
-		--materialized-view-list-file=./example-data/views/materialized-views.lst \
-		--materialize \
-		--disable-view-name-mapping
+		--view-list-config=./example-data/views/views.yml \
+		--materialize
 
 
 example-data-materialize-views: .require-DATASET_NAME
