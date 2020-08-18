@@ -342,11 +342,17 @@ class ViewListConfig:
     def __getitem__(self, index):
         return self.view_config_list[index]
 
-    def filter_view_names(self, view_names: List[str]):
+    def filter_view_names(self, view_names: List[str]) -> 'ViewListConfig':
         return ViewListConfig([
             view
             for view in self.view_config_list
             if view.view_name in view_names
+        ])
+
+    def resolve_conditions(self, condition_value: dict) -> 'ViewListConfig':
+        return ViewListConfig([
+            view.resolve_conditions(condition_value)
+            for view in self.view_config_list
         ])
 
 

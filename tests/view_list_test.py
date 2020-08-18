@@ -9,6 +9,7 @@ from bigquery_views_manager.view_list import (
     determine_insert_order_for_view_names_and_referenced_tables,
     DATASET_NAME_KEY,
     VIEW_OR_TABLE_NAME_KEY,
+    ViewCondition,
     ViewConfig,
     ViewListConfig,
     load_view_list_config
@@ -153,6 +154,22 @@ class TestViewListConfig:
                 'view1', 'view3'
             ])
         ] == ['view1', 'view3']
+
+    def test_should_resolve_conditions(self):
+        view_list_config = ViewListConfig([
+            ViewConfig('view1', conditions=[
+                ViewCondition(
+                    if_condition={'dataset': 'dataset1'},
+                    materialize_as='output_dataset1.output_table1'
+                )
+            ])
+        ])
+        assert [
+            view.materialize_as
+            for view in view_list_config.resolve_conditions({
+                'dataset': 'dataset1'
+            })
+        ] == ['output_dataset1.output_table1']
 
 
 class TestLoadViewListConfig:
