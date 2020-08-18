@@ -158,6 +158,15 @@ example-data-materialize-views: .require-DATASET_NAME
 		--disable-view-name-mapping
 
 
+example-data-diff-views: .require-DATASET_NAME
+	$(BIGQUERY_VIEWS_MANAGER_CLI) \
+		diff-views \
+		--dataset=$(DATASET_NAME) \
+		--view-list-file=/tmp/example-data/views/views.lst \
+		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		$(ARGS)
+
+
 example-data-update-dataset: \
 	example-data-update-dataset-config-data \
 	example-data-update-dataset-views-and-materialize
