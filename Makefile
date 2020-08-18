@@ -167,6 +167,16 @@ example-data-diff-views: .require-DATASET_NAME
 		$(ARGS)
 
 
+example-data-get-view: .require-DATASET_NAME .require-VIEW_NAME
+	$(BIGQUERY_VIEWS_MANAGER_CLI) \
+		get-views \
+		--dataset=$(DATASET_NAME) \
+		--view-list-file=/tmp/example-data/views/views.lst \
+		--materialized-view-list-file=/tmp/example-data/views/materialized-views.lst \
+		$(VIEW_NAME) \
+		$(ARGS)
+
+
 example-data-update-dataset: \
 	example-data-update-dataset-config-data \
 	example-data-update-dataset-views-and-materialize
