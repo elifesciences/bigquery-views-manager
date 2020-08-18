@@ -211,9 +211,7 @@ example-data-materialize-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		materialize-views \
 		--dataset=$(DATASET_NAME) \
-		--view-list-file=./example-data/views/views.lst \
-		--materialized-view-list-file=./example-data/views/materialized-views.lst \
-		--disable-view-name-mapping
+		--view-list-config=./example-data/views/views.yml
 
 
 example-data-diff-views: .require-DATASET_NAME

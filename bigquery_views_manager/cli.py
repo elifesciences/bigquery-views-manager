@@ -211,19 +211,26 @@ class MaterializeViewsSubCommand(SubCommand):
         super().__init__("materialize-views", "Materialize Views")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
-        add_materialized_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
-        disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
+        )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
+
         materialized_view_ordered_dict = (
             get_mapped_materialized_view_subset(
                 materialized_view_ordered_dict_all, args.view_names
@@ -231,15 +238,11 @@ class MaterializeViewsSubCommand(SubCommand):
             if args.view_names
             else materialized_view_ordered_dict_all
         )
-        views_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-        )
+
         materialize_views(
             client,
             materialized_view_dict=materialized_view_ordered_dict,
-            source_view_dict=views_dict_all,
+            source_view_dict=views_ordered_dict_all,
             project=client.project,
         )
 
