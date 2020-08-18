@@ -333,6 +333,15 @@ class ViewListConfig:
     def __init__(self, view_config_list: List[ViewConfig]):
         self.view_config_list = view_config_list
 
+    def __str__(self):
+        return str(self.view_config_list)
+
+    def __repr__(self):
+        return '%s(%r)' % (
+            type(self).__name__,
+            self.view_config_list
+        )
+
     def __len__(self):
         return len(self.view_config_list)
 
