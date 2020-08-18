@@ -35,6 +35,10 @@ def resolve_query_template_placeholders(
     return query_template
 
 
+def normalize_view_template(query_template: str) -> str:
+    return query_template.rstrip() + '\n'
+
+
 class ViewTemplate:
     def __init__(self, view_template_content):
         self.view_template_content = view_template_content
@@ -46,10 +50,17 @@ class ViewTemplate:
     @staticmethod
     def from_query(query: str, project: str) -> "ViewTemplate":
         return ViewTemplate(
-            replace_query_with_placeholders(query, project=project))
+            replace_query_with_placeholders(query, project=project)
+        )
+
+    @property
+    def normalized(self) -> "ViewTemplate":
+        return ViewTemplate(normalize_view_template(
+            self.view_template_content
+        ))
 
     def __repr__(self):
-        return f"ViewTemplate({self.view_template_content})"
+        return "%s(%r)" % (type(self).__name__, self.view_template_content)
 
     def __str__(self):
         return self.view_template_content
