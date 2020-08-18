@@ -7,4 +7,4 @@ services:
             GOOGLE_APPLICATION_CREDENTIALS: /tmp/credentials.json
         volumes:
             - ./credentials.json:/tmp/credentials.json
-            - ./example-data:/tmp/example-data
+            - ./example-data:/opt/bigquery-views-manager/example-data
