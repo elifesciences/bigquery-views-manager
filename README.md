@@ -1,5 +1,7 @@
 # BigQuery Views Manager
 
+[![PyPi version](https://pypip.in/v/bigquery-views-manager/badge.png)](https://pypi.org/project/bigquery-views-manager/)
+
 Utility project to maintain BigQuery views. The main interface is the CLI.
 
 Main features:
