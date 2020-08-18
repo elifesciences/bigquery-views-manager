@@ -29,6 +29,12 @@ def _update_or_create_views_mock():
         yield mock
 
 
+@pytest.fixture(name='delete_views_or_tables_mock', autouse=True)
+def _delete_views_or_tables_mock():
+    with patch.object(target_module, 'delete_views_or_tables') as mock:
+        yield mock
+
+
 @pytest.fixture(name='materialize_views_mock', autouse=True)
 def _materialize_views_mock():
     with patch.object(target_module, 'materialize_views') as mock:
@@ -68,6 +74,23 @@ class TestCreateOrReplaceViewsSubCommand:
             '--view-list-config=%s' % view_config_path
         ])
         update_or_create_views_mock.assert_called()
+
+
+class TestDeleteViewsSubCommand:
+    def test_should_create_simple_view(
+            self,
+            temp_dir: Path,
+            delete_views_or_tables_mock: MagicMock):
+        view_config_path = temp_dir / 'views.yml'
+        view_config_path.write_text('\n'.join([
+            '- view1'
+        ]))
+        main([
+            'delete-views',
+            '--dataset=dataset1',
+            '--view-list-config=%s' % view_config_path
+        ])
+        delete_views_or_tables_mock.assert_called()
 
 
 class TestMaterializeViewsSubCommand:
