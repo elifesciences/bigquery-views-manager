@@ -171,6 +171,17 @@ class TestViewListConfig:
             })
         ] == ['output_dataset1.output_table1']
 
+    def test_should_convert_to_view_list_dict(self):
+        view_list_config = ViewListConfig([
+            ViewConfig('view1'),
+            ViewConfig('view2')
+        ])
+        view_list_dict = view_list_config.to_view_list_dict('dataset1')
+        assert view_list_dict == OrderedDict([
+            ('view1', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'view1'}),
+            ('view2', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'view2'})
+        ])
+
 
 class TestLoadViewListConfig:
     def test_should_load_simple_yaml_with_defaults(self, temp_dir: Path):

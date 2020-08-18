@@ -355,6 +355,18 @@ class ViewListConfig:
             for view in self.view_config_list
         ])
 
+    def to_view_list_dict(self, dataset: str) -> OrderedDict:
+        return OrderedDict([
+            (
+                view.view_name,
+                {
+                    DATASET_NAME_KEY: dataset,
+                    VIEW_OR_TABLE_NAME_KEY: view.view_name
+                }
+            )
+            for view in self.view_config_list
+        ])
+
 
 def load_view_list_config(path: str):
     view_list_obj = yaml.load(Path(path).read_text(), Loader=yaml.Loader)
