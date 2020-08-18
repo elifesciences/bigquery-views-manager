@@ -1,6 +1,11 @@
 # BigQuery Views Manager
 
-Utility project to maintain BigQuery views.
+Utility project to maintain BigQuery views. The main interface is the CLI.
+
+Main features:
+
+* Synchronize BigQuery Views between GCP and local file system
+* Materialize Views (by running a view and saving it to a table)
 
 ## Pre-requisites
 
