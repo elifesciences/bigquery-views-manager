@@ -402,9 +402,6 @@ class GetViewsSubCommand(SubCommand):
 
         base_dir = Path(args.view_list_config).parent
         get_views(client, base_dir, views_dict, project=client.project)
-        if args.all_remote_views:
-            for view_template_name, dataset_table_or_view_data in views_dict.items():
-                views_ordered_dict_all[view_template_name] = dataset_table_or_view_data
 
         if args.add_to_view_list:
             for view_name in views_dict.keys():
