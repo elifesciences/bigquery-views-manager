@@ -4,11 +4,20 @@ from collections import OrderedDict
 from itertools import islice
 
 from google.cloud import bigquery
-from google.cloud.bigquery.job import QueryJobConfig
+from google.cloud.bigquery.job import QueryJobConfig, QueryJob
 
 from .view_list import VIEW_OR_TABLE_NAME_KEY, DATASET_NAME_KEY
 
 LOGGER = logging.getLogger(__name__)
+
+
+class MaterializeViewResult:
+    def __init__(
+            self,
+            total_bytes_processed: int,
+            total_rows: int):
+        self.total_bytes_processed = total_bytes_processed
+        self.total_rows = total_rows
 
 
 def get_select_all_from_query(view_name: str, project: str,
@@ -23,7 +32,7 @@ def materialize_view(  # pylint: disable=too-many-arguments
         project: str,
         source_dataset: str,
         destination_dataset: str,
-):
+) -> QueryJob:
     query = get_select_all_from_query(source_view_name,
                                       project=project,
                                       dataset=source_dataset)
@@ -48,16 +57,22 @@ def materialize_view(  # pylint: disable=too-many-arguments
     # getting the result will make sure that the query ran successfully
     result: bigquery.table.RowIterator = query_job.result()
     duration = time.perf_counter() - start
+    total_bytes_processed = query_job.total_bytes_processed
     LOGGER.info(
-        'materialized view: %s.%s, total rows: %s, took: %.3fs',
+        'materialized view: %s.%s, total rows: %s, %s bytes processed, took: %.3fs',
         source_dataset,
         source_view_name,
         result.total_rows,
+        total_bytes_processed,
         duration
     )
     if LOGGER.isEnabledFor(logging.DEBUG):
         sample_result = list(islice(result, 3))
         LOGGER.debug("sample_result: %s", sample_result)
+    return MaterializeViewResult(
+        total_bytes_processed=total_bytes_processed,
+        total_rows=result.total_rows
+    )
 
 
 def materialize_views(
@@ -70,9 +85,10 @@ def materialize_views(
     if not materialized_view_dict:
         return
     start = time.perf_counter()
-    for view_template_file_name, dataset_view_data in materialized_view_dict.items(
-    ):
-        materialize_view(
+    total_bytes_processed = 0
+    total_rows = 0
+    for view_template_file_name, dataset_view_data in materialized_view_dict.items():
+        result = materialize_view(
             client,
             source_view_name=source_view_dict.get(view_template_file_name).get(
                 VIEW_OR_TABLE_NAME_KEY),
@@ -83,10 +99,17 @@ def materialize_views(
                 DATASET_NAME_KEY),
             destination_dataset=dataset_view_data.get(DATASET_NAME_KEY),
         )
+        total_bytes_processed += (result.total_bytes_processed or 0)
+        total_rows += (result.total_rows or 0)
     duration = time.perf_counter() - start
     LOGGER.info(
-        'materialized views, number of views: %d, took: %.3fs (%0.3fs / views)',
+        (
+            'materialized views, number of views: %d,'
+            ' total rows: %s, %s bytes processed, took: %.3fs (%0.3fs / views)'
+        ),
         len(materialized_view_dict),
+        total_rows,
+        total_bytes_processed,
         duration,
         duration / len(materialized_view_dict),
     )
