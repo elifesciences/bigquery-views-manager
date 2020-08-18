@@ -367,6 +367,22 @@ class ViewListConfig:
             for view in self.view_config_list
         ])
 
+    def to_materialized_view_ordered_dict(self, dataset: str) -> OrderedDict:
+        result = OrderedDict()
+        for view in self.view_config_list:
+            resolved_materialize_as = view.resolved_materialize_as
+            if not resolved_materialize_as:
+                continue
+            full_name_parts = resolved_materialize_as.split('.', maxsplit=1)
+            if len(full_name_parts) == 1:
+                full_name_parts = (dataset, full_name_parts[0])
+            output_dataset_name, output_table_name = full_name_parts
+            result[view.view_name] = {
+                DATASET_NAME_KEY: output_dataset_name,
+                VIEW_OR_TABLE_NAME_KEY: output_table_name
+            }
+        return result
+
 
 def load_view_list_config(path: str):
     view_list_obj = yaml.load(Path(path).read_text(), Loader=yaml.Loader)

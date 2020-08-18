@@ -182,6 +182,22 @@ class TestViewListConfig:
             ('view2', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'view2'})
         ])
 
+    def test_should_convert_to_materialized_view_ordered_dict(self):
+        view_list_config = ViewListConfig([
+            ViewConfig('view1', materialize_as='output_dataset1.output_table1'),
+            ViewConfig('view2'),
+            ViewConfig('view3', materialize=True)
+        ])
+        materialized_view_ordered_dict = (
+            view_list_config.to_materialized_view_ordered_dict('dataset1')
+        )
+        assert materialized_view_ordered_dict == OrderedDict([
+            ('view1', {
+                DATASET_NAME_KEY: 'output_dataset1', VIEW_OR_TABLE_NAME_KEY: 'output_table1'
+            }),
+            ('view3', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'mview3'})
+        ])
+
 
 class TestLoadViewListConfig:
     def test_should_load_simple_yaml_with_defaults(self, temp_dir: Path):
