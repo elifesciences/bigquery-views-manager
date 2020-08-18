@@ -296,6 +296,15 @@ class ViewConfig:
     def __str__(self):
         return self.view_name
 
+    def __repr__(self):
+        return '%s(%r, materialize=%r, materialize_as=%r, conditions=%r)' % (
+            type(self).__name__,
+            self.view_name,
+            self.materialize,
+            self.materialize_as,
+            self.conditions
+        )
+
     @property
     def resolved_materialize_as(self):
         if self.materialize_as:
@@ -320,7 +329,7 @@ class ViewConfig:
         return self
 
 
-def load_view_list(path: str):
+def load_view_list_config(path: str):
     view_list_obj = yaml.load(Path(path).read_text(), Loader=yaml.Loader)
     LOGGER.debug('view_list_obj: %s', view_list_obj)
     return [

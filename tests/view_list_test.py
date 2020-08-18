@@ -9,7 +9,7 @@ from bigquery_views_manager.view_list import (
     determine_insert_order_for_view_names_and_referenced_tables,
     DATASET_NAME_KEY,
     VIEW_OR_TABLE_NAME_KEY,
-    load_view_list
+    load_view_list_config
 )
 
 
@@ -138,14 +138,14 @@ class TestDetermineInsertOrderForViewNamesAndReferencedTables:
         ) == result
 
 
-class TestLoadViewList:
+class TestLoadViewListConfig:
     def test_should_load_simple_yaml_with_defaults(self, temp_dir: Path):
         view_list_path = temp_dir / 'views.yaml'
         view_list_path.write_text('\n'.join([
             '- view1',
             '- view2'
         ]))
-        view_list = load_view_list(view_list_path)
+        view_list = load_view_list_config(view_list_path)
         LOGGER.debug('view_list: %s', view_list)
         assert len(view_list) == 2
         assert [str(item) for item in view_list] == ['view1', 'view2']
@@ -159,7 +159,7 @@ class TestLoadViewList:
             '    materialize: false',
             '- view3'
         ]))
-        view_list = load_view_list(view_list_path)
+        view_list = load_view_list_config(view_list_path)
         LOGGER.debug('view_list: %s', view_list)
         assert len(view_list) == 3
         assert [str(item) for item in view_list] == ['view1', 'view2', 'view3']
@@ -180,7 +180,7 @@ class TestLoadViewList:
             '        dataset: source_dataset1',
             '      materialize_as: "output_dataset1.output_table1"'
         ]))
-        view_list = load_view_list(view_list_path)
+        view_list = load_view_list_config(view_list_path)
         LOGGER.debug('view_list: %s', view_list)
         assert len(view_list) == 1
         assert [str(item) for item in view_list] == ['view1']
