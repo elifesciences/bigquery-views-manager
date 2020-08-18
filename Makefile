@@ -139,7 +139,7 @@ example-data-update-dataset-config-data: .require-DATASET_NAME
 		--config-tables-base-dir=/tmp/example-data/config-tables
 
 
-example-data-update-dataset-views-and-materialize:
+example-data-update-dataset-views-and-materialize: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		create-or-replace-views \
 		--dataset=$(DATASET_NAME) \
@@ -149,7 +149,7 @@ example-data-update-dataset-views-and-materialize:
 		--disable-view-name-mapping
 
 
-example-data-materialize-views:
+example-data-materialize-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		materialize-views \
 		--dataset=$(DATASET_NAME) \
