@@ -250,6 +250,14 @@ class ViewCondition:
             materialize_as=value.get('materialize_as')
         )
 
+    def to_value(self) -> dict:
+        value = {}
+        if self.if_condition is not None:
+            value['if'] = self.if_condition
+        if self.materialize_as is not None:
+            value['materialize_as'] = self.materialize_as
+        return value
+
     def get_values(self) -> dict:
         return {
             key: value
@@ -292,6 +300,21 @@ class ViewConfig:
                 conditions=conditions
             )
         raise ValueError('unrecognised view config: %r' % value)
+
+    def to_value(self) -> Union[str, dict]:
+        view_args = {}
+        if self.materialize is not None:
+            view_args['materialize'] = self.materialize
+        if self.materialize_as is not None:
+            view_args['materialize_as'] = self.materialize_as
+        if self.conditions:
+            view_args['conditions'] = [
+                condition.to_value()
+                for condition in self.conditions
+            ]
+        if not view_args:
+            return str(self)
+        return {self.view_name: view_args}
 
     def __str__(self):
         return self.view_name
@@ -406,3 +429,10 @@ def load_view_list_config(path: str):
         ViewConfig.from_value(value)
         for value in view_list_obj
     ])
+
+
+def save_view_list_config(view_list_config: ViewListConfig, path: str):
+    Path(path).write_text(yaml.dump([
+        view.to_value()
+        for view in view_list_config
+    ]))

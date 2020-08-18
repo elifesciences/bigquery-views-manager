@@ -4,6 +4,8 @@ from collections import OrderedDict
 
 from typing import List, Tuple
 
+import yaml
+
 from bigquery_views_manager.view_list import (
     get_referenced_table_names_for_query,
     determine_insert_order_for_view_names_and_referenced_tables,
@@ -12,7 +14,8 @@ from bigquery_views_manager.view_list import (
     ViewCondition,
     ViewConfig,
     ViewListConfig,
-    load_view_list_config
+    load_view_list_config,
+    save_view_list_config
 )
 
 
@@ -272,3 +275,52 @@ class TestLoadViewListConfig:
         not_matching_resolved_view1 = view1.resolve_conditions({'dataset': 'other'})
         assert not_matching_resolved_view1.materialize_as is None
         assert not_matching_resolved_view1.resolved_materialize_as == 'mview1'
+
+
+def _load_save_read_view_list_config_lines(temp_dir: Path, view_list_lines: List[str]):
+    view_list_path = temp_dir / 'views.yaml'
+    view_list_path.write_text('\n'.join(view_list_lines))
+    output_view_list_path = temp_dir / 'output-views.yaml'
+    view_list = load_view_list_config(view_list_path)
+    LOGGER.debug('view_list: %s', view_list)
+    save_view_list_config(view_list, output_view_list_path)
+    if not output_view_list_path.exists():
+        return None
+    output_view_list_lines = output_view_list_path.read_text().splitlines()
+    LOGGER.debug('output_view_list_lines: %s', output_view_list_lines)
+    return output_view_list_lines
+
+
+def _load_yaml_lines(yaml_lines: List[str]):
+    return yaml.load('\n'.join(yaml_lines), Loader=yaml.Loader)
+
+
+class TestSaveViewListConfig:
+    def test_should_load_and_save_simple_yaml_with_defaults(self, temp_dir: Path):
+        view_list_lines = [
+            '- view1',
+            '- view2'
+        ]
+        output_view_list_lines = _load_save_read_view_list_config_lines(
+            temp_dir,
+            view_list_lines
+        )
+        assert output_view_list_lines == view_list_lines
+
+    def test_should_load_and_save_complex_yaml(self, temp_dir: Path):
+        view_list_lines = [
+            '- view1:',
+            '    materialize: true',
+            '    conditions:',
+            '    - if:',
+            '        dataset: source_dataset1',
+            '      materialize_as: output_dataset1.output_table1'
+        ]
+        output_view_list_lines = _load_save_read_view_list_config_lines(
+            temp_dir,
+            view_list_lines
+        )
+        assert (
+            _load_yaml_lines(output_view_list_lines)
+            == _load_yaml_lines(view_list_lines)
+        )
