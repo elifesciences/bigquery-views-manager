@@ -1,5 +1,8 @@
 # BigQuery Views Manager
 
+[![PyPi version](https://pypip.in/v/bigquery-views-manager/badge.png)](https://pypi.org/project/bigquery-views-manager/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Utility project to maintain BigQuery views. The main interface is the CLI.
 
 Main features:
