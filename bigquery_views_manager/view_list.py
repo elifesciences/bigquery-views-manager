@@ -364,6 +364,12 @@ class ViewListConfig:
             for view in self.view_config_list
         ])
 
+    def has_view(self, view_name: str) -> bool:
+        return any(view.view_name == view_name for view in self.view_config_list)
+
+    def add_view(self, view: ViewConfig) -> 'ViewListConfig':
+        return ViewListConfig(self.view_config_list + [view])
+
     def to_views_ordered_dict(self, dataset: str) -> OrderedDict:
         return OrderedDict([
             (

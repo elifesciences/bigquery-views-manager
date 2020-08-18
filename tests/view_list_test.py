@@ -171,6 +171,17 @@ class TestViewListConfig:
             })
         ] == ['output_dataset1.output_table1']
 
+    def test_should_add_view(self):
+        view_list_config = ViewListConfig([
+            ViewConfig('view1'),
+            ViewConfig('view2')
+        ])
+        assert view_list_config.has_view('view1')
+        assert view_list_config.has_view('view2')
+        assert not view_list_config.has_view('view3')
+        view_list_config = view_list_config.add_view(ViewConfig('view3'))
+        assert view_list_config.has_view('view3')
+
     def test_should_convert_to_view_list_dict(self):
         view_list_config = ViewListConfig([
             ViewConfig('view1'),
