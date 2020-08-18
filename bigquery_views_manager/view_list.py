@@ -1,10 +1,13 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Union
 from collections import OrderedDict
 
+import yaml
+
 from .views import get_local_view_template
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -230,3 +233,97 @@ def determine_view_insert_order(
                                                     view_names_ordered_dict),
         materialized_views_ordered_dict,
     )
+
+
+class ViewCondition:
+    def __init__(
+            self,
+            if_condition: Dict[str, str],
+            materialize_as: str = None):
+        self.if_condition = if_condition
+        self.materialize_as = materialize_as
+
+    @staticmethod
+    def from_value(value: dict) -> 'ViewCondition':
+        return ViewCondition(
+            if_condition=value.get('if'),
+            materialize_as=value.get('materialize_as')
+        )
+
+    def get_values(self) -> dict:
+        return {
+            key: value
+            for key, value in self.__dict__.items()
+            if key != 'if_condition' and value is not None
+        }
+
+    def is_matching(self, condition_values: dict) -> bool:
+        for key, value in self.if_condition.items():
+            if condition_values.get(key) != value:
+                return False
+        return True
+
+
+class ViewConfig:
+    def __init__(
+            self,
+            view_name: str,
+            materialize: bool = None,
+            materialize_as: str = None,
+            conditions: List[ViewCondition] = None):
+        self.view_name = view_name
+        self.materialize = materialize
+        self.materialize_as = materialize_as
+        self.conditions = conditions or []
+
+    @staticmethod
+    def from_value(value: Union[str, dict]) -> 'ViewConfig':
+        if isinstance(value, str):
+            return ViewConfig(value)
+        if len(value) == 1:
+            view_name, view_args = next(iter(value.items()))
+            conditions = [
+                ViewCondition.from_value(condition)
+                for condition in view_args.get('conditions', [])
+            ]
+            return ViewConfig(
+                view_name,
+                materialize=view_args.get('materialize'),
+                conditions=conditions
+            )
+        raise ValueError('unrecognised view config: %r' % value)
+
+    def __str__(self):
+        return self.view_name
+
+    @property
+    def resolved_materialize_as(self):
+        if self.materialize_as:
+            return self.materialize_as
+        if self.materialize:
+            return get_default_destination_table_name_for_view_name(
+                self.view_name
+            )
+        return None
+
+    def apply_conditional_values(self, condition: ViewCondition) -> 'ViewConfig':
+        return ViewConfig(**{
+            **self.__dict__,
+            **condition.get_values()
+        })
+
+    def resolve_conditions(self, condition_value: dict) -> 'ViewConfig':
+        for condition in self.conditions:
+            if not condition.is_matching(condition_value):
+                continue
+            return self.apply_conditional_values(condition)
+        return self
+
+
+def load_view_list(path: str):
+    view_list_obj = yaml.load(Path(path).read_text(), Loader=yaml.Loader)
+    LOGGER.debug('view_list_obj: %s', view_list_obj)
+    return [
+        ViewConfig.from_value(value)
+        for value in view_list_obj
+    ]
