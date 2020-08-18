@@ -13,10 +13,10 @@ from .view_list import (
     get_mapped_materialized_view_subset,
     extend_or_subset_mapped_view_subset,
     map_view_to_dataset_from_template_mapping_dict,
-    load_view_mapping,
-    save_view_mapping,
-    determine_view_insert_order,
     create_simple_view_mapping_from_view_list,
+    load_view_list_config,
+    save_view_list_config,
+    ViewConfig
 )
 
 from .update_views import update_or_create_views
@@ -31,10 +31,20 @@ from . import configure_warnings  # noqa pylint: disable=unused-import
 
 LOGGER = logging.getLogger(__name__)
 
+DEFAULT_VIEW_LIST_CONFIG_FILE = "views/views.yml"
 DEFAULT_VIEW_LIST_FILE = "views/views.lst"
 DEFAULT_MATERIALIZED_VIEW_LIST_FILE = "views/materialized-views.lst"
 
 DEFAULT_CONFIG_TABLES_BASE_DIR = "config-tables"
+
+
+def add_view_list_config_file_argument(parser: argparse.ArgumentParser):
+    parser.add_argument(
+        "--view-list-config",
+        type=str,
+        default=DEFAULT_VIEW_LIST_CONFIG_FILE,
+        help="Path to view list config (yaml)",
+    )
 
 
 def add_view_list_file_argument(parser: argparse.ArgumentParser):
@@ -103,31 +113,31 @@ class CreateOrReplaceViewsSubCommand(SubCommand):
         super().__init__("create-or-replace-views", "Create or Replace Views")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
         parser.add_argument(
             "--materialize",
             action="store_true",
             help="Materialize views in the materialized view list while updating",
         )
-        add_materialized_view_list_file_argument(parser)
-        disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        # structure of dict-
-        # {TEMPLATE_FILE_NAME : {'dataset_name' : DATASET_NAME, 'table_name' : TABLE_NAME}}
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
+            args.dataset
         )
-        views_ordered_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
+        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
+
         views_dict = (
             extend_or_subset_mapped_view_subset(
                 views_ordered_dict_all, args.view_names, args.dataset
@@ -135,6 +145,7 @@ class CreateOrReplaceViewsSubCommand(SubCommand):
             if args.view_names
             else views_ordered_dict_all
         )
+        LOGGER.debug('views_dict: %s', views_dict)
 
         materialized_view_ordered_dict = (
             get_mapped_materialized_view_subset(
@@ -158,7 +169,7 @@ class CreateOrReplaceViewsSubCommand(SubCommand):
 
         update_or_create_views(
             client,
-            Path(args.view_list_file).parent,
+            Path(args.view_list_config).parent,
             views_dict,
             materialized_view_names=materialized_view_ordered_dict,
             project=client.project,
@@ -172,17 +183,21 @@ class DeleteViewsSubCommand(SubCommand):
         super().__init__("delete-views", "Delete Views")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
-        disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        views_ordered_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
 
         views_dict = (
             extend_or_subset_mapped_view_subset(
@@ -199,19 +214,26 @@ class MaterializeViewsSubCommand(SubCommand):
         super().__init__("materialize-views", "Materialize Views")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
-        add_materialized_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
-        disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
+        )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
+
         materialized_view_ordered_dict = (
             get_mapped_materialized_view_subset(
                 materialized_view_ordered_dict_all, args.view_names
@@ -219,15 +241,11 @@ class MaterializeViewsSubCommand(SubCommand):
             if args.view_names
             else materialized_view_ordered_dict_all
         )
-        views_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-        )
+
         materialize_views(
             client,
             materialized_view_dict=materialized_view_ordered_dict,
-            source_view_dict=views_dict_all,
+            source_view_dict=views_ordered_dict_all,
             project=client.project,
         )
 
@@ -237,27 +255,30 @@ class DeleteMaterializedTablesSubCommand(SubCommand):
         super().__init__("delete-materialized-tables", "Delete Materialized Tables")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_materialized_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
-        disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        materialized_views_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
 
-        materialized_views_ordered_dict = (
+        materialized_view_ordered_dict = (
             extend_or_subset_mapped_view_subset(
-                materialized_views_ordered_dict_all, args.view_names, args.dataset
+                materialized_view_ordered_dict_all, args.view_names, args.dataset
             )
             if args.view_names
-            else materialized_views_ordered_dict_all
+            else materialized_view_ordered_dict_all
         )
-        delete_views_or_tables(client, materialized_views_ordered_dict)
+        delete_views_or_tables(client, materialized_view_ordered_dict)
 
 
 class DiffViewsSubCommand(SubCommand):
@@ -265,27 +286,29 @@ class DiffViewsSubCommand(SubCommand):
         super().__init__("diff-views", "Show difference between local and remote views")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
-        add_materialized_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
         parser.add_argument(
             "--fail-if-changed", action="store_true", help="Fail if changed"
         )
-        disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
+            args.dataset
         )
-        views_ordered_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
+        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
+
         views_dict = (
             extend_or_subset_mapped_view_subset(
                 views_ordered_dict_all, args.view_names, args.dataset
@@ -308,7 +331,7 @@ class DiffViewsSubCommand(SubCommand):
 
         has_changed = diff_views(
             client,
-            Path(args.view_list_file).parent,
+            Path(args.view_list_config).parent,
             views_dict,
             project=client.project,
             default_dataset=args.dataset,
@@ -329,7 +352,7 @@ class GetViewsSubCommand(SubCommand):
         )
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
         parser.add_argument(
             "--all-remote-views",
@@ -342,21 +365,24 @@ class GetViewsSubCommand(SubCommand):
             help="Add any missing views to the view list",
         )
         disable_view_name_mapping_argument(parser)
-        add_materialized_view_list_file_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        views_ordered_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
+            args.dataset
         )
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
+
         if args.all_remote_views:
             view_names = get_bq_view_names(client, dataset=args.dataset)
             views_dict = create_simple_view_mapping_from_view_list(
@@ -371,18 +397,17 @@ class GetViewsSubCommand(SubCommand):
                 else views_ordered_dict_all
             )
 
-        base_dir = Path(args.view_list_file).parent
+        base_dir = Path(args.view_list_config).parent
         get_views(client, base_dir, views_dict, project=client.project)
-        if args.all_remote_views:
-            for view_template_name, dataset_table_or_view_data in views_dict.items():
-                views_ordered_dict_all[view_template_name] = dataset_table_or_view_data
 
         if args.add_to_view_list:
-            merged_view_names = determine_view_insert_order(
-                base_dir, views_ordered_dict_all, materialized_view_ordered_dict_all
-            )
-            save_view_mapping(
-                args.view_list_file, merged_view_names, is_materialized_view=False
+            for view_name in views_dict.keys():
+                if not view_list_config.has_view(view_name):
+                    view_list_config = view_list_config.add_view(ViewConfig(view_name))
+            view_list_config = view_list_config.sort_insert_order(base_dir)
+            save_view_list_config(
+                view_list_config,
+                args.view_list_config
             )
 
 
@@ -397,34 +422,25 @@ class SortViewListSubCommand(SubCommand):
         )
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
-        disable_view_name_mapping_argument(parser)
-        add_materialized_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        base_dir = Path(args.view_list_file).parent
-        to_map_table_name = not args.disable_view_name_mapping
-        views_ordered_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-        )
+        base_dir = Path(args.view_list_config).parent
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
 
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
-        )
+        sorted_view_list_config = view_list_config.sort_insert_order(base_dir)
+        LOGGER.info('sorted_view_list_config: %s', sorted_view_list_config)
 
-        sorted_view_names = determine_view_insert_order(
-            base_dir, views_ordered_dict_all, materialized_view_ordered_dict_all
+        save_view_list_config(
+            sorted_view_list_config,
+            args.view_list_config
         )
-
-        sorted_view_dict = create_simple_view_mapping_from_view_list(
-            args.dataset, sorted_view_names
-        )
-        save_view_mapping(args.view_list_file, sorted_view_dict, False)
 
 
 class CreateOrReplaceConfigTablesSubCommand(SubCommand):

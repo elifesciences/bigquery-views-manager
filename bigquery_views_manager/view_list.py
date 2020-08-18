@@ -1,10 +1,13 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Union
 from collections import OrderedDict
 
+import yaml
+
 from .views import get_local_view_template
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -55,43 +58,6 @@ def extend_or_subset_mapped_view_subset(
             },
         )
     return views_dict
-
-
-def load_view_mapping(
-        filename: str,
-        should_map_table: bool,
-        default_dataset_name: str,
-        is_materialized_view: bool = False,
-) -> OrderedDict:
-    view_mapping = OrderedDict()
-    view_mapping_as_string = Path(filename).read_text().splitlines()
-    for line in view_mapping_as_string:
-        if line.strip() == "":
-            continue
-        splitted_line = line.split(",")
-        view_template_file_name = splitted_line[0]
-        if len(splitted_line) < 2 or not should_map_table:
-            dataset_name = default_dataset_name
-            table_name = (get_default_destination_table_name_for_view_name(
-                view_template_file_name)
-                          if is_materialized_view else view_template_file_name)
-        else:
-            if is_materialized_view:
-                mapped_full_name = splitted_line[1].split(".")
-                dataset_name = (default_dataset_name
-                                if len(mapped_full_name) < 2 else
-                                mapped_full_name[0].strip())
-                table_name = (mapped_full_name[0] if len(mapped_full_name) < 2
-                              else mapped_full_name[1])
-            else:
-                table_name = view_template_file_name
-                dataset_name = splitted_line[1]
-
-        view_mapping[view_template_file_name] = {
-            DATASET_NAME_KEY: dataset_name,
-            VIEW_OR_TABLE_NAME_KEY: table_name,
-        }
-    return view_mapping
 
 
 def create_simple_view_mapping_from_view_list(dataset: str,
@@ -189,6 +155,7 @@ def determine_insert_order_for_view_names_and_referenced_tables(
         referenced_table_names_by_view_name: Dict[str, List[str]],
         materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
+    LOGGER.debug('referenced_table_names_by_view_name: %s', referenced_table_names_by_view_name)
     view_by_materialized_view_name_map = {
         dataset_view_data.get(VIEW_OR_TABLE_NAME_KEY): template_name
         for template_name, dataset_view_data in
@@ -230,3 +197,227 @@ def determine_view_insert_order(
                                                     view_names_ordered_dict),
         materialized_views_ordered_dict,
     )
+
+
+class ViewCondition:
+    def __init__(
+            self,
+            if_condition: Dict[str, str],
+            materialize_as: str = None):
+        self.if_condition = if_condition
+        self.materialize_as = materialize_as
+
+    @staticmethod
+    def from_value(value: dict) -> 'ViewCondition':
+        return ViewCondition(
+            if_condition=value.get('if'),
+            materialize_as=value.get('materialize_as')
+        )
+
+    def to_value(self) -> dict:
+        value = {}
+        if self.if_condition is not None:
+            value['if'] = self.if_condition
+        if self.materialize_as is not None:
+            value['materialize_as'] = self.materialize_as
+        return value
+
+    def get_values(self) -> dict:
+        return {
+            key: value
+            for key, value in self.__dict__.items()
+            if key != 'if_condition' and value is not None
+        }
+
+    def is_matching(self, condition_values: dict) -> bool:
+        for key, value in self.if_condition.items():
+            if condition_values.get(key) != value:
+                return False
+        return True
+
+
+class ViewConfig:
+    def __init__(
+            self,
+            view_name: str,
+            materialize: bool = None,
+            materialize_as: str = None,
+            conditions: List[ViewCondition] = None):
+        self.view_name = view_name
+        self.materialize = materialize
+        self.materialize_as = materialize_as
+        self.conditions = conditions or []
+
+    @staticmethod
+    def from_value(value: Union[str, dict]) -> 'ViewConfig':
+        if isinstance(value, str):
+            return ViewConfig(value)
+        if len(value) == 1:
+            view_name, view_args = next(iter(value.items()))
+            conditions = [
+                ViewCondition.from_value(condition)
+                for condition in view_args.get('conditions', [])
+            ]
+            return ViewConfig(
+                view_name,
+                materialize=view_args.get('materialize'),
+                conditions=conditions
+            )
+        raise ValueError('unrecognised view config: %r' % value)
+
+    def to_value(self) -> Union[str, dict]:
+        view_args = {}
+        if self.materialize is not None:
+            view_args['materialize'] = self.materialize
+        if self.materialize_as is not None:
+            view_args['materialize_as'] = self.materialize_as
+        if self.conditions:
+            view_args['conditions'] = [
+                condition.to_value()
+                for condition in self.conditions
+            ]
+        if not view_args:
+            return str(self)
+        return {self.view_name: view_args}
+
+    def __str__(self):
+        return self.view_name
+
+    def __repr__(self):
+        return '%s(%r, materialize=%r, materialize_as=%r, conditions=%r)' % (
+            type(self).__name__,
+            self.view_name,
+            self.materialize,
+            self.materialize_as,
+            self.conditions
+        )
+
+    @property
+    def resolved_materialize_as(self):
+        if self.materialize_as:
+            return self.materialize_as
+        if self.materialize:
+            return get_default_destination_table_name_for_view_name(
+                self.view_name
+            )
+        return None
+
+    def apply_conditional_values(self, condition: ViewCondition) -> 'ViewConfig':
+        return ViewConfig(**{
+            **self.__dict__,
+            **condition.get_values()
+        })
+
+    def resolve_conditions(self, condition_value: dict) -> 'ViewConfig':
+        for condition in self.conditions:
+            if not condition.is_matching(condition_value):
+                continue
+            return self.apply_conditional_values(condition)
+        return self
+
+
+class ViewListConfig:
+    def __init__(self, view_config_list: List[ViewConfig]):
+        self.view_config_list = view_config_list
+
+    def __str__(self):
+        return str(self.view_config_list)
+
+    def __repr__(self):
+        return '%s(%r)' % (
+            type(self).__name__,
+            self.view_config_list
+        )
+
+    def __len__(self):
+        return len(self.view_config_list)
+
+    def __iter__(self):
+        return iter(self.view_config_list)
+
+    def __getitem__(self, index):
+        return self.view_config_list[index]
+
+    @property
+    def view_names(self) -> List[str]:
+        return [view.view_name for view in self.view_config_list]
+
+    def filter_view_names(self, view_names: List[str]) -> 'ViewListConfig':
+        return ViewListConfig([
+            view
+            for view in self.view_config_list
+            if view.view_name in view_names
+        ])
+
+    def resolve_conditions(self, condition_value: dict) -> 'ViewListConfig':
+        return ViewListConfig([
+            view.resolve_conditions(condition_value)
+            for view in self.view_config_list
+        ])
+
+    def has_view(self, view_name: str) -> bool:
+        return any(view.view_name == view_name for view in self.view_config_list)
+
+    def add_view(self, view: ViewConfig) -> 'ViewListConfig':
+        return ViewListConfig(self.view_config_list + [view])
+
+    def sort_insert_order(self, base_dir: str) -> 'ViewListConfig':
+        dummy_dataset = 'dummy_dataset'
+        insert_order = determine_view_insert_order(
+            base_dir,
+            view_names_ordered_dict=self.to_views_ordered_dict(dummy_dataset),
+            materialized_views_ordered_dict=self.to_materialized_view_ordered_dict(dummy_dataset)
+        )
+        view_config_by_name_map = {
+            view.view_name: view
+            for view in self.view_config_list
+        }
+        LOGGER.debug('insert_order: %s', insert_order)
+        return ViewListConfig([
+            view_config_by_name_map[view_name]
+            for view_name in insert_order.keys()
+        ])
+
+    def to_views_ordered_dict(self, dataset: str) -> OrderedDict:
+        return OrderedDict([
+            (
+                view.view_name,
+                {
+                    DATASET_NAME_KEY: dataset,
+                    VIEW_OR_TABLE_NAME_KEY: view.view_name
+                }
+            )
+            for view in self.view_config_list
+        ])
+
+    def to_materialized_view_ordered_dict(self, dataset: str) -> OrderedDict:
+        result = OrderedDict()
+        for view in self.view_config_list:
+            resolved_materialize_as = view.resolved_materialize_as
+            if not resolved_materialize_as:
+                continue
+            full_name_parts = resolved_materialize_as.split('.', maxsplit=1)
+            if len(full_name_parts) == 1:
+                full_name_parts = (dataset, full_name_parts[0])
+            output_dataset_name, output_table_name = full_name_parts
+            result[view.view_name] = {
+                DATASET_NAME_KEY: output_dataset_name,
+                VIEW_OR_TABLE_NAME_KEY: output_table_name
+            }
+        return result
+
+
+def load_view_list_config(path: str):
+    view_list_obj = yaml.load(Path(path).read_text(), Loader=yaml.Loader)
+    LOGGER.debug('view_list_obj: %s', view_list_obj)
+    return ViewListConfig([
+        ViewConfig.from_value(value)
+        for value in view_list_obj
+    ])
+
+
+def save_view_list_config(view_list_config: ViewListConfig, path: str):
+    Path(path).write_text(yaml.dump([
+        view.to_value()
+        for view in view_list_config
+    ]))

@@ -66,3 +66,11 @@ class TestViewTemplate:
             SELECT * FROM `{project}.{dataset}.table1`
             JOIN `{project}.{dataset}.table2`
             """)
+
+    def test_should_normalize_by_adding_line_feed(self):
+        assert ViewTemplate.from_query(
+            "SELECT * FROM `project1.dataset1.table1`",
+            project="project1",
+        ).normalized.view_template_content == (
+            "SELECT * FROM `{project}.{dataset}.table1`\n"
+        )

@@ -20,9 +20,9 @@ def get_view(  # pylint: disable=too-many-arguments
 ):
     bq_view_query = get_bq_view_query(client, view_name, dataset=dataset)
 
-    LOGGER.debug("bq_view_query(%s)=%s", view_name, bq_view_query)
-    view_template = ViewTemplate.from_query(bq_view_query, project=project)
-    LOGGER.debug("view_template(%s)=%s", view_name, view_template)
+    LOGGER.debug("bq_view_query(%s)=%r", view_name, bq_view_query)
+    view_template = ViewTemplate.from_query(bq_view_query, project=project).normalized
+    LOGGER.debug("view_template(%s)=%r", view_name, view_template)
     view_template_file = get_view_template_file(base_dir, view_template_name)
     view_template.to_file(view_template_file)
     LOGGER.info("updated %s", view_template_file)
