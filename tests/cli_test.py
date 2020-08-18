@@ -4,7 +4,11 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
+from bigquery_views_manager.view_list import (
+    DATASET_NAME_KEY,
+    VIEW_OR_TABLE_NAME_KEY,
+    load_view_list_config
+)
 
 import bigquery_views_manager.cli as target_module
 from bigquery_views_manager.cli import (
@@ -181,3 +185,30 @@ class TestGetViewsSubCommand:
             '--view-list-config=%s' % view_config_path
         ])
         get_views_mock.assert_called()
+
+
+class TestSortViewListSubCommand:
+    def test_should_sort_view_list(
+            self,
+            temp_dir: Path):
+        view_config_path = temp_dir / 'views.yml'
+        view_config_path.write_text('\n'.join([
+            '- view1',
+            '- view2:',
+            '    materialize: true'
+        ]))
+        (temp_dir / 'view1.sql').write_text(
+            'SELECT * FROM `{project}.{dataset}.mview2`'
+        )
+        (temp_dir / 'view2.sql').write_text(
+            'SELECT 1'
+        )
+        main([
+            'sort-view-list',
+            '--dataset=dataset1',
+            '--view-list-config=%s' % view_config_path
+        ])
+        assert load_view_list_config(view_config_path).view_names == [
+            'view2',
+            'view1'
+        ]

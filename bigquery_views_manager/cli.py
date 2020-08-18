@@ -13,9 +13,6 @@ from .view_list import (
     get_mapped_materialized_view_subset,
     extend_or_subset_mapped_view_subset,
     map_view_to_dataset_from_template_mapping_dict,
-    load_view_mapping,
-    save_view_mapping,
-    determine_view_insert_order,
     create_simple_view_mapping_from_view_list,
     load_view_list_config,
     save_view_list_config,
@@ -425,34 +422,25 @@ class SortViewListSubCommand(SubCommand):
         )
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_view_list_file_argument(parser)
-        disable_view_name_mapping_argument(parser)
-        add_materialized_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        base_dir = Path(args.view_list_file).parent
-        to_map_table_name = not args.disable_view_name_mapping
-        views_ordered_dict_all = load_view_mapping(
-            args.view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-        )
+        base_dir = Path(args.view_list_config).parent
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
 
-        materialized_view_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
-        )
+        sorted_view_list_config = view_list_config.sort_insert_order(base_dir)
+        LOGGER.info('sorted_view_list_config: %s', sorted_view_list_config)
 
-        sorted_view_names = determine_view_insert_order(
-            base_dir, views_ordered_dict_all, materialized_view_ordered_dict_all
+        save_view_list_config(
+            sorted_view_list_config,
+            args.view_list_config
         )
-
-        sorted_view_dict = create_simple_view_mapping_from_view_list(
-            args.dataset, sorted_view_names
-        )
-        save_view_mapping(args.view_list_file, sorted_view_dict, False)
 
 
 class CreateOrReplaceConfigTablesSubCommand(SubCommand):

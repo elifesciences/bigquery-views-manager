@@ -126,6 +126,11 @@ dev-example-data-get-all-views:
 		example-data-get-all-views
 
 
+dev-example-data-sort-view-list:
+	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
+		example-data-sort-view-list
+
+
 dev-example-data-update-dataset:
 	$(MAKE) BIGQUERY_VIEWS_MANAGER_CLI="$(BIGQUERY_VIEWS_MANAGER_CLI_VENV)" \
 		example-data-update-dataset
@@ -235,6 +240,14 @@ example-data-get-view: .require-DATASET_NAME .require-VIEW_NAME
 example-data-get-all-views: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		get-views \
+		--dataset=$(DATASET_NAME) \
+		--view-list-config=./example-data/views/views.yml \
+		$(ARGS)
+
+
+example-data-sort-view-list: .require-DATASET_NAME
+	$(BIGQUERY_VIEWS_MANAGER_CLI) \
+		sort-view-list \
 		--dataset=$(DATASET_NAME) \
 		--view-list-config=./example-data/views/views.yml \
 		$(ARGS)
