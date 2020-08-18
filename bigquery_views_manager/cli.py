@@ -407,12 +407,10 @@ class GetViewsSubCommand(SubCommand):
                 views_ordered_dict_all[view_template_name] = dataset_table_or_view_data
 
         if args.add_to_view_list:
-            # merged_view_names = determine_view_insert_order(
-            #     base_dir, views_ordered_dict_all, materialized_view_ordered_dict_all
-            # )
             for view_name in views_dict.keys():
                 if not view_list_config.has_view(view_name):
                     view_list_config = view_list_config.add_view(ViewConfig(view_name))
+            view_list_config = view_list_config.sort_insert_order(base_dir)
             save_view_list_config(
                 view_list_config,
                 args.view_list_config

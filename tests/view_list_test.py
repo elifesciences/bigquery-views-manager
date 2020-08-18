@@ -212,6 +212,38 @@ class TestViewListConfig:
             ('view3', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'mview3'})
         ])
 
+    def test_should_sort_views_without_materialized_table(self, temp_dir: Path):
+        view_list_config = ViewListConfig([
+            ViewConfig('view1'),
+            ViewConfig('view2')
+        ])
+        (temp_dir / 'view1.sql').write_text(
+            'SELECT * FROM `{project}.{dataset}.view2`'
+        )
+        (temp_dir / 'view2.sql').write_text(
+            'SELECT 1'
+        )
+        sorted_view_list_config = view_list_config.sort_insert_order(
+            temp_dir
+        )
+        assert sorted_view_list_config.view_names == ['view2', 'view1']
+
+    def test_should_sort_views_with_materialized_table(self, temp_dir: Path):
+        view_list_config = ViewListConfig([
+            ViewConfig('view1'),
+            ViewConfig('view2', materialize=True)
+        ])
+        (temp_dir / 'view1.sql').write_text(
+            'SELECT * FROM `{project}.{dataset}.mview2`'
+        )
+        (temp_dir / 'view2.sql').write_text(
+            'SELECT 1'
+        )
+        sorted_view_list_config = view_list_config.sort_insert_order(
+            temp_dir
+        )
+        assert sorted_view_list_config.view_names == ['view2', 'view1']
+
 
 class TestLoadViewListConfig:
     def test_should_load_simple_yaml_with_defaults(self, temp_dir: Path):

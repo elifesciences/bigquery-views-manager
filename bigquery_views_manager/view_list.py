@@ -192,6 +192,7 @@ def determine_insert_order_for_view_names_and_referenced_tables(
         referenced_table_names_by_view_name: Dict[str, List[str]],
         materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
+    LOGGER.debug('referenced_table_names_by_view_name: %s', referenced_table_names_by_view_name)
     view_by_materialized_view_name_map = {
         dataset_view_data.get(VIEW_OR_TABLE_NAME_KEY): template_name
         for template_name, dataset_view_data in
@@ -374,6 +375,10 @@ class ViewListConfig:
     def __getitem__(self, index):
         return self.view_config_list[index]
 
+    @property
+    def view_names(self) -> List[str]:
+        return [view.view_name for view in self.view_config_list]
+
     def filter_view_names(self, view_names: List[str]) -> 'ViewListConfig':
         return ViewListConfig([
             view
@@ -392,6 +397,23 @@ class ViewListConfig:
 
     def add_view(self, view: ViewConfig) -> 'ViewListConfig':
         return ViewListConfig(self.view_config_list + [view])
+
+    def sort_insert_order(self, base_dir: str) -> 'ViewListConfig':
+        dummy_dataset = 'dummy_dataset'
+        insert_order = determine_view_insert_order(
+            base_dir,
+            view_names_ordered_dict=self.to_views_ordered_dict(dummy_dataset),
+            materialized_views_ordered_dict=self.to_materialized_view_ordered_dict(dummy_dataset)
+        )
+        view_config_by_name_map = {
+            view.view_name: view
+            for view in self.view_config_list
+        }
+        LOGGER.debug('insert_order: %s', insert_order)
+        return ViewListConfig([
+            view_config_by_name_map[view_name]
+            for view_name in insert_order.keys()
+        ])
 
     def to_views_ordered_dict(self, dataset: str) -> OrderedDict:
         return OrderedDict([
