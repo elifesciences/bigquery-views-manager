@@ -355,7 +355,7 @@ class ViewListConfig:
             for view in self.view_config_list
         ])
 
-    def to_view_list_dict(self, dataset: str) -> OrderedDict:
+    def to_views_ordered_dict(self, dataset: str) -> OrderedDict:
         return OrderedDict([
             (
                 view.view_name,

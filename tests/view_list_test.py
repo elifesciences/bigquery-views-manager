@@ -176,8 +176,8 @@ class TestViewListConfig:
             ViewConfig('view1'),
             ViewConfig('view2')
         ])
-        view_list_dict = view_list_config.to_view_list_dict('dataset1')
-        assert view_list_dict == OrderedDict([
+        views_ordered_dict = view_list_config.to_views_ordered_dict('dataset1')
+        assert views_ordered_dict == OrderedDict([
             ('view1', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'view1'}),
             ('view2', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'view2'})
         ])
