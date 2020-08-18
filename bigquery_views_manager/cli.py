@@ -256,27 +256,30 @@ class DeleteMaterializedTablesSubCommand(SubCommand):
         super().__init__("delete-materialized-tables", "Delete Materialized Tables")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
-        add_materialized_view_list_file_argument(parser)
+        add_view_list_config_file_argument(parser)
         add_view_names_argument(parser)
-        disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        to_map_table_name = not args.disable_view_name_mapping
-        materialized_views_ordered_dict_all = load_view_mapping(
-            args.materialized_view_list_file,
-            should_map_table=to_map_table_name,
-            default_dataset_name=args.dataset,
-            is_materialized_view=True,
+        view_list_config = load_view_list_config(
+            args.view_list_config
+        ).resolve_conditions({
+            'project': client.project,
+            'dataset': args.dataset
+        })
+        LOGGER.info('view_list_config: %s', view_list_config)
+        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
+            args.dataset
         )
+        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
 
-        materialized_views_ordered_dict = (
+        materialized_view_ordered_dict = (
             extend_or_subset_mapped_view_subset(
-                materialized_views_ordered_dict_all, args.view_names, args.dataset
+                materialized_view_ordered_dict_all, args.view_names, args.dataset
             )
             if args.view_names
-            else materialized_views_ordered_dict_all
+            else materialized_view_ordered_dict_all
         )
-        delete_views_or_tables(client, materialized_views_ordered_dict)
+        delete_views_or_tables(client, materialized_view_ordered_dict)
 
 
 class DiffViewsSubCommand(SubCommand):

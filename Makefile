@@ -181,8 +181,7 @@ example-data-clean-dataset-materialized-tables: .require-DATASET_NAME
 	$(BIGQUERY_VIEWS_MANAGER_CLI) \
 		delete-materialized-tables \
 		--dataset=$(DATASET_NAME) \
-		--materialized-view-list-file=./example-data/views/materialized-views.lst \
-		--disable-view-name-mapping
+		--view-list-config=./example-data/views/views.yml
 
 
 example-data-clean-dataset: \

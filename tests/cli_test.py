@@ -109,3 +109,21 @@ class TestMaterializeViewsSubCommand:
             '--view-list-config=%s' % view_config_path
         ])
         materialize_views_mock.assert_called()
+
+
+class TestDeleteMaterializedTablesSubCommand:
+    def test_should_delete_materialized_tables(
+            self,
+            temp_dir: Path,
+            delete_views_or_tables_mock: MagicMock):
+        view_config_path = temp_dir / 'views.yml'
+        view_config_path.write_text('\n'.join([
+            '- view1:',
+            '    materialize: true'
+        ]))
+        main([
+            'delete-materialized-tables',
+            '--dataset=dataset1',
+            '--view-list-config=%s' % view_config_path
+        ])
+        delete_views_or_tables_mock.assert_called()
