@@ -509,6 +509,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=("BigQuery Views Manager"))
 
     subparsers = parser.add_subparsers(dest="command")
+    subparsers.required = True
     for sub_command in SUB_COMMANDS:
         sub_parser = subparsers.add_parser(
             sub_command.name, help=sub_command.description

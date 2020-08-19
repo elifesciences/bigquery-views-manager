@@ -2,7 +2,7 @@ version: '3'
 
 # to add images that are only used for tests and by Jenkins in general
 services:
-    bigquery-views:
+    bigquery-views-manager:
         environment:
             GOOGLE_APPLICATION_CREDENTIALS: /tmp/credentials.json
         volumes:
