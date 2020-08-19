@@ -10,7 +10,7 @@ services:
                 python_base_image_tag: ${PYTHON_BASE_IMAGE_TAG}
         image: elifesciences/bigquery-views-manager_venv:${IMAGE_TAG}
 
-    bigquery-views:
+    bigquery-views-manager:
         build:
             context: .
             args:

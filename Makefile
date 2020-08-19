@@ -8,7 +8,7 @@ VENV = venv
 PIP = $(VENV)/bin/pip
 PYTHON = $(VENV)/bin/python
 
-RUN_DEV = $(DOCKER_COMPOSE) run --rm bigquery-views
+RUN_DEV = $(DOCKER_COMPOSE) run --rm bigquery-views-manager
 
 GOOGLE_CLOUD_PROJECT = bigquery-views-manager
 
@@ -138,7 +138,7 @@ dev-example-data-update-dataset:
 
 .PHONY: build
 build:
-	$(DOCKER_COMPOSE) build venv bigquery-views
+	$(DOCKER_COMPOSE) build venv bigquery-views-manager
 
 
 build-dev: build
@@ -283,14 +283,14 @@ ci-example-data-update-dataset: .require-DATASET_NAME
 ci-push-testpypi: .require-COMMIT
 	$(DOCKER_COMPOSE_CI) run --rm \
 		-v $$PWD/.pypirc:/root/.pypirc \
-		bigquery-views \
+		bigquery-views-manager \
 		./docker/push-testpypi-commit-version.sh "$(COMMIT)"
 
 
 ci-push-pypi: .require-VERSION
 	$(DOCKER_COMPOSE_CI) run --rm \
 		-v $$PWD/.pypirc:/root/.pypirc \
-		bigquery-views \
+		bigquery-views-manager \
 		./docker/push-pypi-version.sh "$(VERSION)"
 
 
