@@ -207,6 +207,21 @@ The following commands are supported:
 * `delete-views`
 * `delete-materialized-tables`
 
+## Docker Image
+
+There is also a Docker Image that can be used directly:
+
+```bash
+docker pull elifesciences/bigquery-views-manager:latest
+docker run --rm \
+    --volume ~/.config/gcloud:/root/.config/gcloud \
+    --volume $$PWD/views:/data/views \
+    --env GOOGLE_CLOUD_PROJECT=my-gcp-project \
+    elifesciences/bigquery-views-manager:latest \
+    diff-views \
+    --dataset my_dataset
+```
+
 ## Similar Projects
 
 * [BigQuery-DatasetManager](https://github.com/laughingman7743/BigQuery-DatasetManager)
