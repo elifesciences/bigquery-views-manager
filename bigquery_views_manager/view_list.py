@@ -408,7 +408,7 @@ class ViewListConfig:
 
 
 def load_view_list_config(path: str):
-    view_list_obj = yaml.load(Path(path).read_text(), Loader=yaml.Loader)
+    view_list_obj = yaml.safe_load(Path(path).read_text())
     LOGGER.debug('view_list_obj: %s', view_list_obj)
     return ViewListConfig([
         ViewConfig.from_value(value)
@@ -417,7 +417,7 @@ def load_view_list_config(path: str):
 
 
 def save_view_list_config(view_list_config: ViewListConfig, path: str):
-    Path(path).write_text(yaml.dump([
+    Path(path).write_text(yaml.safe_dump([
         view.to_value()
         for view in view_list_config
     ]))

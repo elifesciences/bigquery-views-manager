@@ -324,7 +324,7 @@ def _load_save_read_view_list_config_lines(temp_dir: Path, view_list_lines: List
 
 
 def _load_yaml_lines(yaml_lines: List[str]):
-    return yaml.load('\n'.join(yaml_lines), Loader=yaml.Loader)
+    return yaml.safe_load('\n'.join(yaml_lines))
 
 
 class TestSaveViewListConfig:
