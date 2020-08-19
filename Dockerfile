@@ -19,3 +19,5 @@ ARG version
 ADD docker ./docker
 RUN ls -l && ./docker/set-version.sh "${version}"
 LABEL org.opencontainers.image.version=${version}
+
+ENTRYPOINT ["python", "-m", "bigquery_views_manager"]

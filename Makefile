@@ -8,7 +8,9 @@ VENV = venv
 PIP = $(VENV)/bin/pip
 PYTHON = $(VENV)/bin/python
 
-RUN_DEV = $(DOCKER_COMPOSE) run --rm bigquery-views-manager
+RUN_DEV = $(DOCKER_COMPOSE) run --rm \
+	--entrypoint "" \
+	bigquery-views-manager
 
 GOOGLE_CLOUD_PROJECT = bigquery-views-manager
 
