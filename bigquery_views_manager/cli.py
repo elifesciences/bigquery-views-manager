@@ -367,9 +367,10 @@ class GetViewsSubCommand(SubCommand):
         disable_view_name_mapping_argument(parser)
 
     def run(self, client: bigquery.Client, args: argparse.Namespace):
-        view_list_config = load_view_list_config(
+        original_view_list_config = load_view_list_config(
             args.view_list_config
-        ).resolve_conditions({
+        )
+        view_list_config = original_view_list_config.resolve_conditions({
             'project': client.project,
             'dataset': args.dataset
         })
@@ -401,12 +402,15 @@ class GetViewsSubCommand(SubCommand):
         get_views(client, base_dir, views_dict, project=client.project)
 
         if args.add_to_view_list:
+            updated_view_list_config = original_view_list_config
             for view_name in views_dict.keys():
                 if not view_list_config.has_view(view_name):
-                    view_list_config = view_list_config.add_view(ViewConfig(view_name))
-            view_list_config = view_list_config.sort_insert_order(base_dir)
+                    updated_view_list_config = updated_view_list_config.add_view(
+                        ViewConfig(view_name)
+                    )
+            updated_view_list_config = updated_view_list_config.sort_insert_order(base_dir)
             save_view_list_config(
-                view_list_config,
+                updated_view_list_config,
                 args.view_list_config
             )
 
@@ -428,10 +432,7 @@ class SortViewListSubCommand(SubCommand):
         base_dir = Path(args.view_list_config).parent
         view_list_config = load_view_list_config(
             args.view_list_config
-        ).resolve_conditions({
-            'project': client.project,
-            'dataset': args.dataset
-        })
+        )
         LOGGER.info('view_list_config: %s', view_list_config)
 
         sorted_view_list_config = view_list_config.sort_insert_order(base_dir)
