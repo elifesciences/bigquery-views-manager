@@ -11,6 +11,7 @@ WORKDIR ${PROJECT_HOME}
 
 COPY *.sh *.py *.txt README.md pytest.ini .pylintrc .flake8 ./
 COPY bigquery_views_manager bigquery_views_manager
+RUN pip install -e . --no-dependencies
 
 # tests
 COPY tests tests
@@ -19,5 +20,8 @@ ARG version
 ADD docker ./docker
 RUN ls -l && ./docker/set-version.sh "${version}"
 LABEL org.opencontainers.image.version=${version}
+
+RUN mkdir -p /data
+WORKDIR /data
 
 ENTRYPOINT ["python", "-m", "bigquery_views_manager"]
