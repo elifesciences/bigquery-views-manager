@@ -85,6 +85,7 @@ When working with multiple datasets, this can also be conditional:
 ```yaml
 - v_view1:
     materialize: true
+    conditions:
     - if:
         dataset: source_dataset1
       materialize_as: "output_dataset1.output_table1"
