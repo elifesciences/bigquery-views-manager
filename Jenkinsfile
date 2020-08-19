@@ -69,6 +69,12 @@ elifePipeline {
                     }
                 }
             }
+
+            stage 'Push release bigquery-views-manager image', {
+                def image = DockerImage.elifesciences(this, 'bigquery-views-manager', commit)
+                image.tag('latest').push()
+                image.tag(version).push()
+            }
         }
     }
 }
