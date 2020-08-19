@@ -223,6 +223,7 @@ docker run --rm \
     --dataset my_dataset
 ```
 
-## Similar Projects
+## Related Projects
 
 * [BigQuery-DatasetManager](https://github.com/laughingman7743/BigQuery-DatasetManager)
+* [BigQuery View Analyzer](https://github.com/servian/bigquery-view-analyzer)
