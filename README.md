@@ -8,7 +8,8 @@ Utility project to maintain BigQuery views. The main interface is the CLI.
 Main features:
 
 * Synchronize BigQuery Views between GCP and local file system
-* Materialize Views (by running a view and saving it to a table)
+* Materialize Views (by running a view and saving it to a table):
+  * [BigQuery Materialized Views](https://cloud.google.com/bigquery/docs/materialized-views-intro) are now available as Pre-GA
 
 ## Pre-requisites
 
