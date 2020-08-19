@@ -8,8 +8,11 @@ VENV = venv
 PIP = $(VENV)/bin/pip
 PYTHON = $(VENV)/bin/python
 
+DOCKER_PROJECT_HOME = /opt/bigquery-views-manager
+
 RUN_DEV = $(DOCKER_COMPOSE) run --rm \
 	--entrypoint "" \
+	--workdir "$(DOCKER_PROJECT_HOME)" \
 	bigquery-views-manager
 
 GOOGLE_CLOUD_PROJECT = bigquery-views-manager
@@ -286,6 +289,7 @@ ci-push-testpypi: .require-COMMIT
 	$(DOCKER_COMPOSE_CI) run --rm \
 		-v $$PWD/.pypirc:/root/.pypirc \
 		--entrypoint "" \
+		--workdir "$(DOCKER_PROJECT_HOME)" \
 		bigquery-views-manager \
 		./docker/push-testpypi-commit-version.sh "$(COMMIT)"
 
@@ -294,6 +298,7 @@ ci-push-pypi: .require-VERSION
 	$(DOCKER_COMPOSE_CI) run --rm \
 		-v $$PWD/.pypirc:/root/.pypirc \
 		--entrypoint "" \
+		--workdir "$(DOCKER_PROJECT_HOME)" \
 		bigquery-views-manager \
 		./docker/push-pypi-version.sh "$(VERSION)"
 
