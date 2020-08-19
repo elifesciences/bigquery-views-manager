@@ -222,6 +222,16 @@ class ViewCondition:
             value['materialize_as'] = self.materialize_as
         return value
 
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return '%s(if_condition=%r, materialize_as=%r)' % (
+            type(self).__name__,
+            self.if_condition,
+            self.materialize_as
+        )
+
     def get_values(self) -> dict:
         return {
             key: value
