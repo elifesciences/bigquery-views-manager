@@ -285,6 +285,7 @@ ci-example-data-update-dataset: .require-DATASET_NAME
 ci-push-testpypi: .require-COMMIT
 	$(DOCKER_COMPOSE_CI) run --rm \
 		-v $$PWD/.pypirc:/root/.pypirc \
+		--entrypoint "" \
 		bigquery-views-manager \
 		./docker/push-testpypi-commit-version.sh "$(COMMIT)"
 
@@ -292,6 +293,7 @@ ci-push-testpypi: .require-COMMIT
 ci-push-pypi: .require-VERSION
 	$(DOCKER_COMPOSE_CI) run --rm \
 		-v $$PWD/.pypirc:/root/.pypirc \
+		--entrypoint "" \
 		bigquery-views-manager \
 		./docker/push-pypi-version.sh "$(VERSION)"
 
