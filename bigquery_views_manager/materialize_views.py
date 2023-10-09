@@ -31,7 +31,7 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
         project: str,
         source_dataset: str,
         destination_dataset: str,
-) -> QueryJob:
+) -> MaterializeViewResult:
     query = get_select_all_from_query(source_view_name,
                                       project=project,
                                       dataset=source_dataset)
