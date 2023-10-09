@@ -16,6 +16,7 @@ LOGGER = logging.getLogger(__name__)
 class MaterializeViewResult:
     total_bytes_processed: int
     total_rows: int
+    duration: float
 
 
 def get_select_all_from_query(view_name: str, project: str,
@@ -69,7 +70,8 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
         LOGGER.debug("sample_result: %s", sample_result)
     return MaterializeViewResult(
         total_bytes_processed=total_bytes_processed,
-        total_rows=result.total_rows
+        total_rows=result.total_rows,
+        duration=duration
     )
 
 
