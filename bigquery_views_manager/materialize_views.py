@@ -5,7 +5,7 @@ from itertools import islice
 from dataclasses import dataclass
 
 from google.cloud import bigquery
-from google.cloud.bigquery.job import QueryJobConfig, QueryJob
+from google.cloud.bigquery.job import QueryJobConfig
 
 from .view_list import VIEW_OR_TABLE_NAME_KEY, DATASET_NAME_KEY
 
