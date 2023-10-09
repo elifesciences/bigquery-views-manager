@@ -2,6 +2,7 @@ import logging
 import time
 from collections import OrderedDict
 from itertools import islice
+from dataclasses import dataclass
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig, QueryJob
@@ -11,13 +12,10 @@ from .view_list import VIEW_OR_TABLE_NAME_KEY, DATASET_NAME_KEY
 LOGGER = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
 class MaterializeViewResult:
-    def __init__(
-            self,
-            total_bytes_processed: int,
-            total_rows: int):
-        self.total_bytes_processed = total_bytes_processed
-        self.total_rows = total_rows
+    total_bytes_processed: int
+    total_rows: int
 
 
 def get_select_all_from_query(view_name: str, project: str,
