@@ -17,6 +17,7 @@ class MaterializeViewResult:
     total_bytes_processed: int
     total_rows: int
     duration: float
+    cache_hit: bool
 
 
 def get_select_all_from_query(view_name: str, project: str,
@@ -57,6 +58,7 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
     result: bigquery.table.RowIterator = query_job.result()
     duration = time.perf_counter() - start
     total_bytes_processed = query_job.total_bytes_processed
+    cache_hit = query_job.cache_hit
     LOGGER.info(
         'materialized view: %s.%s, total rows: %s, %s bytes processed, took: %.3fs',
         source_dataset,
@@ -71,7 +73,8 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
     return MaterializeViewResult(
         total_bytes_processed=total_bytes_processed,
         total_rows=result.total_rows,
-        duration=duration
+        duration=duration,
+        cache_hit=cache_hit
     )
 
 
