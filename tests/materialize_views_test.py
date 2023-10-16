@@ -96,4 +96,8 @@ class TestMaterializeView:
         assert return_value.cache_hit == query_job.cache_hit
         assert return_value.slot_millis == query_job.slot_millis
         assert return_value.total_bytes_billed
+        assert return_value.source_dataset == SOURCE_DATASET_1
+        assert return_value.source_view_name == VIEW_1
+        assert return_value.destination_dataset == DESTINATION_DATASET_1
+        assert return_value.destination_table_name == TABLE_1
 

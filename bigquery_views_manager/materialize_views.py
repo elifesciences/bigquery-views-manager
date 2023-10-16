@@ -15,6 +15,10 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class MaterializeViewResult:
+    source_dataset: str
+    source_view_name: str
+    destination_dataset: str
+    destination_table_name: str
     total_bytes_processed: int
     total_rows: int
     duration: float
@@ -76,6 +80,10 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
         sample_result = list(islice(result, 3))
         LOGGER.debug("sample_result: %s", sample_result)
     return MaterializeViewResult(
+        source_dataset=source_dataset,
+        source_view_name=source_view_name,
+        destination_dataset=destination_dataset,
+        destination_table_name=destination_table_name,
         total_bytes_processed=total_bytes_processed,
         total_rows=result.total_rows,
         duration=duration,
