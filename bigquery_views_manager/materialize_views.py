@@ -20,7 +20,7 @@ class MaterializeViewResult:
     duration: float
     cache_hit: bool
     slot_millis: Optional[int]
-    total_bytes_billed: Optional[int]
+    total_bytes_billed: int
 
 
 def get_select_all_from_query(view_name: str, project: str,
