@@ -3,7 +3,7 @@ import time
 from collections import OrderedDict
 from itertools import islice
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Sequence
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
@@ -25,6 +25,14 @@ class MaterializeViewResult:
     cache_hit: bool
     slot_millis: Optional[int]
     total_bytes_billed: int
+
+
+@dataclass(frozen=True)
+class MaterializeViewListResult:
+    result_list: Sequence[MaterializeViewResult]
+
+    def __bool__(self):
+        return bool(self.result_list)
 
 
 def get_select_all_from_query(view_name: str, project: str,
@@ -98,13 +106,14 @@ def materialize_views(
         materialized_view_dict: OrderedDict,
         source_view_dict: OrderedDict,
         project: str,
-):
+) -> MaterializeViewListResult:
     LOGGER.info("view_names: %s", materialized_view_dict)
     if not materialized_view_dict:
-        return
+        return MaterializeViewListResult(result_list=[])
     start = time.perf_counter()
     total_bytes_processed = 0
     total_rows = 0
+    result_list = []
     for view_template_file_name, dataset_view_data in materialized_view_dict.items():
         result = materialize_view(
             client,
@@ -117,6 +126,7 @@ def materialize_views(
                 DATASET_NAME_KEY),
             destination_dataset=dataset_view_data.get(DATASET_NAME_KEY),
         )
+        result_list.append(result)
         total_bytes_processed += (result.total_bytes_processed or 0)
         total_rows += (result.total_rows or 0)
     duration = time.perf_counter() - start
@@ -131,3 +141,4 @@ def materialize_views(
         duration,
         duration / len(materialized_view_dict),
     )
+    return result_list
