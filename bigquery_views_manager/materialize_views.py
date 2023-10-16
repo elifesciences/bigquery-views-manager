@@ -3,6 +3,7 @@ import time
 from collections import OrderedDict
 from itertools import islice
 from dataclasses import dataclass
+from typing import Optional
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
@@ -18,6 +19,7 @@ class MaterializeViewResult:
     total_rows: int
     duration: float
     cache_hit: bool
+    slot_millis: Optional[int]
 
 
 def get_select_all_from_query(view_name: str, project: str,
@@ -59,6 +61,7 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
     duration = time.perf_counter() - start
     total_bytes_processed = query_job.total_bytes_processed
     cache_hit = query_job.cache_hit
+    slot_millis = query_job.slot_millis
     LOGGER.info(
         'materialized view: %s.%s, total rows: %s, %s bytes processed, took: %.3fs',
         source_dataset,
@@ -74,7 +77,8 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
         total_bytes_processed=total_bytes_processed,
         total_rows=result.total_rows,
         duration=duration,
-        cache_hit=cache_hit
+        cache_hit=cache_hit,
+        slot_millis=slot_millis
     )
 
 
