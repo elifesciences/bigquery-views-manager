@@ -20,6 +20,7 @@ class MaterializeViewResult:
     duration: float
     cache_hit: bool
     slot_millis: Optional[int]
+    total_bytes_billed: Optional[int]
 
 
 def get_select_all_from_query(view_name: str, project: str,
@@ -62,6 +63,7 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
     total_bytes_processed = query_job.total_bytes_processed
     cache_hit = query_job.cache_hit
     slot_millis = query_job.slot_millis
+    total_bytes_billed = query_job.total_bytes_billed
     LOGGER.info(
         'materialized view: %s.%s, total rows: %s, %s bytes processed, took: %.3fs',
         source_dataset,
@@ -78,7 +80,8 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
         total_rows=result.total_rows,
         duration=duration,
         cache_hit=cache_hit,
-        slot_millis=slot_millis
+        slot_millis=slot_millis,
+        total_bytes_billed=total_bytes_billed
     )
 
 

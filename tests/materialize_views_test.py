@@ -95,4 +95,5 @@ class TestMaterializeView:
         assert return_value.total_bytes_processed == query_job.total_bytes_processed
         assert return_value.cache_hit == query_job.cache_hit
         assert return_value.slot_millis == query_job.slot_millis
+        assert return_value.total_bytes_billed
 
