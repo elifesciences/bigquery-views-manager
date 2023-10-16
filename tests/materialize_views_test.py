@@ -77,3 +77,20 @@ class TestMaterializeView:
             destination_dataset=DESTINATION_DATASET_1,
         )
         bq_client.query.return_value.result.assert_called()
+
+    def test_should_return_results(self, bq_client):
+        return_value = materialize_view(
+            bq_client,
+            source_view_name=VIEW_1,
+            destination_table_name=TABLE_1,
+            project=PROJECT_1,
+            source_dataset=SOURCE_DATASET_1,
+            destination_dataset=DESTINATION_DATASET_1,
+        )
+        query_job = bq_client.query.return_value
+        bq_result = query_job.result.return_value
+        assert return_value
+        assert return_value.duration is not None
+        assert return_value.total_rows == bq_result.total_rows
+        assert return_value.total_bytes_processed == query_job.total_bytes_processed
+
