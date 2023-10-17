@@ -81,12 +81,8 @@ elifePipeline {
 
 
 def withPypiCredentials(String env, String sectionName, doSomething) {
-    try {
-        withCredentials([string(credentialsId: "pypi-credentials--${env}", variable: 'TWINE_PASSWORD')]) {
-            doSomething()
-        }
-    } finally {
-        sh 'echo > .pypirc'
+    withCredentials([string(credentialsId: "pypi-credentials--${env}", variable: 'TWINE_PASSWORD')]) {
+        doSomething()
     }
 }
 

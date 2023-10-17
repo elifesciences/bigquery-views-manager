@@ -16,8 +16,6 @@ cat bigquery_views_manager/__init__.py
 
 python setup.py sdist bdist_wheel
 
-ls -l $HOME/.pypirc
-
 ls -l dist/
 
 twine upload --repository "${repository}" --username "__token__" --verbose "dist/bigquery_views_manager-${version}"*
