@@ -41,7 +41,7 @@ elifePipeline {
 
             stage 'Push package to test.pypi.org', {
                 withEnv(["VERSION=${version}"]) {
-                    withPypiCredentials 'staging', 'testpypi', {
+                    withPypiCredentials 'test', 'testpypi', {
                         sh "make IMAGE_TAG=${commit} COMMIT=${commit} NO_BUILD=y ci-push-testpypi"
                     }
                 }
@@ -64,7 +64,7 @@ elifePipeline {
         elifeTagOnly { tag ->
             stage 'Push pypi release', {
                 withEnv(["VERSION=${version}"]) {
-                    withPypiCredentials 'prod', 'pypi', {
+                    withPypiCredentials 'live', 'pypi', {
                         sh "make IMAGE_TAG=${commit} NO_BUILD=y ci-push-pypi"
                     }
                 }
