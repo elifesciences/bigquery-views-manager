@@ -80,22 +80,11 @@ elifePipeline {
 }
 
 
-import groovy.json.JsonSlurper
-
-@NonCPS
-def jsonToPypirc(String jsonText, String sectionName) {
-    def credentials = new JsonSlurper().parseText(jsonText)
-    echo "Username: ${credentials.username}"
-    return "[${sectionName}]\nusername: ${credentials.username}\npassword: ${credentials.password}"
-}
-
 def withPypiCredentials(String env, String sectionName, doSomething) {
     try {
-        writeFile(file: '.pypirc', text: jsonToPypirc(sh(
-            script: "vault.sh kv get -format=json secret/containers/pypi/${env} | jq .data.data",
-            returnStdout: true
-        ).trim(), sectionName))
-        doSomething()
+        withCredentials([string(credentialsId: "pypi-credentials--${env}", variable: 'TWINE_PASSWORD')]) {
+            doSomething()
+        }
     } finally {
         sh 'echo > .pypirc'
     }

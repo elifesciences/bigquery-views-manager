@@ -287,7 +287,6 @@ ci-example-data-update-dataset: .require-DATASET_NAME
 
 ci-push-testpypi: .require-COMMIT
 	$(DOCKER_COMPOSE_CI) run --rm \
-		-v $$PWD/.pypirc:/root/.pypirc \
 		--entrypoint "" \
 		--workdir "$(DOCKER_PROJECT_HOME)" \
 		bigquery-views-manager \
@@ -296,7 +295,6 @@ ci-push-testpypi: .require-COMMIT
 
 ci-push-pypi: .require-VERSION
 	$(DOCKER_COMPOSE_CI) run --rm \
-		-v $$PWD/.pypirc:/root/.pypirc \
 		--entrypoint "" \
 		--workdir "$(DOCKER_PROJECT_HOME)" \
 		bigquery-views-manager \

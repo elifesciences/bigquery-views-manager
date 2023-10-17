@@ -20,4 +20,4 @@ ls -l $HOME/.pypirc
 
 ls -l dist/
 
-twine upload --repository "${repository}" --verbose "dist/bigquery_views_manager-${version}"*
+twine upload --repository "${repository}" --username "__token__" --verbose "dist/bigquery_views_manager-${version}"*
