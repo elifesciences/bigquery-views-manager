@@ -41,7 +41,7 @@ elifePipeline {
 
             stage 'Push package to test.pypi.org', {
                 withEnv(["VERSION=${version}"]) {
-                    withPypiCredentials 'staging', 'testpypi', {
+                    withPypiCredentials 'test', 'testpypi', {
                         sh "make IMAGE_TAG=${commit} COMMIT=${commit} NO_BUILD=y ci-push-testpypi"
                     }
                 }
@@ -64,7 +64,7 @@ elifePipeline {
         elifeTagOnly { tag ->
             stage 'Push pypi release', {
                 withEnv(["VERSION=${version}"]) {
-                    withPypiCredentials 'prod', 'pypi', {
+                    withPypiCredentials 'live', 'pypi', {
                         sh "make IMAGE_TAG=${commit} NO_BUILD=y ci-push-pypi"
                     }
                 }
@@ -80,24 +80,9 @@ elifePipeline {
 }
 
 
-import groovy.json.JsonSlurper
-
-@NonCPS
-def jsonToPypirc(String jsonText, String sectionName) {
-    def credentials = new JsonSlurper().parseText(jsonText)
-    echo "Username: ${credentials.username}"
-    return "[${sectionName}]\nusername: ${credentials.username}\npassword: ${credentials.password}"
-}
-
 def withPypiCredentials(String env, String sectionName, doSomething) {
-    try {
-        writeFile(file: '.pypirc', text: jsonToPypirc(sh(
-            script: "vault.sh kv get -format=json secret/containers/pypi/${env} | jq .data.data",
-            returnStdout: true
-        ).trim(), sectionName))
+    withCredentials([string(credentialsId: "pypi-credentials--${env}", variable: 'TWINE_PASSWORD')]) {
         doSomething()
-    } finally {
-        sh 'echo > .pypirc'
     }
 }
 

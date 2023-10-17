@@ -5,6 +5,7 @@ services:
     bigquery-views-manager:
         environment:
             GOOGLE_APPLICATION_CREDENTIALS: /tmp/credentials.json
+            TWINE_PASSWORD: ${TWINE_PASSWORD}
         volumes:
             - ./credentials.json:/tmp/credentials.json
             - ./example-data:/opt/bigquery-views-manager/example-data
