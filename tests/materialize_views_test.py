@@ -1,10 +1,11 @@
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 import pytest
 
 import bigquery_views_manager.materialize_views as materialize_views_module
 from bigquery_views_manager.materialize_views import (
     MaterializeViewListResult,
+    MaterializeViewResult,
     get_select_all_from_query,
     materialize_view,
     materialize_views
@@ -120,8 +121,14 @@ class TestMaterializeViews:
         assert not return_value
 
     def test_should_return_result(self, bq_client):
-        destination_dataset_view_dict = {DATASET_NAME_KEY: DESTINATION_DATASET_1, VIEW_OR_TABLE_NAME_KEY: TABLE_1}
-        source_dataset_view_dict = {DATASET_NAME_KEY: SOURCE_DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_1}
+        destination_dataset_view_dict = {
+            DATASET_NAME_KEY: DESTINATION_DATASET_1,
+            VIEW_OR_TABLE_NAME_KEY: TABLE_1
+        }
+        source_dataset_view_dict = {
+            DATASET_NAME_KEY: SOURCE_DATASET_1,
+            VIEW_OR_TABLE_NAME_KEY: VIEW_1
+        }
         materialized_view_dict = {'view_template_file_name_1': destination_dataset_view_dict}
         source_view_dict = {'view_template_file_name_1': source_dataset_view_dict}
         return_value = materialize_views(
@@ -130,6 +137,17 @@ class TestMaterializeViews:
             source_view_dict=source_view_dict,
             project=PROJECT_1
         )
-        query_job = bq_client.query.return_value
-        bq_result = query_job.result.return_value
-        assert return_value 
+        assert return_value == MaterializeViewListResult(
+            result_list=[MaterializeViewResult(
+                source_dataset=SOURCE_DATASET_1,
+                source_view_name=VIEW_1,
+                destination_dataset=DESTINATION_DATASET_1,
+                destination_table_name=TABLE_1,
+                total_bytes_processed=ANY,
+                total_rows=ANY,
+                duration=ANY,
+                cache_hit=ANY,
+                slot_millis=ANY,
+                total_bytes_billed=ANY
+            )]
+        )

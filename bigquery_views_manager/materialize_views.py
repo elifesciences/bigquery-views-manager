@@ -14,13 +14,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class MaterializeViewResult:
+class MaterializeViewResult:  # pylint: disable=too-many-instance-attributes
     source_dataset: str
     source_view_name: str
     destination_dataset: str
     destination_table_name: str
-    total_bytes_processed: int
-    total_rows: int
+    total_bytes_processed: Optional[int]
+    total_rows: Optional[int]
     duration: float
     cache_hit: bool
     slot_millis: Optional[int]
@@ -141,4 +141,4 @@ def materialize_views(
         duration,
         duration / len(materialized_view_dict),
     )
-    return result_list
+    return MaterializeViewListResult(result_list)
