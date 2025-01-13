@@ -4,7 +4,8 @@ import bigquery_views_manager
 
 
 with open('requirements.txt', 'r') as f:
-    REQUIRED_PACKAGES = f.readlines()
+    lines = f.readlines()
+    REQUIRED_PACKAGES = [line.split("==")[0].strip() for line in lines if line.strip()]
 
 
 with open('README.md', 'r') as f:
