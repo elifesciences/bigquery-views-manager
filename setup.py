@@ -17,7 +17,6 @@ packages = find_packages()
 
 setup(
     name='bigquery-views-manager',
-    version=bigquery_views_manager.__version__,
     author="eLife Sciences Publications, Ltd",
     url="https://github.com/elifesciences/bigquery-views-manager",
     install_requires=REQUIRED_PACKAGES,
