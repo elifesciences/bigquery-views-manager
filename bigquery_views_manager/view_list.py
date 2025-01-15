@@ -76,7 +76,7 @@ def create_simple_view_mapping_from_view_list(dataset: str,
 def save_view_mapping(filename: str, view_mapping: OrderedDict,
                       is_materialized_view: False):
     LOGGER.info("saving view mapping list to %s", filename)
-    file_content_as_list = list()
+    file_content_as_list = []
     for view_template_name, view_dict in view_mapping.items():
         if is_materialized_view:
             file_content_as_list.append(
