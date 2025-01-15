@@ -2,7 +2,6 @@
 disable=
     missing-docstring,
     too-few-public-methods,
-    no-self-use,
     duplicate-code,
     too-many-positional-arguments
 
