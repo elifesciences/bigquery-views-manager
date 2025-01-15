@@ -3,7 +3,8 @@ disable=
     missing-docstring,
     too-few-public-methods,
     no-self-use,
-    duplicate-code
+    duplicate-code,
+    too-many-positional-arguments
 
 [TYPECHECK]
 ignored-classes=
