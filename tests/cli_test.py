@@ -81,7 +81,7 @@ class TestCreateOrReplaceViewsSubCommand:
         main([
             'create-or-replace-views',
             '--dataset=dataset1',
-            '--view-list-config=%s' % view_config_path
+            f'--view-list-config={view_config_path}'
         ])
         update_or_create_views_mock.assert_called()
 
@@ -98,7 +98,7 @@ class TestDeleteViewsSubCommand:
         main([
             'delete-views',
             '--dataset=dataset1',
-            '--view-list-config=%s' % view_config_path
+            f'--view-list-config={view_config_path}'
         ])
         delete_views_or_tables_mock.assert_called()
 
@@ -116,7 +116,7 @@ class TestMaterializeViewsSubCommand:
         main([
             'materialize-views',
             '--dataset=dataset1',
-            '--view-list-config=%s' % view_config_path
+            f'--view-list-config={view_config_path}'
         ])
         materialize_views_mock.assert_called()
 
@@ -134,7 +134,7 @@ class TestDeleteMaterializedTablesSubCommand:
         main([
             'delete-materialized-tables',
             '--dataset=dataset1',
-            '--view-list-config=%s' % view_config_path
+            f'--view-list-config={view_config_path}'
         ])
         delete_views_or_tables_mock.assert_called()
 
@@ -152,7 +152,7 @@ class TestDiffViewsSubCommand:
         main([
             'diff-views',
             '--dataset=dataset1',
-            '--view-list-config=%s' % view_config_path
+            f'--view-list-config={view_config_path}'
         ])
         diff_views_mock.assert_called()
 
@@ -170,7 +170,7 @@ class TestGetViewsSubCommand:
         main([
             'get-views',
             '--dataset=dataset1',
-            '--view-list-config=%s' % view_config_path
+            f'--view-list-config={view_config_path}'
         ])
         get_views_mock.assert_called()
 
@@ -194,7 +194,7 @@ class TestSortViewListSubCommand:
         main([
             'sort-view-list',
             '--dataset=dataset1',
-            '--view-list-config=%s' % view_config_path
+            f'--view-list-config={view_config_path}'
         ])
         assert load_view_list_config(view_config_path).view_names == [
             'view2',

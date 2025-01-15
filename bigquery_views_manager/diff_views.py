@@ -61,7 +61,7 @@ def get_dataset_to_table_dict(view_names: dict):
 
 
 def get_view_to_view_file(view_names: dict):
-    view_to_view_file = dict()
+    view_to_view_file = {}
     for k, value in view_names.items():
         view_to_view_file[value.get(DATASET_NAME_KEY) + "." +
                           value.get(VIEW_OR_TABLE_NAME_KEY)] = k

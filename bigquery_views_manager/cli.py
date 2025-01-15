@@ -506,7 +506,7 @@ def add_common_arguments(parser: argparse.ArgumentParser):
 
 
 def parse_args(argv=None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=("BigQuery Views Manager"))
+    parser = argparse.ArgumentParser(description="BigQuery Views Manager")
 
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True

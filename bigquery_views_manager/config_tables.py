@@ -21,17 +21,19 @@ def get_local_config_table_names(base_dir: str) -> List[str]:
 
 
 def get_config_table_file(base_dir: str, config_table_name: str) -> str:
-    return (Path(base_dir).joinpath(CONFIG_TABLES_DIR).joinpath(
-        "%s.csv" % config_table_name))
+    return Path(base_dir).joinpath(CONFIG_TABLES_DIR).joinpath(
+        f"{config_table_name}.csv"
+    )
 
 
 def get_config_table_schema_file(base_dir: str, config_table_name: str) -> str:
-    return (Path(base_dir).joinpath(CONFIG_TABLES_SCHEMA_DIR).joinpath(
-        "%s_schema.json" % config_table_name))
+    return Path(base_dir).joinpath(CONFIG_TABLES_SCHEMA_DIR).joinpath(
+        f"{config_table_name}_schema.json"
+    )
 
 
 def get_table_schema(source_schema_file: str) -> List:
-    with open(source_schema_file) as json_file:
+    with open(source_schema_file, encoding='utf-8') as json_file:
         data = json.load(json_file)
         schema = [SchemaField.from_api_repr(json_field) for json_field in data]
     return schema

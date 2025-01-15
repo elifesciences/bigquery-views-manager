@@ -76,7 +76,7 @@ def create_simple_view_mapping_from_view_list(dataset: str,
 def save_view_mapping(filename: str, view_mapping: OrderedDict,
                       is_materialized_view: False):
     LOGGER.info("saving view mapping list to %s", filename)
-    file_content_as_list = list()
+    file_content_as_list = []
     for view_template_name, view_dict in view_mapping.items():
         if is_materialized_view:
             file_content_as_list.append(
@@ -89,7 +89,7 @@ def save_view_mapping(filename: str, view_mapping: OrderedDict,
                                         view_dict.get(DATASET_NAME_KEY))
 
     file_content = "\n".join(file_content_as_list) + "\n"
-    return Path(filename).write_text(file_content)
+    return Path(filename).write_text(file_content, encoding='utf-8')
 
 
 def get_referenced_table_names_for_query(view_query: str) -> List[str]:
@@ -226,10 +226,10 @@ class ViewCondition:
         return repr(self)
 
     def __repr__(self):
-        return '%s(if_condition=%r, materialize_as=%r)' % (
-            type(self).__name__,
-            self.if_condition,
-            self.materialize_as
+        return (
+            type(self).__name__
+            + f'(if_condition={repr(self.if_condition)}'
+            + f', materialize_as={repr(self.materialize_as)})'
         )
 
     def get_values(self) -> dict:
@@ -273,7 +273,7 @@ class ViewConfig:
                 materialize=view_args.get('materialize'),
                 conditions=conditions
             )
-        raise ValueError('unrecognised view config: %r' % value)
+        raise ValueError(f'unrecognised view config: {repr(value)}')
 
     def to_value(self) -> Union[str, dict]:
         view_args = {}
@@ -294,12 +294,12 @@ class ViewConfig:
         return self.view_name
 
     def __repr__(self):
-        return '%s(%r, materialize=%r, materialize_as=%r, conditions=%r)' % (
-            type(self).__name__,
-            self.view_name,
-            self.materialize,
-            self.materialize_as,
-            self.conditions
+        return (
+            type(self).__name__
+            + f'({repr(self.view_name)}'
+            + f', materialize={repr(self.materialize)}'
+            + f', materialize_as={repr(self.materialize_as)}'
+            + f', conditions={repr(self.conditions)})'
         )
 
     @property
@@ -334,10 +334,7 @@ class ViewListConfig:
         return str(self.view_config_list)
 
     def __repr__(self):
-        return '%s(%r)' % (
-            type(self).__name__,
-            self.view_config_list
-        )
+        return f'{type(self).__name__}({repr(self.view_config_list)})'
 
     def __len__(self):
         return len(self.view_config_list)
@@ -418,7 +415,7 @@ class ViewListConfig:
 
 
 def load_view_list_config(path: str):
-    view_list_obj = yaml.safe_load(Path(path).read_text())
+    view_list_obj = yaml.safe_load(Path(path).read_text(encoding='utf-8'))
     LOGGER.debug('view_list_obj: %s', view_list_obj)
     return ViewListConfig([
         ViewConfig.from_value(value)
@@ -430,4 +427,4 @@ def save_view_list_config(view_list_config: ViewListConfig, path: str):
     Path(path).write_text(yaml.safe_dump([
         view.to_value()
         for view in view_list_config
-    ]))
+    ]), encoding='utf-8')
