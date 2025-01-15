@@ -226,10 +226,10 @@ class ViewCondition:
         return repr(self)
 
     def __repr__(self):
-        return '%s(if_condition=%r, materialize_as=%r)' % (
-            type(self).__name__,
-            self.if_condition,
-            self.materialize_as
+        return (
+            type(self).__name__
+            + f'(if_condition={repr(self.if_condition)}'
+            + f', materialize_as={repr(self.materialize_as)})'
         )
 
     def get_values(self) -> dict:
@@ -273,7 +273,7 @@ class ViewConfig:
                 materialize=view_args.get('materialize'),
                 conditions=conditions
             )
-        raise ValueError('unrecognised view config: %r' % value)
+        raise ValueError(f'unrecognised view config: {repr(value)}')
 
     def to_value(self) -> Union[str, dict]:
         view_args = {}
@@ -294,12 +294,12 @@ class ViewConfig:
         return self.view_name
 
     def __repr__(self):
-        return '%s(%r, materialize=%r, materialize_as=%r, conditions=%r)' % (
-            type(self).__name__,
-            self.view_name,
-            self.materialize,
-            self.materialize_as,
-            self.conditions
+        return (
+            type(self).__name__
+            + f'({repr(self.view_name)}'
+            + f', materialize={repr(self.materialize)}'
+            + f', materialize_as={repr(self.materialize_as)}'
+            + f', conditions={repr(self.conditions)})'
         )
 
     @property
@@ -334,10 +334,7 @@ class ViewListConfig:
         return str(self.view_config_list)
 
     def __repr__(self):
-        return '%s(%r)' % (
-            type(self).__name__,
-            self.view_config_list
-        )
+        return f'{type(self).__name__}({repr(self.view_config_list)})'
 
     def __len__(self):
         return len(self.view_config_list)

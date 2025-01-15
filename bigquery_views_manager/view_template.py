@@ -60,7 +60,7 @@ class ViewTemplate:
         ))
 
     def __repr__(self):
-        return "%s(%r)" % (type(self).__name__, self.view_template_content)
+        return f'{type(self).__name__}({repr(self.view_template_content)})'
 
     def __str__(self):
         return self.view_template_content
