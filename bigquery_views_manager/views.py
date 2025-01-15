@@ -21,7 +21,7 @@ def get_bq_view_query(client: bigquery.Client, view_name: str, dataset: str):
 
 
 def get_view_template_file(base_dir: str, view_file_name: str) -> str:
-    return Path(base_dir).joinpath("%s.sql" % view_file_name)
+    return Path(base_dir).joinpath(f"{view_file_name}.sql")
 
 
 def get_local_view_template(base_dir: str,
