@@ -45,7 +45,7 @@ class ViewTemplate:
 
     @staticmethod
     def from_file(filename: str) -> "ViewTemplate":
-        return ViewTemplate(Path(filename).read_text())
+        return ViewTemplate(Path(filename).read_text(encoding='utf-8'))
 
     @staticmethod
     def from_query(query: str, project: str) -> "ViewTemplate":
@@ -66,7 +66,7 @@ class ViewTemplate:
         return self.view_template_content
 
     def to_file(self, filename: str):
-        return Path(filename).write_text(self.view_template_content)
+        return Path(filename).write_text(self.view_template_content, encoding='utf-8')
 
     def substitute(self, project: str, default_dataset: str,
                    view_to_dataset_mapping: dict) -> str:

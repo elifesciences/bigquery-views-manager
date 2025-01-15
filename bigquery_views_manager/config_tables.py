@@ -33,7 +33,7 @@ def get_config_table_schema_file(base_dir: str, config_table_name: str) -> str:
 
 
 def get_table_schema(source_schema_file: str) -> List:
-    with open(source_schema_file) as json_file:
+    with open(source_schema_file, encoding='utf-8') as json_file:
         data = json.load(json_file)
         schema = [SchemaField.from_api_repr(json_field) for json_field in data]
     return schema

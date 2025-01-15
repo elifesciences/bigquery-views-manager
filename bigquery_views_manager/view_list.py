@@ -89,7 +89,7 @@ def save_view_mapping(filename: str, view_mapping: OrderedDict,
                                         view_dict.get(DATASET_NAME_KEY))
 
     file_content = "\n".join(file_content_as_list) + "\n"
-    return Path(filename).write_text(file_content)
+    return Path(filename).write_text(file_content, encoding='utf-8')
 
 
 def get_referenced_table_names_for_query(view_query: str) -> List[str]:
@@ -415,7 +415,7 @@ class ViewListConfig:
 
 
 def load_view_list_config(path: str):
-    view_list_obj = yaml.safe_load(Path(path).read_text())
+    view_list_obj = yaml.safe_load(Path(path).read_text(encoding='utf-8'))
     LOGGER.debug('view_list_obj: %s', view_list_obj)
     return ViewListConfig([
         ViewConfig.from_value(value)
@@ -427,4 +427,4 @@ def save_view_list_config(view_list_config: ViewListConfig, path: str):
     Path(path).write_text(yaml.safe_dump([
         view.to_value()
         for view in view_list_config
-    ]))
+    ]), encoding='utf-8')
