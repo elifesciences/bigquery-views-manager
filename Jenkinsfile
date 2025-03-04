@@ -48,12 +48,6 @@ elifePipeline {
             // }
         }
 
-        elifeMainlineOnly {
-            stage 'Merge to master', {
-                elifeGitMoveToBranch commit, 'master'
-            }
-        }
-
         elifeTagOnly { tag ->
             stage 'Push pypi release', {
                 withEnv(["VERSION=${version}"]) {
