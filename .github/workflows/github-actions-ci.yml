@@ -25,3 +25,5 @@ jobs:
         run: make ci-build-and-test DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}'
       - name: Clean dataset
         run: make DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}' IMAGE_TAG=${{ github.sha }} REVISION=${{ github.sha }} DATASET_NAME=${{ env.DATASET_NAME }} ci-example-data-clean-dataset
+      - name: Update dataset
+        run: make DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}' IMAGE_TAG=${{ github.sha }} REVISION=${{ github.sha }} DATASET_NAME=${{ env.DATASET_NAME }} ci-example-data-update-dataset
