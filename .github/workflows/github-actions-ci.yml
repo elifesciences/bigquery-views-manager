@@ -1,0 +1,20 @@
+name: CI Build
+
+on:
+  push:
+    branches:
+      - develop
+    tags:
+      - 'v*'  # Push events to matching v*, i.e. v1.0, v20.15.10
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Build Image and Run Tests
+        run: make ci-build-and-test
