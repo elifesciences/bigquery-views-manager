@@ -35,3 +35,5 @@ jobs:
         run: make DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}' IMAGE_TAG=${{ github.sha }} REVISION=${{ github.sha }} DATASET_NAME=${{ env.DATASET_NAME }} ci-example-data-clean-dataset
       - name: Push package to test.pypi.org
         run: make DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}' IMAGE_TAG=${{ github.sha }} COMMIT=${{ github.sha }} NO_BUILD=y ci-push-testpypi
+        env:
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_CREDENTIALS }}
