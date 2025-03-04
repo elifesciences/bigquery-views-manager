@@ -16,6 +16,8 @@ env:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ env.DATASET_NAME }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
