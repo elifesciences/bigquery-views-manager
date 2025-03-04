@@ -24,20 +24,20 @@ elifePipeline {
         }
 
         elifePullRequestOnly { prNumber ->
-            stage 'Create and delete views', {
-                lock('bigquery-views-manager--ci') {
-                    withEnv(["VERSION=${version}"]) {
-                        withBigQueryViewsManagerGcpCredentials {
-                            cleanDataset('bigquery_views_manager_ci', commit)
-                            try {
-                                updateDataset('bigquery_views_manager_ci', commit)
-                            } finally {
-                                cleanDataset('bigquery_views_manager_ci', commit)
-                            }
-                        }
-                    }
-                }
-            }
+            // stage 'Create and delete views', {
+            //     lock('bigquery-views-manager--ci') {
+            //         withEnv(["VERSION=${version}"]) {
+            //             withBigQueryViewsManagerGcpCredentials {
+            //                 cleanDataset('bigquery_views_manager_ci', commit)
+            //                 try {
+            //                     updateDataset('bigquery_views_manager_ci', commit)
+            //                 } finally {
+            //                     cleanDataset('bigquery_views_manager_ci', commit)
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
 
             stage 'Push package to test.pypi.org', {
                 withEnv(["VERSION=${version}"]) {
