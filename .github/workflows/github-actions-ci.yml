@@ -44,3 +44,8 @@ jobs:
         run: make DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}' IMAGE_TAG=${{ github.sha }} COMMIT=${{ github.sha }} NO_BUILD=y ci-push-testpypi
         env:
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_CREDENTIALS }}
+      - name: Push package to pypi.org
+        if: ${{ env.VERSION != 'develop' }}
+        run: make DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}' IMAGE_TAG=${{ github.sha }} COMMIT=${{ github.sha }} NO_BUILD=y ci-push-pypi
+        env:
+          TWINE_PASSWORD: ${{ secrets.PYPI_CREDENTIALS }}
