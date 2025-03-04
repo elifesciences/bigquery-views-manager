@@ -21,11 +21,12 @@ jobs:
     steps:
       - name: Set Version Env Var
         run: |
+          VERSION=develop
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            echo 'VERSION=${GITHUB_REF#refs/tags/v}' >> $GITHUB_ENV
-          else
-            echo 'VERSION=develop' >> $GITHUB_ENV
+            VERSION=${GITHUB_REF#refs/tags/v}
           fi
+          echo "VERSION: ${VERSION}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Setup GCP Secrets
