@@ -17,7 +17,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ env.DATASET_NAME }}
+      group: bigquery_views_manager_ci
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
