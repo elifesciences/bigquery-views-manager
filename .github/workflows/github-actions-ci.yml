@@ -20,7 +20,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Setup GCP Secrets
-        run: echo -n '${{ secrets.BIGQUERY_VIEWS_MANAGER_GCP_TEST }}' > ./credentials.json
+        run: echo -n '${{ secrets.BIGQUERY_VIEWS_MANAGER_GCP }}' > ./credentials.json
       - name: Build Image and Run Tests
         run: make ci-build-and-test DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}'
       - name: Clean dataset
