@@ -39,13 +39,13 @@ elifePipeline {
             //     }
             // }
 
-            stage 'Push package to test.pypi.org', {
-                withEnv(["VERSION=${version}"]) {
-                    withPypiCredentials 'test', 'testpypi', {
-                        sh "make IMAGE_TAG=${commit} COMMIT=${commit} NO_BUILD=y ci-push-testpypi"
-                    }
-                }
-            }
+            // stage 'Push package to test.pypi.org', {
+            //     withEnv(["VERSION=${version}"]) {
+            //         withPypiCredentials 'test', 'testpypi', {
+            //             sh "make IMAGE_TAG=${commit} COMMIT=${commit} NO_BUILD=y ci-push-testpypi"
+            //         }
+            //     }
+            // }
         }
 
         elifeMainlineOnly {
