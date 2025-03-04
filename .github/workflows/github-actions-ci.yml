@@ -17,4 +17,4 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Build Image and Run Tests
-        run: make ci-build-and-test
+        run: make ci-build-and-test DOCKER_COMPOSE_CI='docker compose -f docker-compose.yml -f docker-compose.ci.yml'
