@@ -11,6 +11,7 @@ on:
       - develop
 env:
   DATASET_NAME: bigquery_views_manager_ci
+  DOCKER_COMPOSE_CI: docker compose -f docker-compose.yml -f docker-compose.ci.yml
 
 jobs:
   build-and-test:
@@ -19,6 +20,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Build Image and Run Tests
-        run: make ci-build-and-test DOCKER_COMPOSE_CI='docker compose -f docker-compose.yml -f docker-compose.ci.yml'
+        run: make ci-build-and-test DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}'
       - name: Clean dataset
-        run: make IMAGE_TAG=${{ github.sha }} REVISION=${{ github.sha }} DATASET_NAME=${{ env.DATASET_NAME }} ci-example-data-clean-dataset
+        run: make DOCKER_COMPOSE_CI='${{ env.DOCKER_COMPOSE_CI }}' IMAGE_TAG=${{ github.sha }} REVISION=${{ github.sha }} DATASET_NAME=${{ env.DATASET_NAME }} ci-example-data-clean-dataset
