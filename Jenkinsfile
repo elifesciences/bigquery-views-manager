@@ -52,13 +52,6 @@ elifePipeline {
             stage 'Merge to master', {
                 elifeGitMoveToBranch commit, 'master'
             }
-
-            stage 'Push unstable bigquery-views-manager image', {
-                def image = DockerImage.elifesciences(this, 'bigquery-views-manager', commit)
-                def unstable_image = image.addSuffixAndTag('_unstable', commit)
-                unstable_image.tag('latest').push()
-                unstable_image.push()
-            }
         }
 
         elifeTagOnly { tag ->
@@ -68,12 +61,6 @@ elifePipeline {
                         sh "make IMAGE_TAG=${commit} NO_BUILD=y ci-push-pypi"
                     }
                 }
-            }
-
-            stage 'Push release bigquery-views-manager image', {
-                def image = DockerImage.elifesciences(this, 'bigquery-views-manager', commit)
-                image.tag('latest').push()
-                image.tag(version).push()
             }
         }
     }
