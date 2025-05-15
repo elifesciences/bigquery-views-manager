@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from py._path.local import LocalPath
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -19,5 +18,5 @@ def _bq_client():
 
 
 @pytest.fixture()
-def temp_dir(tmpdir: LocalPath) -> Path:
-    return Path(tmpdir)
+def temp_dir(tmp_path: Path) -> Path:
+    return tmp_path
