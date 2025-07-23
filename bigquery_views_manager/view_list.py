@@ -423,7 +423,7 @@ def load_view_list_config(path: str | Path):
     ])
 
 
-def save_view_list_config(view_list_config: ViewListConfig, path: str):
+def save_view_list_config(view_list_config: ViewListConfig, path: str | Path):
     Path(path).write_text(yaml.safe_dump([
         view.to_value()
         for view in view_list_config
