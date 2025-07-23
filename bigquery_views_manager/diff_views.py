@@ -1,5 +1,6 @@
 import logging
 from difflib import context_diff
+from pathlib import Path
 from typing import List, Set, Iterable
 from collections import OrderedDict
 import re
@@ -70,7 +71,7 @@ def get_view_to_view_file(view_names: dict):
 
 def get_diff_result(  # pylint: disable=too-many-arguments,too-many-locals
         client: bigquery.Client,
-        base_dir: str,
+        base_dir: str | Path,
         view_names_dict: OrderedDict,
         project: str,
         default_dataset: str,
@@ -185,7 +186,7 @@ def format_diff_result(diff_result: ViewDiffResult) -> str:
 
 def diff_views(  # pylint: disable=too-many-arguments
         client: bigquery.Client,
-        base_dir: str,
+        base_dir: str | Path,
         view_names_dict: OrderedDict,
         project: str,
         default_dataset: str,
