@@ -368,7 +368,7 @@ class ViewListConfig:
     def add_view(self, view: ViewConfig) -> 'ViewListConfig':
         return ViewListConfig(self.view_config_list + [view])
 
-    def sort_insert_order(self, base_dir: str) -> 'ViewListConfig':
+    def sort_insert_order(self, base_dir: str | Path) -> 'ViewListConfig':
         dummy_dataset = 'dummy_dataset'
         insert_order = determine_view_insert_order(
             base_dir,
