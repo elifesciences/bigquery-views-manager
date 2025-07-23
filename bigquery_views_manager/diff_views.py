@@ -7,7 +7,7 @@ import re
 
 from google.cloud import bigquery
 
-import crayons
+import crayons  # type: ignore
 
 from .update_views import get_local_view_query
 from .views import get_bq_view_query, get_bq_view_names
@@ -51,7 +51,7 @@ class ViewDiffResult:
 
 
 def get_dataset_to_table_dict(view_names: dict):
-    dataset_to_table_dict = {}
+    dataset_to_table_dict: dict = {}
     for _, value in view_names.items():
         dataset_name = value.get(DATASET_NAME_KEY)
         dataset_to_table_dict[dataset_name] = dataset_to_table_dict.get(
