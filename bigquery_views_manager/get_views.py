@@ -1,5 +1,6 @@
 import logging
 from collections import OrderedDict
+from pathlib import Path
 
 from google.cloud import bigquery
 
@@ -12,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 def get_view(  # pylint: disable=too-many-arguments
         client: bigquery.Client,
-        base_dir: str,
+        base_dir: str | Path,
         view_name: str,
         view_template_name: str,
         project: str,
@@ -30,7 +31,7 @@ def get_view(  # pylint: disable=too-many-arguments
 
 def get_views(
         client: bigquery.Client,
-        base_dir: str,
+        base_dir: str | Path,
         view_names_ordered_dict: OrderedDict,
         project: str,
 ):
