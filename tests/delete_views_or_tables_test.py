@@ -30,7 +30,7 @@ def _to_mock_table_list_item(table_name: str) -> bigquery.table.TableListItem:
 
 
 def _to_mock_table_list_items(
-        table_names: List[str]
+    table_names: List[str]
 ) -> List[bigquery.table.TableListItem]:
     return [_to_mock_table_list_item(table_name) for table_name in table_names]
 

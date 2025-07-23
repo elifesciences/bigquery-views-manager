@@ -57,8 +57,12 @@ def _get_bq_view_names():
 
 class TestGetDiffResult:
     def test_should_return_result_for_single_unchanged_view(
-            self, bq_client, get_local_view_query, get_bq_view_query,
-            get_bq_view_names):
+        self,
+        bq_client,
+        get_local_view_query,
+        get_bq_view_query,
+        get_bq_view_names
+    ):
         get_local_view_query.return_value = VIEW_QUERY_1
         get_bq_view_query.return_value = VIEW_QUERY_1
         get_bq_view_names.return_value = [VIEW_1]
@@ -70,17 +74,19 @@ class TestGetDiffResult:
             default_dataset=DATASET_1,
             view_to_dataset_mapping=VIEW_TO_DATASET_MAPPING,
         )
-        assert diff_result.unchanged_view_names == {
-            ".".join([DATASET_1, VIEW_1])
-        }
+        assert diff_result.unchanged_view_names == {".".join([DATASET_1, VIEW_1])}
         assert diff_result.local_only_view_names == set()
         assert diff_result.remote_only_view_names == set()
         assert diff_result.changed_view_names == set()
         assert diff_result.changed_views == []
 
     def test_should_return_result_for_single_changed_view(
-            self, bq_client, get_local_view_query, get_bq_view_query,
-            get_bq_view_names):
+        self,
+        bq_client,
+        get_local_view_query,
+        get_bq_view_query,
+        get_bq_view_names
+    ):
         get_local_view_query.return_value = VIEW_QUERY_1
         get_bq_view_query.return_value = VIEW_QUERY_2
         get_bq_view_names.return_value = [VIEW_1]
@@ -89,8 +95,8 @@ class TestGetDiffResult:
             BASE_DIR,
             view_names_dict=get_input_ordered_dict_view_mapping(),
             project=PROJECT_1,
-            default_dataset=DATASET_1,
             view_to_dataset_mapping=VIEW_TO_DATASET_MAPPING,
+            default_dataset=DATASET_1,
         )
         assert diff_result.unchanged_view_names == set()
         assert diff_result.local_only_view_names == set()
@@ -103,10 +109,13 @@ class TestGetDiffResult:
         assert changed_view.local_view_query == VIEW_QUERY_1
         assert changed_view.remote_view_query == VIEW_QUERY_2
 
-    def test_should_return_for_single_local_only_view(self, bq_client,
-                                                      get_local_view_query,
-                                                      get_bq_view_query,
-                                                      get_bq_view_names):
+    def test_should_return_for_single_local_only_view(
+        self,
+        bq_client,
+        get_local_view_query,
+        get_bq_view_query,
+        get_bq_view_names
+    ):
         get_local_view_query.return_value = VIEW_QUERY_1
         get_bq_view_query.return_value = VIEW_QUERY_2
         get_bq_view_names.return_value = []
@@ -119,16 +128,17 @@ class TestGetDiffResult:
             view_to_dataset_mapping=VIEW_TO_DATASET_MAPPING,
         )
         assert diff_result.unchanged_view_names == set()
-        assert diff_result.local_only_view_names == {
-            ".".join([DATASET_1, VIEW_1])
-        }
+        assert diff_result.local_only_view_names == {".".join([DATASET_1, VIEW_1])}
         assert diff_result.remote_only_view_names == set()
         assert diff_result.changed_view_names == set()
 
-    def test_should_return_for_single_remote_only_view(self, bq_client,
-                                                       get_local_view_query,
-                                                       get_bq_view_query,
-                                                       get_bq_view_names):
+    def test_should_return_for_single_remote_only_view(
+        self,
+        bq_client,
+        get_local_view_query,
+        get_bq_view_query,
+        get_bq_view_names
+    ):
         get_local_view_query.return_value = VIEW_QUERY_1
         get_bq_view_query.return_value = VIEW_QUERY_2
         get_bq_view_names.return_value = [VIEW_2]
@@ -141,10 +151,6 @@ class TestGetDiffResult:
             view_to_dataset_mapping=VIEW_TO_DATASET_MAPPING,
         )
         assert diff_result.unchanged_view_names == set()
-        assert diff_result.local_only_view_names == {
-            ".".join([DATASET_1, VIEW_1])
-        }
-        assert diff_result.remote_only_view_names == {
-            ".".join([DATASET_1, VIEW_2])
-        }
+        assert diff_result.local_only_view_names == {".".join([DATASET_1, VIEW_1])}
+        assert diff_result.remote_only_view_names == {".".join([DATASET_1, VIEW_2])}
         assert diff_result.changed_view_names == set()

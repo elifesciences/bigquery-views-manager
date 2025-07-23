@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Optional, Set, Union
 from collections import OrderedDict
 
 import yaml
@@ -21,22 +21,22 @@ def get_default_destination_table_name_for_view_name(view_name: str) -> str:
 
 
 def get_mapped_materialized_view_subset(
-        materialized_view_ordered_dict_all: OrderedDict,
-        subset_view_template_names: Set[str],
+    materialized_view_ordered_dict_all: OrderedDict,
+    subset_view_template_names: Set[str],
 ):
     materialized_view_ordered_dict = OrderedDict()
     for (
-            template_file_name,
-            dataset_view_or_table_data,
+        template_file_name,
+        dataset_view_or_table_data
     ) in materialized_view_ordered_dict_all.items():
         if template_file_name in subset_view_template_names:
-            materialized_view_ordered_dict.update(
-                {template_file_name: dataset_view_or_table_data})
+            materialized_view_ordered_dict.update({template_file_name: dataset_view_or_table_data})
     return materialized_view_ordered_dict
 
 
 def map_view_to_dataset_from_template_mapping_dict(
-        template_mapping_dict: OrderedDict):
+    template_mapping_dict: OrderedDict
+):
     return {
         view.get(VIEW_OR_TABLE_NAME_KEY): view.get(DATASET_NAME_KEY)
         for view in list(template_mapping_dict.values())
@@ -44,9 +44,9 @@ def map_view_to_dataset_from_template_mapping_dict(
 
 
 def extend_or_subset_mapped_view_subset(
-        views_ordered_dict_all,
-        view_names_for_subset_extend: List[str],
-        default_dataset: str,
+    views_ordered_dict_all,
+    view_names_for_subset_extend: List[str],
+    default_dataset: str,
 ):
     views_dict = OrderedDict()
     for view_name in view_names_for_subset_extend:
@@ -60,8 +60,10 @@ def extend_or_subset_mapped_view_subset(
     return views_dict
 
 
-def create_simple_view_mapping_from_view_list(dataset: str,
-                                              view_name_list: List[str]):
+def create_simple_view_mapping_from_view_list(
+    dataset: str,
+    view_name_list: List[str]
+):
     view_mapping = OrderedDict()
     for view_name in view_name_list:
         view_mapping.update({
@@ -73,20 +75,25 @@ def create_simple_view_mapping_from_view_list(dataset: str,
     return view_mapping
 
 
-def save_view_mapping(filename: str, view_mapping: OrderedDict,
-                      is_materialized_view: False):
+def save_view_mapping(
+    filename: str,
+    view_mapping: OrderedDict,
+    is_materialized_view: bool = False
+):
     LOGGER.info("saving view mapping list to %s", filename)
-    file_content_as_list = []
+    file_content_as_list: list = []
     for view_template_name, view_dict in view_mapping.items():
         if is_materialized_view:
             file_content_as_list.append(
-                view_template_name + "," + view_dict.get(DATASET_NAME_KEY) +
-                ".",
-                view_dict.get(VIEW_OR_TABLE_NAME_KEY),
+                view_template_name + "," +
+                view_dict.get(DATASET_NAME_KEY) + "." +
+                view_dict.get(VIEW_OR_TABLE_NAME_KEY)
             )
         else:
-            file_content_as_list.append(view_template_name + "," +
-                                        view_dict.get(DATASET_NAME_KEY))
+            file_content_as_list.append(
+                view_template_name + "," +
+                view_dict.get(DATASET_NAME_KEY)
+            )
 
     file_content = "\n".join(file_content_as_list) + "\n"
     return Path(filename).write_text(file_content, encoding='utf-8')
@@ -96,15 +103,18 @@ def get_referenced_table_names_for_query(view_query: str) -> List[str]:
     return re.findall(r"`(.*)`", view_query)
 
 
-def get_referenced_table_names_for_view_name(base_dir: str,
-                                             view_name: str) -> List[str]:
+def get_referenced_table_names_for_view_name(
+    base_dir: str | Path,
+    view_name: str
+) -> List[str]:
     return get_referenced_table_names_for_query(
         get_local_view_template(base_dir, view_name).view_template_content)
 
 
-def get_referenced_table_names_by_view_name_map(base_dir: str,
-                                                view_names: List[str]
-                                                ) -> Dict[str, List[str]]:
+def get_referenced_table_names_by_view_name_map(
+    base_dir: str | Path,
+    view_names: OrderedDict
+) -> Dict[str, List[str]]:
     return {
         view_name:
         get_referenced_table_names_for_view_name(base_dir, view_name)
@@ -119,15 +129,17 @@ def get_short_table_name(table_name: str) -> str:
 
 
 def get_resolved_short_table_name(
-        table_name: str,
-        view_by_materialized_view_name_map: Dict[str, str]) -> str:
+    table_name: str,
+    view_by_materialized_view_name_map: Dict[str, str]
+) -> str:
     short_table_name = get_short_table_name(table_name)
-    return view_by_materialized_view_name_map.get(short_table_name,
-                                                  short_table_name)
+    return view_by_materialized_view_name_map.get(short_table_name, short_table_name)
 
 
-def filter_map_values_in(unfiltered_map: Dict[str, List[str]],
-                         include_list: List[str]) -> Dict[str, List[str]]:
+def filter_map_values_in(
+    unfiltered_map: Dict[str, List[str]],
+    include_list: OrderedDict
+) -> Dict[str, List[str]]:
     return {
         k: [v for v in values if v in include_list]
         for k, values in unfiltered_map.items()
@@ -135,9 +147,9 @@ def filter_map_values_in(unfiltered_map: Dict[str, List[str]],
 
 
 def add_names_with_referenced_names_recursively(
-        result_name_list: List[str],
-        name_list: List[str],
-        referenced_names_by_name_map: Dict[str, List[str]],
+    result_name_list: List[str],
+    name_list: List[str],
+    referenced_names_by_name_map: Dict[str, List[str]],
 ) -> List[str]:
     for name in name_list:
         add_names_with_referenced_names_recursively(
@@ -151,9 +163,9 @@ def add_names_with_referenced_names_recursively(
 
 
 def determine_insert_order_for_view_names_and_referenced_tables(
-        view_mapping: OrderedDict,
-        referenced_table_names_by_view_name: Dict[str, List[str]],
-        materialized_views_ordered_dict: OrderedDict,
+    view_mapping: OrderedDict,
+    referenced_table_names_by_view_name: Dict[str, List[str]],
+    materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
     LOGGER.debug('referenced_table_names_by_view_name: %s', referenced_table_names_by_view_name)
     view_by_materialized_view_name_map = {
@@ -165,7 +177,9 @@ def determine_insert_order_for_view_names_and_referenced_tables(
         {
             view_name: [
                 get_resolved_short_table_name(
-                    referenced_table_name, view_by_materialized_view_name_map)
+                    referenced_table_name,
+                    view_by_materialized_view_name_map
+                )
                 for referenced_table_name in referenced_table_names
             ]
             for view_name, referenced_table_names in
@@ -174,10 +188,12 @@ def determine_insert_order_for_view_names_and_referenced_tables(
         view_mapping,
     )
     all_view_names = list(view_mapping.keys())
-    result_view_names = []
+    result_view_names: list = []
     result_view_names = add_names_with_referenced_names_recursively(
-        result_view_names, all_view_names,
-        short_referenced_table_names_by_view_name)
+        result_view_names,
+        all_view_names,
+        short_referenced_table_names_by_view_name
+    )
 
     view_insert_order_ordereddict = OrderedDict()
     for result_view_name in result_view_names:
@@ -187,35 +203,35 @@ def determine_insert_order_for_view_names_and_referenced_tables(
 
 
 def determine_view_insert_order(
-        base_dir: str,
-        view_names_ordered_dict: OrderedDict,
-        materialized_views_ordered_dict: OrderedDict,
+    base_dir: str | Path,
+    view_names_ordered_dict: OrderedDict,
+    materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
     return determine_insert_order_for_view_names_and_referenced_tables(
         view_names_ordered_dict,
-        get_referenced_table_names_by_view_name_map(base_dir,
-                                                    view_names_ordered_dict),
+        get_referenced_table_names_by_view_name_map(base_dir, view_names_ordered_dict),
         materialized_views_ordered_dict,
     )
 
 
 class ViewCondition:
     def __init__(
-            self,
-            if_condition: Dict[str, str],
-            materialize_as: str = None):
+        self,
+        if_condition: Dict[str, str],
+        materialize_as: Optional[str] = None
+    ):
         self.if_condition = if_condition
         self.materialize_as = materialize_as
 
     @staticmethod
     def from_value(value: dict) -> 'ViewCondition':
         return ViewCondition(
-            if_condition=value.get('if'),
+            if_condition=value['if'],
             materialize_as=value.get('materialize_as')
         )
 
-    def to_value(self) -> dict:
-        value = {}
+    def to_value(self) -> Dict[str, Union[str, Dict[str, str]]]:
+        value: Dict[str, Union[str, Dict[str, str]]] = {}
         if self.if_condition is not None:
             value['if'] = self.if_condition
         if self.materialize_as is not None:
@@ -248,11 +264,12 @@ class ViewCondition:
 
 class ViewConfig:
     def __init__(
-            self,
-            view_name: str,
-            materialize: bool = None,
-            materialize_as: str = None,
-            conditions: List[ViewCondition] = None):
+        self,
+        view_name: str,
+        materialize: Optional[bool] = None,
+        materialize_as: Optional[str] = None,
+        conditions: Optional[List[ViewCondition]] = None
+    ):
         self.view_name = view_name
         self.materialize = materialize
         self.materialize_as = materialize_as
@@ -276,7 +293,7 @@ class ViewConfig:
         raise ValueError(f'unrecognised view config: {repr(value)}')
 
     def to_value(self) -> Union[str, dict]:
-        view_args = {}
+        view_args: Dict[str, Union[str, bool, List[dict]]] = {}
         if self.materialize is not None:
             view_args['materialize'] = self.materialize
         if self.materialize_as is not None:
@@ -307,9 +324,7 @@ class ViewConfig:
         if self.materialize_as:
             return self.materialize_as
         if self.materialize:
-            return get_default_destination_table_name_for_view_name(
-                self.view_name
-            )
+            return get_default_destination_table_name_for_view_name(self.view_name)
         return None
 
     def apply_conditional_values(self, condition: ViewCondition) -> 'ViewConfig':
@@ -368,7 +383,7 @@ class ViewListConfig:
     def add_view(self, view: ViewConfig) -> 'ViewListConfig':
         return ViewListConfig(self.view_config_list + [view])
 
-    def sort_insert_order(self, base_dir: str) -> 'ViewListConfig':
+    def sort_insert_order(self, base_dir: str | Path) -> 'ViewListConfig':
         dummy_dataset = 'dummy_dataset'
         insert_order = determine_view_insert_order(
             base_dir,
@@ -414,7 +429,7 @@ class ViewListConfig:
         return result
 
 
-def load_view_list_config(path: str):
+def load_view_list_config(path: str | Path):
     view_list_obj = yaml.safe_load(Path(path).read_text(encoding='utf-8'))
     LOGGER.debug('view_list_obj: %s', view_list_obj)
     return ViewListConfig([
@@ -423,7 +438,7 @@ def load_view_list_config(path: str):
     ])
 
 
-def save_view_list_config(view_list_config: ViewListConfig, path: str):
+def save_view_list_config(view_list_config: ViewListConfig, path: str | Path):
     Path(path).write_text(yaml.safe_dump([
         view.to_value()
         for view in view_list_config

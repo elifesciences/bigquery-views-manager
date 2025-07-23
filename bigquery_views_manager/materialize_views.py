@@ -35,22 +35,23 @@ class MaterializeViewListResult:
         return bool(self.result_list)
 
 
-def get_select_all_from_query(view_name: str, project: str,
-                              dataset: str) -> str:
+def get_select_all_from_query(
+    view_name: str,
+    project: str,
+    dataset: str
+) -> str:
     return f"SELECT * FROM `{project}.{dataset}.{view_name}`"
 
 
 def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
-        client: bigquery.Client,
-        source_view_name: str,
-        destination_table_name: str,
-        project: str,
-        source_dataset: str,
-        destination_dataset: str,
+    client: bigquery.Client,
+    source_view_name: str,
+    destination_table_name: str,
+    project: str,
+    source_dataset: str,
+    destination_dataset: str,
 ) -> MaterializeViewResult:
-    query = get_select_all_from_query(source_view_name,
-                                      project=project,
-                                      dataset=source_dataset)
+    query = get_select_all_from_query(source_view_name, project=project, dataset=source_dataset)
     LOGGER.info(
         "materializing view: %s.%s -> %s.%s",
         source_dataset,
@@ -102,10 +103,10 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
 
 
 def materialize_views(
-        client: bigquery.Client,
-        materialized_view_dict: OrderedDict,
-        source_view_dict: OrderedDict,
-        project: str,
+    client: bigquery.Client,
+    materialized_view_dict: OrderedDict,
+    source_view_dict: OrderedDict,
+    project: str,
 ) -> MaterializeViewListResult:
     LOGGER.info("view_names: %s", materialized_view_dict)
     if not materialized_view_dict:
@@ -117,13 +118,10 @@ def materialize_views(
     for view_template_file_name, dataset_view_data in materialized_view_dict.items():
         result = materialize_view(
             client,
-            source_view_name=source_view_dict.get(view_template_file_name).get(
-                VIEW_OR_TABLE_NAME_KEY),
-            destination_table_name=dataset_view_data.get(
-                VIEW_OR_TABLE_NAME_KEY),
+            source_view_name=source_view_dict[view_template_file_name].get(VIEW_OR_TABLE_NAME_KEY),
+            destination_table_name=dataset_view_data.get(VIEW_OR_TABLE_NAME_KEY),
             project=project,
-            source_dataset=source_view_dict.get(view_template_file_name).get(
-                DATASET_NAME_KEY),
+            source_dataset=source_view_dict[view_template_file_name].get(DATASET_NAME_KEY),
             destination_dataset=dataset_view_data.get(DATASET_NAME_KEY),
         )
         result_list.append(result)

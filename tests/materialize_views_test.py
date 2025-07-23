@@ -55,14 +55,16 @@ class TestMaterializeView:
             destination_dataset=DESTINATION_DATASET_1,
         )
         bq_client.query.assert_called_with(
-            get_select_all_from_query(VIEW_1,
-                                      project=PROJECT_1,
-                                      dataset=SOURCE_DATASET_1),
+            get_select_all_from_query(VIEW_1, project=PROJECT_1, dataset=SOURCE_DATASET_1),
             job_config=QueryJobConfig.return_value,
         )
 
     def test_should_set_write_disposition_on_job_config(
-            self, bq_client, bigquery, QueryJobConfig):
+        self,
+        bq_client,
+        bigquery,
+        QueryJobConfig
+    ):
         materialize_view(
             bq_client,
             source_view_name=VIEW_1,
