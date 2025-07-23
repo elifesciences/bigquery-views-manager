@@ -44,7 +44,7 @@ class ViewTemplate:
         self.view_template_content = view_template_content
 
     @staticmethod
-    def from_file(filename: str) -> "ViewTemplate":
+    def from_file(filename: str | Path) -> "ViewTemplate":
         return ViewTemplate(Path(filename).read_text(encoding='utf-8'))
 
     @staticmethod
