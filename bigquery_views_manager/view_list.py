@@ -282,7 +282,7 @@ class ViewConfig:
         raise ValueError(f'unrecognised view config: {repr(value)}')
 
     def to_value(self) -> Union[str, dict]:
-        view_args = {}
+        view_args: Dict[str, Union[str, bool, List[dict]]] = {}
         if self.materialize is not None:
             view_args['materialize'] = self.materialize
         if self.materialize_as is not None:
