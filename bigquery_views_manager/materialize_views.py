@@ -117,12 +117,12 @@ def materialize_views(
     for view_template_file_name, dataset_view_data in materialized_view_dict.items():
         result = materialize_view(
             client,
-            source_view_name=source_view_dict.get(view_template_file_name).get(
+            source_view_name=source_view_dict[view_template_file_name].get(
                 VIEW_OR_TABLE_NAME_KEY),
             destination_table_name=dataset_view_data.get(
                 VIEW_OR_TABLE_NAME_KEY),
             project=project,
-            source_dataset=source_view_dict.get(view_template_file_name).get(
+            source_dataset=source_view_dict[view_template_file_name].get(
                 DATASET_NAME_KEY),
             destination_dataset=dataset_view_data.get(DATASET_NAME_KEY),
         )
