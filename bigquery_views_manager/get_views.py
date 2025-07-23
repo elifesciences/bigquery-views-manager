@@ -12,12 +12,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 def get_view(  # pylint: disable=too-many-arguments
-        client: bigquery.Client,
-        base_dir: str | Path,
-        view_name: str,
-        view_template_name: str,
-        project: str,
-        dataset: str,
+    client: bigquery.Client,
+    base_dir: str | Path,
+    view_name: str,
+    view_template_name: str,
+    project: str,
+    dataset: str,
 ):
     bq_view_query = get_bq_view_query(client, view_name, dataset=dataset)
 
@@ -30,16 +30,13 @@ def get_view(  # pylint: disable=too-many-arguments
 
 
 def get_views(
-        client: bigquery.Client,
-        base_dir: str | Path,
-        view_names_ordered_dict: OrderedDict,
-        project: str,
+    client: bigquery.Client,
+    base_dir: str | Path,
+    view_names_ordered_dict: OrderedDict,
+    project: str,
 ):
     LOGGER.debug("view_names: %s", view_names_ordered_dict)
-    for (
-            view_template_name,
-            dataset_table_or_view_data,
-    ) in view_names_ordered_dict.items():
+    for view_template_name, dataset_table_or_view_data in view_names_ordered_dict.items():
         get_view(
             client,
             base_dir,
