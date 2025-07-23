@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Set, Union
+from typing import Any, Dict, List, Set, Union
 from collections import OrderedDict
 
 import yaml
@@ -206,9 +206,10 @@ def determine_view_insert_order(
 
 class ViewCondition:
     def __init__(
-            self,
-            if_condition: Dict[str, str],
-            materialize_as: str = None):
+        self,
+        if_condition: Dict[str, str],
+        materialize_as: str = None
+    ):
         self.if_condition = if_condition
         self.materialize_as = materialize_as
 
@@ -219,8 +220,8 @@ class ViewCondition:
             materialize_as=value.get('materialize_as')
         )
 
-    def to_value(self) -> dict:
-        value = {}
+    def to_value(self) -> Dict[str, Union[str, Dict[str, str]]]:
+        value: Dict[str, Union[str, Dict[str, str]]] = {}
         if self.if_condition is not None:
             value['if'] = self.if_condition
         if self.materialize_as is not None:
