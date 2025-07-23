@@ -26,12 +26,11 @@ def get_mapped_materialized_view_subset(
 ):
     materialized_view_ordered_dict = OrderedDict()
     for (
-            template_file_name,
-            dataset_view_or_table_data,
+        template_file_name,
+        dataset_view_or_table_data
     ) in materialized_view_ordered_dict_all.items():
         if template_file_name in subset_view_template_names:
-            materialized_view_ordered_dict.update(
-                {template_file_name: dataset_view_or_table_data})
+            materialized_view_ordered_dict.update({template_file_name: dataset_view_or_table_data})
     return materialized_view_ordered_dict
 
 
@@ -130,11 +129,11 @@ def get_short_table_name(table_name: str) -> str:
 
 
 def get_resolved_short_table_name(
-        table_name: str,
-        view_by_materialized_view_name_map: Dict[str, str]) -> str:
+    table_name: str,
+    view_by_materialized_view_name_map: Dict[str, str]
+) -> str:
     short_table_name = get_short_table_name(table_name)
-    return view_by_materialized_view_name_map.get(short_table_name,
-                                                  short_table_name)
+    return view_by_materialized_view_name_map.get(short_table_name, short_table_name)
 
 
 def filter_map_values_in(
@@ -178,7 +177,9 @@ def determine_insert_order_for_view_names_and_referenced_tables(
         {
             view_name: [
                 get_resolved_short_table_name(
-                    referenced_table_name, view_by_materialized_view_name_map)
+                    referenced_table_name,
+                    view_by_materialized_view_name_map
+                )
                 for referenced_table_name in referenced_table_names
             ]
             for view_name, referenced_table_names in
@@ -189,8 +190,10 @@ def determine_insert_order_for_view_names_and_referenced_tables(
     all_view_names = list(view_mapping.keys())
     result_view_names: list = []
     result_view_names = add_names_with_referenced_names_recursively(
-        result_view_names, all_view_names,
-        short_referenced_table_names_by_view_name)
+        result_view_names,
+        all_view_names,
+        short_referenced_table_names_by_view_name
+    )
 
     view_insert_order_ordereddict = OrderedDict()
     for result_view_name in result_view_names:
@@ -261,11 +264,12 @@ class ViewCondition:
 
 class ViewConfig:
     def __init__(
-            self,
-            view_name: str,
-            materialize: Optional[bool] = None,
-            materialize_as: Optional[str] = None,
-            conditions: Optional[List[ViewCondition]] = None):
+        self,
+        view_name: str,
+        materialize: Optional[bool] = None,
+        materialize_as: Optional[str] = None,
+        conditions: Optional[List[ViewCondition]] = None
+    ):
         self.view_name = view_name
         self.materialize = materialize
         self.materialize_as = materialize_as
@@ -320,9 +324,7 @@ class ViewConfig:
         if self.materialize_as:
             return self.materialize_as
         if self.materialize:
-            return get_default_destination_table_name_for_view_name(
-                self.view_name
-            )
+            return get_default_destination_table_name_for_view_name(self.view_name)
         return None
 
     def apply_conditional_values(self, condition: ViewCondition) -> 'ViewConfig':
