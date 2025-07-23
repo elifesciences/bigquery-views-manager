@@ -33,11 +33,11 @@ def get_local_view_template(
 
 
 def get_local_view_query(
-        base_dir: str | Path,
-        view_template_file_name: str,
-        project: str,
-        default_dataset: str,
-        view_to_dataset_mapping: Dict[str, str],
+    base_dir: str | Path,
+    view_template_file_name: str,
+    project: str,
+    default_dataset: str,
+    view_to_dataset_mapping: Dict[str, str],
 ) -> str:
     view_template = get_local_view_template(base_dir, view_template_file_name)
     return view_template.substitute(
