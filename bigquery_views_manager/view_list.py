@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Set, Union
+from typing import Dict, List, Set, Union
 from collections import OrderedDict
 
 import yaml
@@ -21,8 +21,8 @@ def get_default_destination_table_name_for_view_name(view_name: str) -> str:
 
 
 def get_mapped_materialized_view_subset(
-        materialized_view_ordered_dict_all: OrderedDict,
-        subset_view_template_names: Set[str],
+    materialized_view_ordered_dict_all: OrderedDict,
+    subset_view_template_names: Set[str],
 ):
     materialized_view_ordered_dict = OrderedDict()
     for (
@@ -36,7 +36,8 @@ def get_mapped_materialized_view_subset(
 
 
 def map_view_to_dataset_from_template_mapping_dict(
-        template_mapping_dict: OrderedDict):
+    template_mapping_dict: OrderedDict
+):
     return {
         view.get(VIEW_OR_TABLE_NAME_KEY): view.get(DATASET_NAME_KEY)
         for view in list(template_mapping_dict.values())
@@ -44,9 +45,9 @@ def map_view_to_dataset_from_template_mapping_dict(
 
 
 def extend_or_subset_mapped_view_subset(
-        views_ordered_dict_all,
-        view_names_for_subset_extend: List[str],
-        default_dataset: str,
+    views_ordered_dict_all,
+    view_names_for_subset_extend: List[str],
+    default_dataset: str,
 ):
     views_dict = OrderedDict()
     for view_name in view_names_for_subset_extend:
@@ -60,8 +61,10 @@ def extend_or_subset_mapped_view_subset(
     return views_dict
 
 
-def create_simple_view_mapping_from_view_list(dataset: str,
-                                              view_name_list: List[str]):
+def create_simple_view_mapping_from_view_list(
+    dataset: str,
+    view_name_list: List[str]
+):
     view_mapping = OrderedDict()
     for view_name in view_name_list:
         view_mapping.update({
@@ -134,8 +137,10 @@ def get_resolved_short_table_name(
                                                   short_table_name)
 
 
-def filter_map_values_in(unfiltered_map: Dict[str, List[str]],
-                         include_list: List[str]) -> Dict[str, List[str]]:
+def filter_map_values_in(
+    unfiltered_map: Dict[str, List[str]],
+    include_list: List[str]
+) -> Dict[str, List[str]]:
     return {
         k: [v for v in values if v in include_list]
         for k, values in unfiltered_map.items()
@@ -143,9 +148,9 @@ def filter_map_values_in(unfiltered_map: Dict[str, List[str]],
 
 
 def add_names_with_referenced_names_recursively(
-        result_name_list: List[str],
-        name_list: List[str],
-        referenced_names_by_name_map: Dict[str, List[str]],
+    result_name_list: List[str],
+    name_list: List[str],
+    referenced_names_by_name_map: Dict[str, List[str]],
 ) -> List[str]:
     for name in name_list:
         add_names_with_referenced_names_recursively(
@@ -159,9 +164,9 @@ def add_names_with_referenced_names_recursively(
 
 
 def determine_insert_order_for_view_names_and_referenced_tables(
-        view_mapping: OrderedDict,
-        referenced_table_names_by_view_name: Dict[str, List[str]],
-        materialized_views_ordered_dict: OrderedDict,
+    view_mapping: OrderedDict,
+    referenced_table_names_by_view_name: Dict[str, List[str]],
+    materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
     LOGGER.debug('referenced_table_names_by_view_name: %s', referenced_table_names_by_view_name)
     view_by_materialized_view_name_map = {
@@ -195,9 +200,9 @@ def determine_insert_order_for_view_names_and_referenced_tables(
 
 
 def determine_view_insert_order(
-        base_dir: str | Path,
-        view_names_ordered_dict: List[str],
-        materialized_views_ordered_dict: OrderedDict,
+    base_dir: str | Path,
+    view_names_ordered_dict: List[str],
+    materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
     return determine_insert_order_for_view_names_and_referenced_tables(
         view_names_ordered_dict,
