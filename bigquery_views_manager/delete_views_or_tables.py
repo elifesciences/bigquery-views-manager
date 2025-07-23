@@ -19,7 +19,7 @@ def does_bigquery_table_exist(
     client: bigquery.Client,
     dataset_name: str,
     table_name: str
-):
+) -> bool:
     dataset_ref = client.dataset(dataset_name)
     table_ref = dataset_ref.table(table_name)
     try:
