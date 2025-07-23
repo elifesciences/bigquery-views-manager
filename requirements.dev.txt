@@ -4,3 +4,4 @@ pytest-watch==4.2.0
 pylint==3.3.7
 flake8==7.3.0
 twine==6.1.0
+types-PyYAML
