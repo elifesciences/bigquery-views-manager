@@ -20,19 +20,19 @@ def get_local_config_table_names(base_dir: str) -> List[str]:
     ]
 
 
-def get_config_table_file(base_dir: str, config_table_name: str) -> str:
+def get_config_table_file(base_dir: str, config_table_name: str) -> Path:
     return Path(base_dir).joinpath(CONFIG_TABLES_DIR).joinpath(
         f"{config_table_name}.csv"
     )
 
 
-def get_config_table_schema_file(base_dir: str, config_table_name: str) -> str:
+def get_config_table_schema_file(base_dir: str | Path, config_table_name: str) -> Path:
     return Path(base_dir).joinpath(CONFIG_TABLES_SCHEMA_DIR).joinpath(
         f"{config_table_name}_schema.json"
     )
 
 
-def get_table_schema(source_schema_file: str) -> List:
+def get_table_schema(source_schema_file: str | Path) -> List:
     with open(source_schema_file, encoding='utf-8') as json_file:
         data = json.load(json_file)
         schema = [SchemaField.from_api_repr(json_field) for json_field in data]
@@ -42,9 +42,9 @@ def get_table_schema(source_schema_file: str) -> List:
 def update_or_create_table_from_csv(
         client: bigquery.Client,
         table_name: str,
-        source_file: str,
+        source_file: str | Path,
         dataset: str,
-        source_schema_file: str,
+        source_schema_file: str | Path,
 ):
     LOGGER.debug("update_or_create_table_from_csv: %s=%s", table_name,
                  [source_file])
