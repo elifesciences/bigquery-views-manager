@@ -1,5 +1,6 @@
 import logging
 from collections import OrderedDict
+from pathlib import Path
 
 from google.cloud import bigquery
 
@@ -35,7 +36,7 @@ def update_or_create_view(client: bigquery.Client, view_name: str,
 
 def update_or_create_views(  # pylint: disable=too-many-arguments
         client: bigquery.Client,
-        base_dir: str,
+        base_dir: str | Path,
         view_names_dict: OrderedDict,
         materialized_view_names: OrderedDict,
         project: str,
