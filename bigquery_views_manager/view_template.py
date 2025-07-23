@@ -65,8 +65,8 @@ class ViewTemplate:
     def __str__(self):
         return self.view_template_content
 
-    def to_file(self, filename: str):
-        return Path(filename).write_text(self.view_template_content, encoding='utf-8')
+    def to_file(self, filename: str | Path):
+        Path(filename).write_text(self.view_template_content, encoding='utf-8')
 
     def substitute(self, project: str, default_dataset: str,
                    view_to_dataset_mapping: dict) -> str:
