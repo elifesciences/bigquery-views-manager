@@ -187,7 +187,7 @@ def determine_insert_order_for_view_names_and_referenced_tables(
         view_mapping,
     )
     all_view_names = list(view_mapping.keys())
-    result_view_names = []
+    result_view_names: list = []
     result_view_names = add_names_with_referenced_names_recursively(
         result_view_names, all_view_names,
         short_referenced_table_names_by_view_name)
