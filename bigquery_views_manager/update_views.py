@@ -63,10 +63,12 @@ def update_or_create_views(  # pylint: disable=too-many-arguments
             materialize_view(
                 client,
                 source_view_name=view_name,
-                destination_table_name=materialized_view_names.get(
-                    view_template_file_name).get(VIEW_OR_TABLE_NAME_KEY),
+                destination_table_name=materialized_view_names[
+                    view_template_file_name
+                ].get(VIEW_OR_TABLE_NAME_KEY),
                 project=project,
-                destination_dataset=materialized_view_names.get(
-                    view_template_file_name).get(DATASET_NAME_KEY),
+                destination_dataset=materialized_view_names[
+                    view_template_file_name
+                ].get(DATASET_NAME_KEY),
                 source_dataset=dataset_name,
             )
