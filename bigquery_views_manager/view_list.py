@@ -73,8 +73,11 @@ def create_simple_view_mapping_from_view_list(dataset: str,
     return view_mapping
 
 
-def save_view_mapping(filename: str, view_mapping: OrderedDict,
-                      is_materialized_view: False):
+def save_view_mapping(
+    filename: str,
+    view_mapping: OrderedDict,
+    is_materialized_view: False
+):
     LOGGER.info("saving view mapping list to %s", filename)
     file_content_as_list = []
     for view_template_name, view_dict in view_mapping.items():
@@ -96,15 +99,18 @@ def get_referenced_table_names_for_query(view_query: str) -> List[str]:
     return re.findall(r"`(.*)`", view_query)
 
 
-def get_referenced_table_names_for_view_name(base_dir: str | Path,
-                                             view_name: str) -> List[str]:
+def get_referenced_table_names_for_view_name(
+    base_dir: str | Path,
+    view_name: str
+) -> List[str]:
     return get_referenced_table_names_for_query(
         get_local_view_template(base_dir, view_name).view_template_content)
 
 
-def get_referenced_table_names_by_view_name_map(base_dir: str | Path,
-                                                view_names: List[str]
-                                                ) -> Dict[str, List[str]]:
+def get_referenced_table_names_by_view_name_map(
+    base_dir: str | Path,
+    view_names: List[str]
+) -> Dict[str, List[str]]:
     return {
         view_name:
         get_referenced_table_names_for_view_name(base_dir, view_name)
@@ -188,13 +194,12 @@ def determine_insert_order_for_view_names_and_referenced_tables(
 
 def determine_view_insert_order(
         base_dir: str | Path,
-        view_names_ordered_dict: OrderedDict,
+        view_names_ordered_dict: List[str],
         materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
     return determine_insert_order_for_view_names_and_referenced_tables(
         view_names_ordered_dict,
-        get_referenced_table_names_by_view_name_map(base_dir,
-                                                    view_names_ordered_dict),
+        get_referenced_table_names_by_view_name_map(base_dir, view_names_ordered_dict),
         materialized_views_ordered_dict,
     )
 
