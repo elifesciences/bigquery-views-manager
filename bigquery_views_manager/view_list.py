@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Optional, Set, Union
 from collections import OrderedDict
 
 import yaml
@@ -201,7 +201,7 @@ def determine_insert_order_for_view_names_and_referenced_tables(
 
 def determine_view_insert_order(
     base_dir: str | Path,
-    view_names_ordered_dict: List[str],
+    view_names_ordered_dict: OrderedDict,
     materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
     return determine_insert_order_for_view_names_and_referenced_tables(
@@ -215,7 +215,7 @@ class ViewCondition:
     def __init__(
         self,
         if_condition: Dict[str, str],
-        materialize_as: str = None
+        materialize_as: Optional[str] = None
     ):
         self.if_condition = if_condition
         self.materialize_as = materialize_as
@@ -223,7 +223,7 @@ class ViewCondition:
     @staticmethod
     def from_value(value: dict) -> 'ViewCondition':
         return ViewCondition(
-            if_condition=value.get('if'),
+            if_condition=value['if'],
             materialize_as=value.get('materialize_as')
         )
 
@@ -263,9 +263,9 @@ class ViewConfig:
     def __init__(
             self,
             view_name: str,
-            materialize: bool = None,
-            materialize_as: str = None,
-            conditions: List[ViewCondition] = None):
+            materialize: Optional[bool] = None,
+            materialize_as: Optional[str] = None,
+            conditions: Optional[List[ViewCondition]] = None):
         self.view_name = view_name
         self.materialize = materialize
         self.materialize_as = materialize_as
