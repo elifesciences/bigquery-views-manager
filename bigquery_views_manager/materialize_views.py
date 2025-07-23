@@ -8,6 +8,8 @@ from typing import Optional, Sequence
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
+
 from .view_list import VIEW_OR_TABLE_NAME_KEY, DATASET_NAME_KEY
 
 LOGGER = logging.getLogger(__name__)
@@ -103,7 +105,7 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
 
 def materialize_views(
         client: bigquery.Client,
-        materialized_view_dict: OrderedDict,
+        materialized_view_dict: OrderedDict[str, DatasetViewDataTypedDict],
         source_view_dict: OrderedDict,
         project: str,
 ) -> MaterializeViewListResult:
