@@ -83,11 +83,15 @@ def save_view_mapping(
     for view_template_name, view_dict in view_mapping.items():
         if is_materialized_view:
             file_content_as_list.append(
-                view_template_name + "," + view_dict.get(DATASET_NAME_KEY) + ".",
-                view_dict.get(VIEW_OR_TABLE_NAME_KEY),
+                view_template_name + "," +
+                view_dict.get(DATASET_NAME_KEY) + "." +
+                view_dict.get(VIEW_OR_TABLE_NAME_KEY)
             )
         else:
-            file_content_as_list.append(view_template_name + "," + view_dict.get(DATASET_NAME_KEY))
+            file_content_as_list.append(
+                view_template_name + "," +
+                view_dict.get(DATASET_NAME_KEY)
+            )
 
     file_content = "\n".join(file_content_as_list) + "\n"
     return Path(filename).write_text(file_content, encoding='utf-8')
