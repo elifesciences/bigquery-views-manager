@@ -11,9 +11,7 @@ from bigquery_views_manager.view_list import (
 )
 
 import bigquery_views_manager.cli as target_module
-from bigquery_views_manager.cli import (
-    main
-)
+from bigquery_views_manager.cli import main
 
 
 VIEW_1 = "view1,dataset1"
@@ -71,13 +69,12 @@ def get_ordered_dict_view_mapping():
 
 class TestCreateOrReplaceViewsSubCommand:
     def test_should_create_simple_view(
-            self,
-            temp_dir: Path,
-            update_or_create_views_mock: MagicMock):
+        self,
+        temp_dir: Path,
+        update_or_create_views_mock: MagicMock
+    ):
         view_config_path = temp_dir / 'views.yml'
-        view_config_path.write_text('\n'.join([
-            '- view1'
-        ]))
+        view_config_path.write_text('\n'.join(['- view1']))
         main([
             'create-or-replace-views',
             '--dataset=dataset1',
@@ -88,13 +85,12 @@ class TestCreateOrReplaceViewsSubCommand:
 
 class TestDeleteViewsSubCommand:
     def test_should_create_simple_view(
-            self,
-            temp_dir: Path,
-            delete_views_or_tables_mock: MagicMock):
+        self,
+        temp_dir: Path,
+        delete_views_or_tables_mock: MagicMock
+    ):
         view_config_path = temp_dir / 'views.yml'
-        view_config_path.write_text('\n'.join([
-            '- view1'
-        ]))
+        view_config_path.write_text('\n'.join(['- view1']))
         main([
             'delete-views',
             '--dataset=dataset1',
@@ -105,14 +101,12 @@ class TestDeleteViewsSubCommand:
 
 class TestMaterializeViewsSubCommand:
     def test_should_materialize_simple_view(
-            self,
-            temp_dir: Path,
-            materialize_views_mock: MagicMock):
+        self,
+        temp_dir: Path,
+        materialize_views_mock: MagicMock
+    ):
         view_config_path = temp_dir / 'views.yml'
-        view_config_path.write_text('\n'.join([
-            '- view1:',
-            '    materialize: true'
-        ]))
+        view_config_path.write_text('\n'.join(['- view1:', '    materialize: true']))
         main([
             'materialize-views',
             '--dataset=dataset1',
@@ -123,14 +117,12 @@ class TestMaterializeViewsSubCommand:
 
 class TestDeleteMaterializedTablesSubCommand:
     def test_should_delete_materialized_tables(
-            self,
-            temp_dir: Path,
-            delete_views_or_tables_mock: MagicMock):
+        self,
+        temp_dir: Path,
+        delete_views_or_tables_mock: MagicMock
+    ):
         view_config_path = temp_dir / 'views.yml'
-        view_config_path.write_text('\n'.join([
-            '- view1:',
-            '    materialize: true'
-        ]))
+        view_config_path.write_text('\n'.join(['- view1:', '    materialize: true']))
         main([
             'delete-materialized-tables',
             '--dataset=dataset1',
@@ -141,14 +133,12 @@ class TestDeleteMaterializedTablesSubCommand:
 
 class TestDiffViewsSubCommand:
     def test_should_call_diff_views(
-            self,
-            temp_dir: Path,
-            diff_views_mock: MagicMock):
+        self,
+        temp_dir: Path,
+        diff_views_mock: MagicMock
+    ):
         view_config_path = temp_dir / 'views.yml'
-        view_config_path.write_text('\n'.join([
-            '- view1:',
-            '    materialize: true'
-        ]))
+        view_config_path.write_text('\n'.join(['- view1:', '    materialize: true']))
         main([
             'diff-views',
             '--dataset=dataset1',
@@ -159,14 +149,12 @@ class TestDiffViewsSubCommand:
 
 class TestGetViewsSubCommand:
     def test_should_call_get_views(
-            self,
-            temp_dir: Path,
-            get_views_mock: MagicMock):
+        self,
+        temp_dir: Path,
+        get_views_mock: MagicMock
+    ):
         view_config_path = temp_dir / 'views.yml'
-        view_config_path.write_text('\n'.join([
-            '- view1:',
-            '    materialize: true'
-        ]))
+        view_config_path.write_text('\n'.join(['- view1:', '    materialize: true']))
         main([
             'get-views',
             '--dataset=dataset1',
@@ -177,20 +165,17 @@ class TestGetViewsSubCommand:
 
 class TestSortViewListSubCommand:
     def test_should_sort_view_list(
-            self,
-            temp_dir: Path):
+        self,
+        temp_dir: Path
+    ):
         view_config_path = temp_dir / 'views.yml'
         view_config_path.write_text('\n'.join([
             '- view1',
             '- view2:',
             '    materialize: true'
         ]))
-        (temp_dir / 'view1.sql').write_text(
-            'SELECT * FROM `{project}.{dataset}.mview2`'
-        )
-        (temp_dir / 'view2.sql').write_text(
-            'SELECT 1'
-        )
+        (temp_dir / 'view1.sql').write_text('SELECT * FROM `{project}.{dataset}.mview2`')
+        (temp_dir / 'view2.sql').write_text('SELECT 1')
         main([
             'sort-view-list',
             '--dataset=dataset1',
