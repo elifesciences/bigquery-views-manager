@@ -139,7 +139,7 @@ def get_resolved_short_table_name(
 
 def filter_map_values_in(
     unfiltered_map: Dict[str, List[str]],
-    include_list: List[str]
+    include_list: OrderedDict
 ) -> Dict[str, List[str]]:
     return {
         k: [v for v in values if v in include_list]
