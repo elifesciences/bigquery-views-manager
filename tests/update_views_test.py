@@ -82,7 +82,7 @@ class TestUpdateOrCreateView:
 
 class TestUpdateOrCreateViews:
     def test_should_materialize_view_if_in_materialized_view_names(
-        self, 
+        self,
         bq_client,
         materialize_view
     ):
