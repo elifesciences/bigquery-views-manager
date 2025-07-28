@@ -18,9 +18,7 @@ from bigquery_views_manager.view_list import (
     save_view_list_config
 )
 
-
 LOGGER = logging.getLogger(__name__)
-
 
 VIEW_1 = "view1"
 VIEW_2 = "view2"
@@ -32,7 +30,8 @@ DATASET_1 = "dataset"
 
 
 def get_input_ordered_dict_view_mapping(
-        view_dataset_mapping: List[Tuple[str, str, str]]):
+    view_dataset_mapping: List[Tuple[str, str, str]]
+):
     view_mapping = OrderedDict()
     for dataset, view_template_name, db_view_name in view_dataset_mapping:
         view_mapping[view_template_name] = {
@@ -43,8 +42,8 @@ def get_input_ordered_dict_view_mapping(
 
 
 def get_referenced_table_in_template(
-        ref_table_as_simple_list: List[Tuple[str, List[str]]],
-        compose_full_table_name_with_placeholder: bool,
+    ref_table_as_simple_list: List[Tuple[str, List[str]]],
+    compose_full_table_name_with_placeholder: bool,
 ):
     ref_table = OrderedDict()
     for view_template_name, ref_table_list in ref_table_as_simple_list:

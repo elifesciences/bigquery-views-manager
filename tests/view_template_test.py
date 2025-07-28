@@ -40,8 +40,7 @@ class TestViewTemplate:
     def test_should_load_template_from_file(self, tmpdir):
         filename = tmpdir.join("view1.sql")
         filename.write(TEMPLATE_1)
-        assert ViewTemplate.from_file(
-            filename).view_template_content == TEMPLATE_1
+        assert ViewTemplate.from_file(filename).view_template_content == TEMPLATE_1
 
     def test_should_load_template_from_query_with_matching_project(self):
         assert ViewTemplate.from_query(

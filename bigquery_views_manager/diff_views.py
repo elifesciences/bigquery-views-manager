@@ -1,12 +1,13 @@
 import logging
 from difflib import context_diff
+from pathlib import Path
 from typing import List, Set, Iterable
 from collections import OrderedDict
 import re
 
 from google.cloud import bigquery
 
-import crayons
+import crayons  # type: ignore
 
 from .update_views import get_local_view_query
 from .views import get_bq_view_query, get_bq_view_names
@@ -19,11 +20,11 @@ NONE_TEXT = "NONE"
 
 class ChangedView:
     def __init__(
-            self,
-            dataset_name: str,
-            view_name: str,
-            local_view_query: str,
-            remote_view_query: str,
+        self,
+        dataset_name: str,
+        view_name: str,
+        local_view_query: str,
+        remote_view_query: str,
     ):
         self.dataset_name = dataset_name
         self.view_name = view_name
@@ -33,11 +34,11 @@ class ChangedView:
 
 class ViewDiffResult:
     def __init__(
-            self,
-            remote_only_view_names: Set[str],
-            local_only_view_names: Set[str],
-            unchanged_view_names: Set[str],
-            changed_views: List[ChangedView],
+        self,
+        remote_only_view_names: Set[str],
+        local_only_view_names: Set[str],
+        unchanged_view_names: Set[str],
+        changed_views: List[ChangedView],
     ):
         self.remote_only_view_names = remote_only_view_names
         self.local_only_view_names = local_only_view_names
@@ -50,31 +51,30 @@ class ViewDiffResult:
 
 
 def get_dataset_to_table_dict(view_names: dict):
-    dataset_to_table_dict = {}
+    dataset_to_table_dict: dict = {}
     for _, value in view_names.items():
         dataset_name = value.get(DATASET_NAME_KEY)
-        dataset_to_table_dict[dataset_name] = dataset_to_table_dict.get(
-            dataset_name, [])
-        dataset_to_table_dict[dataset_name].append(
-            value.get(VIEW_OR_TABLE_NAME_KEY))
+        dataset_to_table_dict[dataset_name] = dataset_to_table_dict.get(dataset_name, [])
+        dataset_to_table_dict[dataset_name].append(value.get(VIEW_OR_TABLE_NAME_KEY))
     return dataset_to_table_dict
 
 
 def get_view_to_view_file(view_names: dict):
     view_to_view_file = {}
     for k, value in view_names.items():
-        view_to_view_file[value.get(DATASET_NAME_KEY) + "." +
-                          value.get(VIEW_OR_TABLE_NAME_KEY)] = k
+        view_to_view_file[
+            value.get(DATASET_NAME_KEY) + "." + value.get(VIEW_OR_TABLE_NAME_KEY)
+        ] = k
     return view_to_view_file
 
 
 def get_diff_result(  # pylint: disable=too-many-arguments,too-many-locals
-        client: bigquery.Client,
-        base_dir: str,
-        view_names_dict: OrderedDict,
-        project: str,
-        default_dataset: str,
-        view_to_dataset_mapping: dict,
+    client: bigquery.Client,
+    base_dir: str | Path,
+    view_names_dict: OrderedDict,
+    project: str,
+    default_dataset: str,
+    view_to_dataset_mapping: dict,
 ):
     dataset_to_table_list = get_dataset_to_table_dict(view_names_dict)
     view_to_view_file = get_view_to_view_file(view_names_dict)
@@ -184,12 +184,12 @@ def format_diff_result(diff_result: ViewDiffResult) -> str:
 
 
 def diff_views(  # pylint: disable=too-many-arguments
-        client: bigquery.Client,
-        base_dir: str,
-        view_names_dict: OrderedDict,
-        project: str,
-        default_dataset: str,
-        view_to_dataset_mapping: dict,
+    client: bigquery.Client,
+    base_dir: str | Path,
+    view_names_dict: OrderedDict,
+    project: str,
+    default_dataset: str,
+    view_to_dataset_mapping: dict,
 ):
     LOGGER.debug("view_names: %s", view_names_dict)
     diff_result = get_diff_result(

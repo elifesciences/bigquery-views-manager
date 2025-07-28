@@ -20,23 +20,24 @@ def get_bq_view_query(client: bigquery.Client, view_name: str, dataset: str):
     return view.view_query
 
 
-def get_view_template_file(base_dir: str, view_file_name: str) -> str:
+def get_view_template_file(base_dir: str | Path, view_file_name: str) -> Path:
     return Path(base_dir).joinpath(f"{view_file_name}.sql")
 
 
-def get_local_view_template(base_dir: str,
-                            view_template_file_name: str) -> ViewTemplate:
-    view_template_file = get_view_template_file(base_dir,
-                                                view_template_file_name)
+def get_local_view_template(
+    base_dir: str | Path,
+    view_template_file_name: str
+) -> ViewTemplate:
+    view_template_file = get_view_template_file(base_dir, view_template_file_name)
     return ViewTemplate.from_file(view_template_file)
 
 
 def get_local_view_query(
-        base_dir: str,
-        view_template_file_name: str,
-        project: str,
-        default_dataset: str,
-        view_to_dataset_mapping: Dict[str, str],
+    base_dir: str | Path,
+    view_template_file_name: str,
+    project: str,
+    default_dataset: str,
+    view_to_dataset_mapping: Dict[str, str],
 ) -> str:
     view_template = get_local_view_template(base_dir, view_template_file_name)
     return view_template.substitute(

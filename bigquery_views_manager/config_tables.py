@@ -20,19 +20,19 @@ def get_local_config_table_names(base_dir: str) -> List[str]:
     ]
 
 
-def get_config_table_file(base_dir: str, config_table_name: str) -> str:
+def get_config_table_file(base_dir: str, config_table_name: str) -> Path:
     return Path(base_dir).joinpath(CONFIG_TABLES_DIR).joinpath(
         f"{config_table_name}.csv"
     )
 
 
-def get_config_table_schema_file(base_dir: str, config_table_name: str) -> str:
+def get_config_table_schema_file(base_dir: str | Path, config_table_name: str) -> Path:
     return Path(base_dir).joinpath(CONFIG_TABLES_SCHEMA_DIR).joinpath(
         f"{config_table_name}_schema.json"
     )
 
 
-def get_table_schema(source_schema_file: str) -> List:
+def get_table_schema(source_schema_file: str | Path) -> List:
     with open(source_schema_file, encoding='utf-8') as json_file:
         data = json.load(json_file)
         schema = [SchemaField.from_api_repr(json_field) for json_field in data]
@@ -40,14 +40,13 @@ def get_table_schema(source_schema_file: str) -> List:
 
 
 def update_or_create_table_from_csv(
-        client: bigquery.Client,
-        table_name: str,
-        source_file: str,
-        dataset: str,
-        source_schema_file: str,
+    client: bigquery.Client,
+    table_name: str,
+    source_file: str | Path,
+    dataset: str,
+    source_schema_file: str | Path,
 ):
-    LOGGER.debug("update_or_create_table_from_csv: %s=%s", table_name,
-                 [source_file])
+    LOGGER.debug("update_or_create_table_from_csv: %s=%s", table_name, [source_file])
     dataset_ref = client.dataset(dataset)
     table_ref = dataset_ref.table(table_name)
 
@@ -61,9 +60,11 @@ def update_or_create_table_from_csv(
     job_config.write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE
 
     with open(source_file, "rb") as source_fp:
-        load_job = client.load_table_from_file(source_fp,
-                                               destination=table_ref,
-                                               job_config=job_config)
+        load_job = client.load_table_from_file(
+            source_fp,
+            destination=table_ref,
+            job_config=job_config
+        )
 
     # wait for job to complete
     load_job.result()
@@ -71,9 +72,12 @@ def update_or_create_table_from_csv(
     LOGGER.info("updated config table: %s", table_ref.table_id)
 
 
-def update_or_create_config_tables(client: bigquery.Client, base_dir: str,
-                                   config_table_names: List[str],
-                                   dataset: str):
+def update_or_create_config_tables(
+        client: bigquery.Client,
+        base_dir: str,
+        config_table_names: List[str],
+        dataset: str
+):
     LOGGER.info("config_table_names: %s", config_table_names)
     for config_table_name in config_table_names:
         update_or_create_table_from_csv(

@@ -63,7 +63,11 @@ dev-pylint:
 	$(PYTHON) -m pylint bigquery_views_manager tests
 
 
-dev-lint: dev-flake8 dev-pylint
+dev-mypy:
+	$(PYTHON) -m mypy bigquery_views_manager tests
+
+
+dev-lint: dev-flake8 dev-pylint dev-mypy
 
 
 dev-pytest:
@@ -158,7 +162,11 @@ pylint:
 	$(RUN_DEV) pylint bigquery_views_manager tests
 
 
-lint: flake8 pylint
+mypy:
+	$(RUN_DEV) mypy bigquery_views_manager tests
+
+
+lint: flake8 pylint mypy
 
 
 pytest:

@@ -48,7 +48,11 @@ def _get_table_schema():
 # pylint: disable=invalid-name
 class TestUpdateOrCreateTableFromCsv:
     def test_should_call_load_table_from_file(
-            self, bq_client, LoadJobConfig, open_mock, get_table_schema_mock
+        self,
+        bq_client,
+        LoadJobConfig,
+        open_mock,
+        get_table_schema_mock
     ):
         update_or_create_table_from_csv(
             bq_client,
@@ -65,11 +69,16 @@ class TestUpdateOrCreateTableFromCsv:
 
         table_ref = bq_client.dataset(DATASET_1).table(TABLE_1)
         bq_client.load_table_from_file.assert_called_with(
-            source_fp, destination=table_ref, job_config=LoadJobConfig.return_value
+            source_fp,
+            destination=table_ref,
+            job_config=LoadJobConfig.return_value
         )
 
     def test_should_set_write_disposition_on_job_config(
-            self, bq_client, bigquery, LoadJobConfig
+        self,
+        bq_client,
+        bigquery,
+        LoadJobConfig
     ):
         update_or_create_table_from_csv(
             bq_client,
@@ -84,7 +93,10 @@ class TestUpdateOrCreateTableFromCsv:
         )
 
     def test_should_set_schema_on_job_config(
-            self, bq_client, LoadJobConfig, get_table_schema_mock
+        self,
+        bq_client,
+        LoadJobConfig,
+        get_table_schema_mock
     ):
         update_or_create_table_from_csv(
             bq_client,
