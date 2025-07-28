@@ -129,14 +129,6 @@ def highlight(value, is_good):
     return crayons.green(value) if is_good else crayons.red(value)
 
 
-def format_diff_line(line):
-    if line.startswith("!"):
-        return crayons.red(line)
-    if line.startswith("***") or line.startswith("---"):
-        return crayons.white(line, bold=True)
-    return line
-
-
 def format_changed_view_diffs(changed_view: ChangedView) -> str:
     return "\n".join([
         str(crayons.red(line)) if line.startswith("!") else line
