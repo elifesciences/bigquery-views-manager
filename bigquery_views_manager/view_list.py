@@ -93,7 +93,7 @@ def get_referenced_table_names_for_view_name(
 
 def get_referenced_table_names_by_view_name_map(
     base_dir: str | Path,
-    view_names: OrderedDict
+    view_names: OrderedDict[str, DatasetViewDataTypedDict]
 ) -> Dict[str, List[str]]:
     return {
         view_name:
