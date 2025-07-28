@@ -8,13 +8,6 @@ from .view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 LOGGER = logging.getLogger(__name__)
 
 
-def _get_existing_table_names(client: bigquery.Client, dataset: str):
-    return [
-        table_item.table_id
-        for table_item in client.list_tables(dataset=dataset)
-    ]
-
-
 def does_bigquery_table_exist(
     client: bigquery.Client,
     dataset_name: str,
