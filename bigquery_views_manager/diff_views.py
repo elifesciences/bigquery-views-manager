@@ -9,6 +9,8 @@ from google.cloud import bigquery
 
 import crayons  # type: ignore
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
+
 from .update_views import get_local_view_query
 from .views import get_bq_view_query, get_bq_view_names
 from .view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
@@ -71,7 +73,7 @@ def get_view_to_view_file(view_names: dict):
 def get_diff_result(  # pylint: disable=too-many-arguments,too-many-locals
     client: bigquery.Client,
     base_dir: str | Path,
-    view_names_dict: OrderedDict,
+    view_names_dict: OrderedDict[str, DatasetViewDataTypedDict],
     project: str,
     default_dataset: str,
     view_to_dataset_mapping: dict,
@@ -80,7 +82,7 @@ def get_diff_result(  # pylint: disable=too-many-arguments,too-many-locals
     view_to_view_file = get_view_to_view_file(view_names_dict)
     unchanged_view_names = set()
     local_view_names = [
-        value.get(DATASET_NAME_KEY) + "." + value.get(VIEW_OR_TABLE_NAME_KEY)
+        value['dataset_name'] + "." + value['table_name']
         for k, value in view_names_dict.items()
     ]
     remote_view_names = []
