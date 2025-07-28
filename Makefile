@@ -67,7 +67,11 @@ dev-mypy:
 	$(PYTHON) -m mypy bigquery_views_manager tests
 
 
-dev-lint: dev-flake8 dev-pylint dev-mypy
+dev-deadcode:
+	$(PYTHON) -m deadcode.cli bigquery_views_manager
+
+
+dev-lint: dev-flake8 dev-pylint dev-mypy dev-deadcode
 
 
 dev-pytest:

@@ -1,3 +1,4 @@
+deadcode==2.4.1
 mypy==1.17.0
 pytest==8.4.1
 pytest-watch==4.2.0
