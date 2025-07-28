@@ -180,7 +180,7 @@ def format_diff_result(diff_result: ViewDiffResult) -> str:
 def diff_views(  # pylint: disable=too-many-arguments
     client: bigquery.Client,
     base_dir: str | Path,
-    view_names_dict: OrderedDict,
+    view_names_dict: OrderedDict[str, DatasetViewDataTypedDict],
     project: str,
     default_dataset: str,
     view_to_dataset_mapping: dict,
