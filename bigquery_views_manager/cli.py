@@ -32,8 +32,6 @@ from . import configure_warnings  # noqa pylint: disable=unused-import
 LOGGER = logging.getLogger(__name__)
 
 DEFAULT_VIEW_LIST_CONFIG_FILE = "views/views.yml"
-DEFAULT_VIEW_LIST_FILE = "views/views.lst"
-DEFAULT_MATERIALIZED_VIEW_LIST_FILE = "views/materialized-views.lst"
 
 DEFAULT_CONFIG_TABLES_BASE_DIR = "config-tables"
 
