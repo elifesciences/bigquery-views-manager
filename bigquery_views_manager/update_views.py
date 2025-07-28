@@ -4,6 +4,8 @@ from pathlib import Path
 
 from google.cloud import bigquery
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
+
 from .views import get_local_view_query
 from .materialize_views import materialize_view
 from .view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
@@ -38,7 +40,7 @@ def update_or_create_view(
 def update_or_create_views(  # pylint: disable=too-many-arguments
     client: bigquery.Client,
     base_dir: str | Path,
-    view_names_dict: OrderedDict,
+    view_names_dict: OrderedDict[str, DatasetViewDataTypedDict],
     materialized_view_names: OrderedDict,
     project: str,
     default_dataset: str,
@@ -53,8 +55,8 @@ def update_or_create_views(  # pylint: disable=too-many-arguments
             default_dataset=default_dataset,
             view_to_dataset_mapping=view_to_dataset_mapping,
         )
-        view_name = dataset_view_data.get(VIEW_OR_TABLE_NAME_KEY)
-        dataset_name = dataset_view_data.get(DATASET_NAME_KEY)
+        view_name = dataset_view_data["table_name"]
+        dataset_name = dataset_view_data["dataset_name"]
         update_or_create_view(client, view_name, view_query, dataset_name)
         if view_template_file_name in materialized_view_names.keys():
             materialize_view(
