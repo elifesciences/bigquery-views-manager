@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, TypeVar, Union
 from collections import OrderedDict
 
 import yaml
@@ -10,6 +10,8 @@ from .views import get_local_view_template
 
 
 LOGGER = logging.getLogger(__name__)
+
+T = TypeVar('T')
 
 TEMPLATE_TABLE_PREFIX = "{project}.{dataset}."
 DATASET_NAME_KEY = "dataset_name"
@@ -21,10 +23,10 @@ def get_default_destination_table_name_for_view_name(view_name: str) -> str:
 
 
 def get_mapped_materialized_view_subset(
-    materialized_view_ordered_dict_all: OrderedDict,
+    materialized_view_ordered_dict_all: OrderedDict[str, T],
     subset_view_template_names: Set[str],
-):
-    materialized_view_ordered_dict = OrderedDict()
+) -> OrderedDict[str, T]:
+    materialized_view_ordered_dict = OrderedDict[str, T]()
     for (
         template_file_name,
         dataset_view_or_table_data
