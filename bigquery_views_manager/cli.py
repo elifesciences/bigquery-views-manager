@@ -47,15 +47,6 @@ def add_view_list_config_file_argument(parser: argparse.ArgumentParser):
     )
 
 
-def add_materialized_view_list_file_argument(parser: argparse.ArgumentParser):
-    parser.add_argument(
-        "--materialized-view-list-file",
-        type=str,
-        default=DEFAULT_MATERIALIZED_VIEW_LIST_FILE,
-        help="Path to materialized view list file",
-    )
-
-
 def add_view_names_argument(parser: argparse.ArgumentParser):
     parser.add_argument(
         dest="view_names", metavar="view-names", nargs="*", help="View names"
