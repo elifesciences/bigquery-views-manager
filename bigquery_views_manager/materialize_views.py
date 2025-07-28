@@ -10,8 +10,6 @@ from google.cloud.bigquery.job import QueryJobConfig
 
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 
-from .view_list import VIEW_OR_TABLE_NAME_KEY, DATASET_NAME_KEY
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -107,7 +105,7 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
 def materialize_views(
     client: bigquery.Client,
     materialized_view_dict: OrderedDict[str, DatasetViewDataTypedDict],
-    source_view_dict: OrderedDict,
+    source_view_dict: OrderedDict[str, DatasetViewDataTypedDict],
     project: str,
 ) -> MaterializeViewListResult:
     LOGGER.info("view_names: %s", materialized_view_dict)
@@ -120,10 +118,10 @@ def materialize_views(
     for view_template_file_name, dataset_view_data in materialized_view_dict.items():
         result = materialize_view(
             client,
-            source_view_name=source_view_dict[view_template_file_name].get(VIEW_OR_TABLE_NAME_KEY),
+            source_view_name=source_view_dict[view_template_file_name]['table_name'],
             destination_table_name=dataset_view_data['table_name'],
             project=project,
-            source_dataset=source_view_dict[view_template_file_name].get(DATASET_NAME_KEY),
+            source_dataset=source_view_dict[view_template_file_name]['dataset_name'],
             destination_dataset=dataset_view_data['dataset_name'],
         )
         result_list.append(result)
