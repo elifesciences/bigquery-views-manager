@@ -340,13 +340,6 @@ class ViewListConfig:
     def view_names(self) -> List[str]:
         return [view.view_name for view in self.view_config_list]
 
-    def filter_view_names(self, view_names: List[str]) -> 'ViewListConfig':
-        return ViewListConfig([
-            view
-            for view in self.view_config_list
-            if view.view_name in view_names
-        ])
-
     def resolve_conditions(self, condition_value: dict) -> 'ViewListConfig':
         return ViewListConfig([
             view.resolve_conditions(condition_value)
