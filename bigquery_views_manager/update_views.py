@@ -8,7 +8,6 @@ from bigquery_views_manager.materialize_views_typing import DatasetViewDataTyped
 
 from .views import get_local_view_query
 from .materialize_views import materialize_view
-from .view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ def update_or_create_views(  # pylint: disable=too-many-arguments
     client: bigquery.Client,
     base_dir: str | Path,
     view_names_dict: OrderedDict[str, DatasetViewDataTypedDict],
-    materialized_view_names: OrderedDict,
+    materialized_view_names: OrderedDict[str, DatasetViewDataTypedDict],
     project: str,
     default_dataset: str,
     view_to_dataset_mapping: dict,
@@ -64,10 +63,10 @@ def update_or_create_views(  # pylint: disable=too-many-arguments
                 source_view_name=view_name,
                 destination_table_name=materialized_view_names[
                     view_template_file_name
-                ].get(VIEW_OR_TABLE_NAME_KEY),
+                ]['table_name'],
                 project=project,
                 destination_dataset=materialized_view_names[
                     view_template_file_name
-                ].get(DATASET_NAME_KEY),
+                ]['dataset_name'],
                 source_dataset=dataset_name,
             )
