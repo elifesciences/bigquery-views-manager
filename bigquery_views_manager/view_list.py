@@ -6,6 +6,8 @@ from collections import OrderedDict
 
 import yaml
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
+
 from .views import get_local_view_template
 
 
@@ -37,10 +39,10 @@ def get_mapped_materialized_view_subset(
 
 
 def map_view_to_dataset_from_template_mapping_dict(
-    template_mapping_dict: OrderedDict
-):
+    template_mapping_dict: OrderedDict[str, DatasetViewDataTypedDict]
+) -> dict[str, str]:
     return {
-        view.get(VIEW_OR_TABLE_NAME_KEY): view.get(DATASET_NAME_KEY)
+        view['table_name']: view['dataset_name']
         for view in list(template_mapping_dict.values())
     }
 
