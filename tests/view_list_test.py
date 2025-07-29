@@ -6,6 +6,7 @@ from typing import List, Tuple
 
 import yaml
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 from bigquery_views_manager.view_list import (
     get_referenced_table_names_for_query,
     determine_insert_order_for_view_names_and_referenced_tables,
@@ -31,12 +32,12 @@ DATASET_1 = "dataset"
 
 def get_input_ordered_dict_view_mapping(
     view_dataset_mapping: List[Tuple[str, str, str]]
-):
-    view_mapping = OrderedDict()
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
+    view_mapping = OrderedDict[str, DatasetViewDataTypedDict]()
     for dataset, view_template_name, db_view_name in view_dataset_mapping:
         view_mapping[view_template_name] = {
-            DATASET_NAME_KEY: dataset,
-            VIEW_OR_TABLE_NAME_KEY: db_view_name,
+            'dataset_name': dataset,
+            'table_name': db_view_name,
         }
     return view_mapping
 
