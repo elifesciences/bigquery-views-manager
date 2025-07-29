@@ -16,6 +16,8 @@ LOGGER = logging.getLogger(__name__)
 T = TypeVar('T')
 
 TEMPLATE_TABLE_PREFIX = "{project}.{dataset}."
+
+# Note: DATASET_NAME_KEY and VIEW_OR_TABLE_NAME_KEY are deprecated
 DATASET_NAME_KEY = "dataset_name"
 VIEW_OR_TABLE_NAME_KEY = "table_name"
 
