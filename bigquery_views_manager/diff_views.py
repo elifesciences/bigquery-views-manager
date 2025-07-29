@@ -1,7 +1,7 @@
 import logging
 from difflib import context_diff
 from pathlib import Path
-from typing import List, Set, Iterable
+from typing import List, Mapping, Set, Iterable
 from collections import OrderedDict
 import re
 
@@ -17,7 +17,7 @@ from .view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 LOGGER = logging.getLogger(__name__)
 
-NONE_TEXT = "NONE"
+NONE_TEXT = 'NONE'
 
 
 class ChangedView:
@@ -61,11 +61,13 @@ def get_dataset_to_table_dict(view_names: dict):
     return dataset_to_table_dict
 
 
-def get_view_to_view_file(view_names: dict):
+def get_view_to_view_file(
+    view_names: OrderedDict[str, DatasetViewDataTypedDict]
+) -> Mapping[str, str]:
     view_to_view_file = {}
     for k, value in view_names.items():
         view_to_view_file[
-            value.get(DATASET_NAME_KEY) + "." + value.get(VIEW_OR_TABLE_NAME_KEY)
+            value['dataset_name'] + '.' + value['table_name']
         ] = k
     return view_to_view_file
 
@@ -82,7 +84,7 @@ def get_diff_result(  # pylint: disable=too-many-arguments,too-many-locals
     view_to_view_file = get_view_to_view_file(view_names_dict)
     unchanged_view_names = set()
     local_view_names = [
-        value['dataset_name'] + "." + value['table_name']
+        value['dataset_name'] + '.' + value['table_name']
         for k, value in view_names_dict.items()
     ]
     remote_view_names = []
@@ -90,10 +92,10 @@ def get_diff_result(  # pylint: disable=too-many-arguments,too-many-locals
 
     for dataset, table_list in dataset_to_table_list.items():
         bq_view_names = get_bq_view_names(client, dataset=dataset)
-        remote_view_names.extend([dataset + "." + x for x in bq_view_names])
+        remote_view_names.extend([dataset + '.' + x for x in bq_view_names])
         remote_and_local_views = set(bq_view_names) & set(table_list)
         for view_name in remote_and_local_views:
-            view_file_name = view_to_view_file.get(dataset + "." + view_name)
+            view_file_name = view_to_view_file[dataset + '.' + view_name]
             local_view_query = get_local_view_query(
                 base_dir,
                 view_file_name,
@@ -104,9 +106,9 @@ def get_diff_result(  # pylint: disable=too-many-arguments,too-many-locals
             bq_view_query = get_bq_view_query(client,
                                               view_name,
                                               dataset=dataset)
-            if re.sub(r"\s+", "",
-                      local_view_query) == re.sub(r"\s+", "", bq_view_query):
-                unchanged_view_names.add(dataset + "." + view_name)
+            if re.sub(r'\s+', '',
+                      local_view_query) == re.sub(r'\s+', '', bq_view_query):
+                unchanged_view_names.add(dataset + '.' + view_name)
             else:
                 changed_views.append(
                     ChangedView(
@@ -124,7 +126,7 @@ def get_diff_result(  # pylint: disable=too-many-arguments,too-many-locals
 
 
 def format_list(value: Iterable[str]) -> str:
-    return ", ".join(value) if value else NONE_TEXT
+    return ', '.join(value) if value else NONE_TEXT
 
 
 def highlight(value, is_good):
@@ -132,13 +134,13 @@ def highlight(value, is_good):
 
 
 def format_changed_view_diffs(changed_view: ChangedView) -> str:
-    return "\n".join([
-        str(crayons.red(line)) if line.startswith("!") else line
+    return '\n'.join([
+        str(crayons.red(line)) if line.startswith('!') else line
         for line in context_diff(
             changed_view.local_view_query.splitlines(),
             changed_view.remote_view_query.splitlines(),
-            fromfile=f"{changed_view.view_name} (local)",
-            tofile=f"{changed_view.view_name} (remote)",
+            fromfile=f'{changed_view.view_name} (local)',
+            tofile=f'{changed_view.view_name} (remote)',
         )
     ])
 
@@ -161,19 +163,19 @@ def format_diff_result(diff_result: ViewDiffResult) -> str:
     )
     if diff_result.changed_views:
         formatted_changed_view_diffs = (
-            crayons.blue("changed views details BEGIN", bold=True) + "\n\n" +
-            "\n\n".join([
+            crayons.blue('changed views details BEGIN', bold=True) + '\n\n' +
+            '\n\n'.join([
                 format_changed_view_diffs(changed_view)
                 for changed_view in diff_result.changed_views
-            ]) + "\n\n" +
-            crayons.blue("changed views details END", bold=True) + "\n\n")
+            ]) + '\n\n' +
+            crayons.blue('changed views details END', bold=True) + '\n\n')
     else:
-        formatted_changed_view_diffs = ""
-    return formatted_changed_view_diffs + "\n".join([
-        f"unchanged views : {formatted_unchanged_view_names}",
-        f"remote only     : {formatted_remote_only_view_names}",
-        f"local only      : {formatted_local_only_view_names}",
-        f"changed views   : {formatted_changed_view_names}",
+        formatted_changed_view_diffs = ''
+    return formatted_changed_view_diffs + '\n'.join([
+        f'unchanged views : {formatted_unchanged_view_names}',
+        f'remote only     : {formatted_remote_only_view_names}',
+        f'local only      : {formatted_local_only_view_names}',
+        f'changed views   : {formatted_changed_view_names}',
     ])
 
 
@@ -185,7 +187,7 @@ def diff_views(  # pylint: disable=too-many-arguments
     default_dataset: str,
     view_to_dataset_mapping: dict,
 ):
-    LOGGER.debug("view_names: %s", view_names_dict)
+    LOGGER.debug('view_names: %s', view_names_dict)
     diff_result = get_diff_result(
         client,
         base_dir,
@@ -194,5 +196,5 @@ def diff_views(  # pylint: disable=too-many-arguments
         default_dataset=default_dataset,
         view_to_dataset_mapping=view_to_dataset_mapping,
     )
-    LOGGER.info("diff_result:\n%s", format_diff_result(diff_result))
+    LOGGER.info('diff_result:\n%s', format_diff_result(diff_result))
     return diff_result.changed_views
