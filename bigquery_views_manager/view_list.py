@@ -143,11 +143,11 @@ def add_names_with_referenced_names_recursively(
 def determine_insert_order_for_view_names_and_referenced_tables(
     view_mapping: OrderedDict,
     referenced_table_names_by_view_name: Dict[str, List[str]],
-    materialized_views_ordered_dict: OrderedDict,
+    materialized_views_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict],
 ) -> OrderedDict:
     LOGGER.debug('referenced_table_names_by_view_name: %s', referenced_table_names_by_view_name)
     view_by_materialized_view_name_map = {
-        dataset_view_data.get(VIEW_OR_TABLE_NAME_KEY): template_name
+        dataset_view_data['table_name']: template_name
         for template_name, dataset_view_data in
         materialized_views_ordered_dict.items()
     }
