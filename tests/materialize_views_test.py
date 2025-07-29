@@ -132,8 +132,12 @@ class TestMaterializeViews:
             'dataset_name': SOURCE_DATASET_1,
             'table_name': VIEW_1
         }
-        materialized_view_dict = {'view_template_file_name_1': destination_dataset_view_dict}
-        source_view_dict = {'view_template_file_name_1': source_dataset_view_dict}
+        materialized_view_dict = OrderedDict[str, DatasetViewDataTypedDict]({
+            'view_template_file_name_1': destination_dataset_view_dict
+        })
+        source_view_dict = OrderedDict[str, DatasetViewDataTypedDict]({
+            'view_template_file_name_1': source_dataset_view_dict
+        })
         return_value = materialize_views(
             client=bq_client,
             materialized_view_dict=materialized_view_dict,
