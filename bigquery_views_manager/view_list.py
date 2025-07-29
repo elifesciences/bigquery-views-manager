@@ -141,10 +141,10 @@ def add_names_with_referenced_names_recursively(
 
 
 def determine_insert_order_for_view_names_and_referenced_tables(
-    view_mapping: OrderedDict,
+    view_mapping: OrderedDict[str, DatasetViewDataTypedDict],
     referenced_table_names_by_view_name: Dict[str, List[str]],
     materialized_views_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict],
-) -> OrderedDict:
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
     LOGGER.debug('referenced_table_names_by_view_name: %s', referenced_table_names_by_view_name)
     view_by_materialized_view_name_map = {
         dataset_view_data['table_name']: template_name
@@ -173,16 +173,16 @@ def determine_insert_order_for_view_names_and_referenced_tables(
         short_referenced_table_names_by_view_name
     )
 
-    view_insert_order_ordereddict = OrderedDict()
+    view_insert_order_ordereddict = OrderedDict[str, DatasetViewDataTypedDict]()
     for result_view_name in result_view_names:
-        view_insert_order_ordereddict[result_view_name] = view_mapping.get(result_view_name)
+        view_insert_order_ordereddict[result_view_name] = view_mapping[result_view_name]
 
     return view_insert_order_ordereddict
 
 
 def determine_view_insert_order(
     base_dir: str | Path,
-    view_names_ordered_dict: OrderedDict,
+    view_names_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict],
     materialized_views_ordered_dict: OrderedDict,
 ) -> OrderedDict:
     return determine_insert_order_for_view_names_and_referenced_tables(
@@ -371,13 +371,13 @@ class ViewListConfig:
             for view_name in insert_order.keys()
         ])
 
-    def to_views_ordered_dict(self, dataset: str) -> OrderedDict:
-        return OrderedDict([
+    def to_views_ordered_dict(self, dataset: str) -> OrderedDict[str, DatasetViewDataTypedDict]:
+        return OrderedDict[str, DatasetViewDataTypedDict]([
             (
                 view.view_name,
                 {
-                    DATASET_NAME_KEY: dataset,
-                    VIEW_OR_TABLE_NAME_KEY: view.view_name
+                    'dataset_name': dataset,
+                    'table_name': view.view_name
                 }
             )
             for view in self.view_config_list
