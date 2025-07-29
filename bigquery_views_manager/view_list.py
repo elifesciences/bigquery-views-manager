@@ -51,16 +51,14 @@ def extend_or_subset_mapped_view_subset(
     views_ordered_dict_all,
     view_names_for_subset_extend: List[str],
     default_dataset: str,
-):
-    views_dict = OrderedDict()
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
+    views_dict = OrderedDict[str, DatasetViewDataTypedDict]()
     for view_name in view_names_for_subset_extend:
-        views_dict[view_name] = views_ordered_dict_all.get(
-            view_name,
-            {
-                DATASET_NAME_KEY: default_dataset,
-                VIEW_OR_TABLE_NAME_KEY: view_name
-            },
-        )
+        default_view_data: DatasetViewDataTypedDict = {
+            'dataset_name': default_dataset,
+            'table_name': view_name
+        }
+        views_dict[view_name] = views_ordered_dict_all.get(view_name, default_view_data)
     return views_dict
 
 
