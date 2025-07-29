@@ -4,9 +4,8 @@ from collections import OrderedDict
 
 from google.cloud import bigquery
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 from bigquery_views_manager.delete_views_or_tables import delete_views_or_tables
-
-from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 
 PROJECT_1 = "project1"
@@ -14,11 +13,11 @@ DATASET_1 = "dataset1"
 TABLE_1 = "table1"
 
 
-def get_input_ordered_dict_view_mapping():
-    view_mapping = OrderedDict()
+def get_input_ordered_dict_view_mapping() -> OrderedDict[str, DatasetViewDataTypedDict]:
+    view_mapping = OrderedDict[str, DatasetViewDataTypedDict]()
     view_mapping[TABLE_1] = {
-        DATASET_NAME_KEY: DATASET_1,
-        VIEW_OR_TABLE_NAME_KEY: TABLE_1,
+        'dataset_name': DATASET_1,
+        'table_name': TABLE_1,
     }
     return view_mapping
 

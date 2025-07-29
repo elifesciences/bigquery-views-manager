@@ -8,6 +8,7 @@ from collections import OrderedDict
 
 from google.cloud import bigquery
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 from .views import get_bq_view_names
 from .view_list import (
     get_mapped_materialized_view_subset,
@@ -127,12 +128,12 @@ class CreateOrReplaceViewsSubCommand(SubCommand):
         )
         LOGGER.debug('views_dict: %s', views_dict)
 
-        materialized_view_ordered_dict = (
+        materialized_view_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict] = (
             get_mapped_materialized_view_subset(
                 materialized_view_ordered_dict_all, set(views_dict.keys())
             )
             if args.materialize
-            else OrderedDict()
+            else OrderedDict[str, DatasetViewDataTypedDict]()
         )
 
         # what is the dataset of a (materialized) view - used in re-writing template
