@@ -183,7 +183,7 @@ def determine_insert_order_for_view_names_and_referenced_tables(
 def determine_view_insert_order(
     base_dir: str | Path,
     view_names_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict],
-    materialized_views_ordered_dict: OrderedDict,
+    materialized_views_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict],
 ) -> OrderedDict:
     return determine_insert_order_for_view_names_and_referenced_tables(
         view_names_ordered_dict,
