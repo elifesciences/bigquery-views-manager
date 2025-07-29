@@ -403,7 +403,7 @@ class ViewListConfig:
         return result
 
 
-def load_view_list_config(path: str | Path):
+def load_view_list_config(path: str | Path) -> ViewListConfig:
     view_list_obj = yaml.safe_load(Path(path).read_text(encoding='utf-8'))
     LOGGER.debug('view_list_obj: %s', view_list_obj)
     return ViewListConfig([
