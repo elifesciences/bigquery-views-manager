@@ -383,8 +383,11 @@ class ViewListConfig:
             for view in self.view_config_list
         ])
 
-    def to_materialized_view_ordered_dict(self, dataset: str) -> OrderedDict:
-        result = OrderedDict()
+    def to_materialized_view_ordered_dict(
+        self,
+        dataset: str
+    ) -> OrderedDict[str, DatasetViewDataTypedDict]:
+        result = OrderedDict[str, DatasetViewDataTypedDict]()
         for view in self.view_config_list:
             resolved_materialize_as = view.resolved_materialize_as
             if not resolved_materialize_as:
@@ -394,8 +397,8 @@ class ViewListConfig:
                 full_name_parts = (dataset, full_name_parts[0])
             output_dataset_name, output_table_name = full_name_parts
             result[view.view_name] = {
-                DATASET_NAME_KEY: output_dataset_name,
-                VIEW_OR_TABLE_NAME_KEY: output_table_name
+                'dataset_name': output_dataset_name,
+                'table_name': output_table_name
             }
         return result
 
