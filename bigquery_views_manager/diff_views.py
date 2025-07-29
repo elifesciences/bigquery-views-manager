@@ -1,7 +1,7 @@
 import logging
 from difflib import context_diff
 from pathlib import Path
-from typing import List, Mapping, Set, Iterable
+from typing import List, Mapping, Sequence, Set, Iterable
 from collections import OrderedDict
 import re
 
@@ -13,7 +13,6 @@ from bigquery_views_manager.materialize_views_typing import DatasetViewDataTyped
 
 from .update_views import get_local_view_query
 from .views import get_bq_view_query, get_bq_view_names
-from .view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,12 +51,14 @@ class ViewDiffResult:
         return {changed_view.view_name for changed_view in self.changed_views}
 
 
-def get_dataset_to_table_dict(view_names: dict):
-    dataset_to_table_dict: dict = {}
+def get_dataset_to_table_dict(
+    view_names: OrderedDict[str, DatasetViewDataTypedDict]
+) -> Mapping[str, Sequence[str]]:
+    dataset_to_table_dict: dict[str, list[str]] = {}
     for _, value in view_names.items():
-        dataset_name = value.get(DATASET_NAME_KEY)
+        dataset_name = value['dataset_name']
         dataset_to_table_dict[dataset_name] = dataset_to_table_dict.get(dataset_name, [])
-        dataset_to_table_dict[dataset_name].append(value.get(VIEW_OR_TABLE_NAME_KEY))
+        dataset_to_table_dict[dataset_name].append(value['table_name'])
     return dataset_to_table_dict
 
 
