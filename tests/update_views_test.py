@@ -11,7 +11,6 @@ from bigquery_views_manager.update_views import (
     update_or_create_view,
     update_or_create_views,
 )
-from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 PROJECT_1 = "project1"
 DATASET_1 = "dataset1"
