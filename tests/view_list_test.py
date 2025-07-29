@@ -45,8 +45,8 @@ def get_input_ordered_dict_view_mapping(
 def get_referenced_table_in_template(
     ref_table_as_simple_list: List[Tuple[str, List[str]]],
     compose_full_table_name_with_placeholder: bool,
-):
-    ref_table = OrderedDict()
+) -> dict[str, list[str]]:
+    ref_table = dict[str, list[str]]()
     for view_template_name, ref_table_list in ref_table_as_simple_list:
         ref_table[view_template_name] = ([
             "".join(["{project}.{dataset}.", ref_table])
@@ -64,7 +64,7 @@ class TestGetReferencedTableNamesForQuery:
 
 class TestDetermineInsertOrderForViewNamesAndReferencedTables:
     def test_should_find_insert_order_for_single_view(self):
-        result = OrderedDict()
+        result = OrderedDict[str, DatasetViewDataTypedDict]()
         result[VIEW_1] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_1}
         assert determine_insert_order_for_view_names_and_referenced_tables(
             view_mapping=get_input_ordered_dict_view_mapping([
@@ -73,11 +73,11 @@ class TestDetermineInsertOrderForViewNamesAndReferencedTables:
             referenced_table_names_by_view_name=get_referenced_table_in_template(
                 [(VIEW_1, [TABLE_NAME])],
                 compose_full_table_name_with_placeholder=False),
-            materialized_views_ordered_dict=OrderedDict(),
+            materialized_views_ordered_dict=OrderedDict[str, DatasetViewDataTypedDict](),
         ) == result
 
     def test_should_find_insert_order_for_view_depending_on_another_view(self):
-        result = OrderedDict()
+        result = OrderedDict[str, DatasetViewDataTypedDict]()
         result[VIEW_2] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_2}
         result[VIEW_1] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_1}
         assert determine_insert_order_for_view_names_and_referenced_tables(
@@ -88,12 +88,12 @@ class TestDetermineInsertOrderForViewNamesAndReferencedTables:
                 [(VIEW_1, [TABLE_NAME, VIEW_2])],
                 compose_full_table_name_with_placeholder=False,
             ),
-            materialized_views_ordered_dict=OrderedDict(),
+            materialized_views_ordered_dict=OrderedDict[str, DatasetViewDataTypedDict](),
         ) == result
 
     def test_should_find_insert_order_for_view_depending_on_another_view_with_placeholders(
             self):
-        result = OrderedDict()
+        result = OrderedDict[str, DatasetViewDataTypedDict]()
         result[VIEW_2] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_2}
         result[VIEW_1] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_1}
         assert determine_insert_order_for_view_names_and_referenced_tables(
@@ -104,12 +104,12 @@ class TestDetermineInsertOrderForViewNamesAndReferencedTables:
                 [(VIEW_1, [TABLE_NAME, VIEW_2])],
                 compose_full_table_name_with_placeholder=True,
             ),
-            materialized_views_ordered_dict=OrderedDict(),
+            materialized_views_ordered_dict=OrderedDict[str, DatasetViewDataTypedDict](),
         ) == result
 
     def test_should_find_insert_order_for_view_depending_on_materialized_view_with_placeholders(
             self):
-        result = OrderedDict()
+        result = OrderedDict[str, DatasetViewDataTypedDict]()
         result[VIEW_2] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_2}
         result[VIEW_1] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_1}
         assert determine_insert_order_for_view_names_and_referenced_tables(
@@ -125,7 +125,7 @@ class TestDetermineInsertOrderForViewNamesAndReferencedTables:
         ) == result
 
     def test_should_find_insert_order_for_indirect_dependency(self):
-        result = OrderedDict()
+        result = OrderedDict[str, DatasetViewDataTypedDict]()
         result[VIEW_3] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_3}
         result[VIEW_2] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_2}
         result[VIEW_1] = {DATASET_NAME_KEY: DATASET_1, VIEW_OR_TABLE_NAME_KEY: VIEW_1}
@@ -140,7 +140,7 @@ class TestDetermineInsertOrderForViewNamesAndReferencedTables:
                  (VIEW_2, [TABLE_NAME, VIEW_3])],
                 compose_full_table_name_with_placeholder=False,
             ),
-            materialized_views_ordered_dict=OrderedDict(),
+            materialized_views_ordered_dict=OrderedDict[str, DatasetViewDataTypedDict](),
         ) == result
 
 
@@ -178,7 +178,7 @@ class TestViewListConfig:
             ViewConfig('view2')
         ])
         views_ordered_dict = view_list_config.to_views_ordered_dict('dataset1')
-        assert views_ordered_dict == OrderedDict([
+        assert views_ordered_dict == OrderedDict[str, DatasetViewDataTypedDict]([
             ('view1', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'view1'}),
             ('view2', {DATASET_NAME_KEY: 'dataset1', VIEW_OR_TABLE_NAME_KEY: 'view2'})
         ])
@@ -192,7 +192,7 @@ class TestViewListConfig:
         materialized_view_ordered_dict = (
             view_list_config.to_materialized_view_ordered_dict('dataset1')
         )
-        assert materialized_view_ordered_dict == OrderedDict([
+        assert materialized_view_ordered_dict == OrderedDict[str, DatasetViewDataTypedDict]([
             ('view1', {
                 DATASET_NAME_KEY: 'output_dataset1', VIEW_OR_TABLE_NAME_KEY: 'output_table1'
             }),
