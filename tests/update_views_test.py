@@ -105,16 +105,16 @@ class TestUpdateOrCreateViews:
             destination_table_name=get_input_ordered_dict_view_mapping(
                 VIEW_1,
                 M_VIEW_1
-            ).get(VIEW_1).get(VIEW_OR_TABLE_NAME_KEY),
+            )[VIEW_1]['table_name'],
             project=PROJECT_1,
             source_dataset=get_input_ordered_dict_view_mapping(
                 VIEW_1,
                 VIEW_1
-            ).get(VIEW_1).get(DATASET_NAME_KEY),
+            )[VIEW_1]['dataset_name'],
             destination_dataset=get_input_ordered_dict_view_mapping(
                 VIEW_1,
                 M_VIEW_1
-            ).get(VIEW_1).get(DATASET_NAME_KEY),
+            )[VIEW_1]['dataset_name']
         )
 
     def test_should_not_materialize_view_if_not_in_materialized_view_names(
