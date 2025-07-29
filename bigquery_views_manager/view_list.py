@@ -65,13 +65,13 @@ def extend_or_subset_mapped_view_subset(
 def create_simple_view_mapping_from_view_list(
     dataset: str,
     view_name_list: List[str]
-):
-    view_mapping = OrderedDict()
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
+    view_mapping = OrderedDict[str, DatasetViewDataTypedDict]()
     for view_name in view_name_list:
         view_mapping.update({
             view_name: {
-                VIEW_OR_TABLE_NAME_KEY: view_name,
-                DATASET_NAME_KEY: dataset
+                'dataset_name': dataset,
+                'table_name': view_name
             }
         })
     return view_mapping
