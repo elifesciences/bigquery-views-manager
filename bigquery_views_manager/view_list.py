@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set, TypeVar, Union
+from typing import Dict, Iterable, List, Optional, Set, TypeVar, Union
 from collections import OrderedDict
 
 import yaml
@@ -91,7 +91,7 @@ def get_referenced_table_names_for_view_name(
 
 def get_referenced_table_names_by_view_name_map(
     base_dir: str | Path,
-    view_names: OrderedDict[str, DatasetViewDataTypedDict]
+    view_names: Iterable[str]
 ) -> Dict[str, List[str]]:
     return {
         view_name:
