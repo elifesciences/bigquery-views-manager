@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Set, TypeVar, Union
+from typing import Container, Dict, Iterable, List, Optional, Set, TypeVar, Union
 from collections import OrderedDict
 
 import yaml
@@ -116,7 +116,7 @@ def get_resolved_short_table_name(
 
 def filter_map_values_in(
     unfiltered_map: Dict[str, List[str]],
-    include_list: OrderedDict
+    include_list: Container[str]
 ) -> Dict[str, List[str]]:
     return {
         k: [v for v in values if v in include_list]
