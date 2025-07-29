@@ -1,3 +1,4 @@
+from typing import OrderedDict
 from unittest.mock import ANY, patch
 
 import pytest
@@ -10,7 +11,7 @@ from bigquery_views_manager.materialize_views import (
     materialize_view,
     materialize_views
 )
-from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 
 PROJECT_1 = "project1"
 SOURCE_DATASET_1 = "dataset1"
@@ -115,24 +116,28 @@ class TestMaterializeViews:
     def test_should_return_empty_list_when_there_is_no_view_to_materialize(self, bq_client):
         return_value = materialize_views(
             client=bq_client,
-            materialized_view_dict={},
-            source_view_dict={},
+            materialized_view_dict=OrderedDict[str, DatasetViewDataTypedDict](),
+            source_view_dict=OrderedDict[str, DatasetViewDataTypedDict](),
             project=PROJECT_1
         )
         assert return_value == MaterializeViewListResult(result_list=[])
         assert not return_value
 
     def test_should_return_result(self, bq_client):
-        destination_dataset_view_dict = {
-            DATASET_NAME_KEY: DESTINATION_DATASET_1,
-            VIEW_OR_TABLE_NAME_KEY: TABLE_1
+        destination_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': DESTINATION_DATASET_1,
+            'table_name': TABLE_1
         }
-        source_dataset_view_dict = {
-            DATASET_NAME_KEY: SOURCE_DATASET_1,
-            VIEW_OR_TABLE_NAME_KEY: VIEW_1
+        source_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': SOURCE_DATASET_1,
+            'table_name': VIEW_1
         }
-        materialized_view_dict = {'view_template_file_name_1': destination_dataset_view_dict}
-        source_view_dict = {'view_template_file_name_1': source_dataset_view_dict}
+        materialized_view_dict = OrderedDict[str, DatasetViewDataTypedDict]({
+            'view_template_file_name_1': destination_dataset_view_dict
+        })
+        source_view_dict = OrderedDict[str, DatasetViewDataTypedDict]({
+            'view_template_file_name_1': source_dataset_view_dict
+        })
         return_value = materialize_views(
             client=bq_client,
             materialized_view_dict=materialized_view_dict,

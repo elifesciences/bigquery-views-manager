@@ -4,13 +4,13 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 import bigquery_views_manager.update_views as update_views_module
 from bigquery_views_manager.update_views import (
     get_create_or_replace_view_query,
     update_or_create_view,
     update_or_create_views,
 )
-from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
 
 PROJECT_1 = "project1"
 DATASET_1 = "dataset1"
@@ -25,11 +25,14 @@ VIEW_QUERY_1 = "SELECT * FROM `project1.dataset1.table1`"
 BASE_DIR_1 = "/views1"
 
 
-def get_input_ordered_dict_view_mapping(view_name: str, db_view_name: str):
-    view_mapping = OrderedDict()
+def get_input_ordered_dict_view_mapping(
+    view_name: str,
+    db_view_name: str
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
+    view_mapping = OrderedDict[str, DatasetViewDataTypedDict]()
     view_mapping[view_name] = {
-        DATASET_NAME_KEY: DATASET_1,
-        VIEW_OR_TABLE_NAME_KEY: db_view_name,
+        'dataset_name': DATASET_1,
+        'table_name': db_view_name,
     }
     return view_mapping
 
@@ -101,16 +104,16 @@ class TestUpdateOrCreateViews:
             destination_table_name=get_input_ordered_dict_view_mapping(
                 VIEW_1,
                 M_VIEW_1
-            ).get(VIEW_1).get(VIEW_OR_TABLE_NAME_KEY),
+            )[VIEW_1]['table_name'],
             project=PROJECT_1,
             source_dataset=get_input_ordered_dict_view_mapping(
                 VIEW_1,
                 VIEW_1
-            ).get(VIEW_1).get(DATASET_NAME_KEY),
+            )[VIEW_1]['dataset_name'],
             destination_dataset=get_input_ordered_dict_view_mapping(
                 VIEW_1,
                 M_VIEW_1
-            ).get(VIEW_1).get(DATASET_NAME_KEY),
+            )[VIEW_1]['dataset_name']
         )
 
     def test_should_not_materialize_view_if_not_in_materialized_view_names(

@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from bigquery_views_manager.view_list import DATASET_NAME_KEY, VIEW_OR_TABLE_NAME_KEY
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 import bigquery_views_manager.diff_views as diff_views_module
 from bigquery_views_manager.diff_views import get_diff_result
 
@@ -22,11 +22,11 @@ VIEW_QUERY_2 = "SELECT * FROM `project1.dataset1.table2`"
 BASE_DIR = "views"
 
 
-def get_input_ordered_dict_view_mapping():
-    view_mapping = OrderedDict()
+def get_input_ordered_dict_view_mapping() -> OrderedDict[str, DatasetViewDataTypedDict]:
+    view_mapping = OrderedDict[str, DatasetViewDataTypedDict]()
     view_mapping[VIEW_1] = {
-        DATASET_NAME_KEY: DATASET_1,
-        VIEW_OR_TABLE_NAME_KEY: VIEW_1
+        'dataset_name': DATASET_1,
+        'table_name': VIEW_1
     }
     return view_mapping
 

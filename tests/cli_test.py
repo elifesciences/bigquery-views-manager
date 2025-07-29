@@ -4,9 +4,8 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 from bigquery_views_manager.view_list import (
-    DATASET_NAME_KEY,
-    VIEW_OR_TABLE_NAME_KEY,
     load_view_list_config
 )
 
@@ -60,10 +59,10 @@ def _get_bq_view_names_mock():
         yield mock
 
 
-def get_ordered_dict_view_mapping():
-    result = OrderedDict()
-    result["view1"] = {DATASET_NAME_KEY: "dataset1", VIEW_OR_TABLE_NAME_KEY: "view1"}
-    result["view2"] = {DATASET_NAME_KEY: "dataset2", VIEW_OR_TABLE_NAME_KEY: "view2"}
+def get_ordered_dict_view_mapping() -> OrderedDict[str, DatasetViewDataTypedDict]:
+    result = OrderedDict[str, DatasetViewDataTypedDict]()
+    result["view1"] = {'dataset_name': "dataset1", 'table_name': "view1"}
+    result["view2"] = {'dataset_name': "dataset2", 'table_name': "view2"}
     return result
 
 

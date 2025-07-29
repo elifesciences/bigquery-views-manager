@@ -1,17 +1,23 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
+from typing import Container, Dict, Iterable, List, Optional, Set, TypeVar, Union
 from collections import OrderedDict
 
 import yaml
+
+from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 
 from .views import get_local_view_template
 
 
 LOGGER = logging.getLogger(__name__)
 
+T = TypeVar('T')
+
 TEMPLATE_TABLE_PREFIX = "{project}.{dataset}."
+
+# Note: DATASET_NAME_KEY and VIEW_OR_TABLE_NAME_KEY are deprecated
 DATASET_NAME_KEY = "dataset_name"
 VIEW_OR_TABLE_NAME_KEY = "table_name"
 
@@ -21,10 +27,10 @@ def get_default_destination_table_name_for_view_name(view_name: str) -> str:
 
 
 def get_mapped_materialized_view_subset(
-    materialized_view_ordered_dict_all: OrderedDict,
+    materialized_view_ordered_dict_all: OrderedDict[str, T],
     subset_view_template_names: Set[str],
-):
-    materialized_view_ordered_dict = OrderedDict()
+) -> OrderedDict[str, T]:
+    materialized_view_ordered_dict = OrderedDict[str, T]()
     for (
         template_file_name,
         dataset_view_or_table_data
@@ -35,10 +41,10 @@ def get_mapped_materialized_view_subset(
 
 
 def map_view_to_dataset_from_template_mapping_dict(
-    template_mapping_dict: OrderedDict
-):
+    template_mapping_dict: OrderedDict[str, DatasetViewDataTypedDict]
+) -> dict[str, str]:
     return {
-        view.get(VIEW_OR_TABLE_NAME_KEY): view.get(DATASET_NAME_KEY)
+        view['table_name']: view['dataset_name']
         for view in list(template_mapping_dict.values())
     }
 
@@ -47,29 +53,27 @@ def extend_or_subset_mapped_view_subset(
     views_ordered_dict_all,
     view_names_for_subset_extend: List[str],
     default_dataset: str,
-):
-    views_dict = OrderedDict()
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
+    views_dict = OrderedDict[str, DatasetViewDataTypedDict]()
     for view_name in view_names_for_subset_extend:
-        views_dict[view_name] = views_ordered_dict_all.get(
-            view_name,
-            {
-                DATASET_NAME_KEY: default_dataset,
-                VIEW_OR_TABLE_NAME_KEY: view_name
-            },
-        )
+        default_view_data: DatasetViewDataTypedDict = {
+            'dataset_name': default_dataset,
+            'table_name': view_name
+        }
+        views_dict[view_name] = views_ordered_dict_all.get(view_name, default_view_data)
     return views_dict
 
 
 def create_simple_view_mapping_from_view_list(
     dataset: str,
     view_name_list: List[str]
-):
-    view_mapping = OrderedDict()
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
+    view_mapping = OrderedDict[str, DatasetViewDataTypedDict]()
     for view_name in view_name_list:
         view_mapping.update({
             view_name: {
-                VIEW_OR_TABLE_NAME_KEY: view_name,
-                DATASET_NAME_KEY: dataset
+                'dataset_name': dataset,
+                'table_name': view_name
             }
         })
     return view_mapping
@@ -89,7 +93,7 @@ def get_referenced_table_names_for_view_name(
 
 def get_referenced_table_names_by_view_name_map(
     base_dir: str | Path,
-    view_names: OrderedDict
+    view_names: Iterable[str]
 ) -> Dict[str, List[str]]:
     return {
         view_name:
@@ -114,7 +118,7 @@ def get_resolved_short_table_name(
 
 def filter_map_values_in(
     unfiltered_map: Dict[str, List[str]],
-    include_list: OrderedDict
+    include_list: Container[str]
 ) -> Dict[str, List[str]]:
     return {
         k: [v for v in values if v in include_list]
@@ -139,13 +143,13 @@ def add_names_with_referenced_names_recursively(
 
 
 def determine_insert_order_for_view_names_and_referenced_tables(
-    view_mapping: OrderedDict,
+    view_mapping: OrderedDict[str, DatasetViewDataTypedDict],
     referenced_table_names_by_view_name: Dict[str, List[str]],
-    materialized_views_ordered_dict: OrderedDict,
-) -> OrderedDict:
+    materialized_views_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict],
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
     LOGGER.debug('referenced_table_names_by_view_name: %s', referenced_table_names_by_view_name)
     view_by_materialized_view_name_map = {
-        dataset_view_data.get(VIEW_OR_TABLE_NAME_KEY): template_name
+        dataset_view_data['table_name']: template_name
         for template_name, dataset_view_data in
         materialized_views_ordered_dict.items()
     }
@@ -171,18 +175,18 @@ def determine_insert_order_for_view_names_and_referenced_tables(
         short_referenced_table_names_by_view_name
     )
 
-    view_insert_order_ordereddict = OrderedDict()
+    view_insert_order_ordereddict = OrderedDict[str, DatasetViewDataTypedDict]()
     for result_view_name in result_view_names:
-        view_insert_order_ordereddict[result_view_name] = view_mapping.get(result_view_name)
+        view_insert_order_ordereddict[result_view_name] = view_mapping[result_view_name]
 
     return view_insert_order_ordereddict
 
 
 def determine_view_insert_order(
     base_dir: str | Path,
-    view_names_ordered_dict: OrderedDict,
-    materialized_views_ordered_dict: OrderedDict,
-) -> OrderedDict:
+    view_names_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict],
+    materialized_views_ordered_dict: OrderedDict[str, DatasetViewDataTypedDict],
+) -> OrderedDict[str, DatasetViewDataTypedDict]:
     return determine_insert_order_for_view_names_and_referenced_tables(
         view_names_ordered_dict,
         get_referenced_table_names_by_view_name_map(base_dir, view_names_ordered_dict),
@@ -369,20 +373,23 @@ class ViewListConfig:
             for view_name in insert_order.keys()
         ])
 
-    def to_views_ordered_dict(self, dataset: str) -> OrderedDict:
-        return OrderedDict([
+    def to_views_ordered_dict(self, dataset: str) -> OrderedDict[str, DatasetViewDataTypedDict]:
+        return OrderedDict[str, DatasetViewDataTypedDict]([
             (
                 view.view_name,
                 {
-                    DATASET_NAME_KEY: dataset,
-                    VIEW_OR_TABLE_NAME_KEY: view.view_name
+                    'dataset_name': dataset,
+                    'table_name': view.view_name
                 }
             )
             for view in self.view_config_list
         ])
 
-    def to_materialized_view_ordered_dict(self, dataset: str) -> OrderedDict:
-        result = OrderedDict()
+    def to_materialized_view_ordered_dict(
+        self,
+        dataset: str
+    ) -> OrderedDict[str, DatasetViewDataTypedDict]:
+        result = OrderedDict[str, DatasetViewDataTypedDict]()
         for view in self.view_config_list:
             resolved_materialize_as = view.resolved_materialize_as
             if not resolved_materialize_as:
@@ -392,13 +399,13 @@ class ViewListConfig:
                 full_name_parts = (dataset, full_name_parts[0])
             output_dataset_name, output_table_name = full_name_parts
             result[view.view_name] = {
-                DATASET_NAME_KEY: output_dataset_name,
-                VIEW_OR_TABLE_NAME_KEY: output_table_name
+                'dataset_name': output_dataset_name,
+                'table_name': output_table_name
             }
         return result
 
 
-def load_view_list_config(path: str | Path):
+def load_view_list_config(path: str | Path) -> ViewListConfig:
     view_list_obj = yaml.safe_load(Path(path).read_text(encoding='utf-8'))
     LOGGER.debug('view_list_obj: %s', view_list_obj)
     return ViewListConfig([
