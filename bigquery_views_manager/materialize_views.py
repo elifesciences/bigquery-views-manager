@@ -9,6 +9,7 @@ from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
 
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
+from bigquery_views_manager.view_list import ViewListConfig
 
 LOGGER = logging.getLogger(__name__)
 
@@ -139,4 +140,51 @@ def materialize_views(
         duration,
         duration / len(materialized_view_dict),
     )
+    return MaterializeViewListResult(result_list)
+
+
+def materialize_views_if_necessary(
+    client: bigquery.Client,
+    project: str,
+    dataset: str,
+    view_list_config: ViewListConfig,
+) -> MaterializeViewListResult:
+    start = time.perf_counter()
+    total_bytes_processed = 0
+    total_rows = 0
+    result_list = []
+    for view_config in view_list_config:
+        if not view_config.is_materialized():
+            continue
+        destination_dataset_and_table_dict = view_config.get_destination_dataset_and_table_name(
+            dataset
+        )
+        result = materialize_view(
+            client=client,
+            project=project,
+            source_dataset=dataset,
+            source_view_name=view_config.view_name,
+            destination_dataset=destination_dataset_and_table_dict['dataset_name'],
+            destination_table_name=destination_dataset_and_table_dict['table_name']
+        )
+        result_list.append(result)
+        total_bytes_processed += (result.total_bytes_processed or 0)
+        total_rows += (result.total_rows or 0)
+    duration = time.perf_counter() - start
+    if result_list:
+        LOGGER.info(
+            (
+                'materialized views, number of views: %d, '
+                'total rows: %s, '
+                '%s bytes processed, '
+                'took: %.3fs (%0.3fs / views)'
+            ),
+            len(result_list),
+            total_rows,
+            total_bytes_processed,
+            duration,
+            duration / len(result_list),
+        )
+    else:
+        LOGGER.info('There are no views to materialize.')
     return MaterializeViewListResult(result_list)
