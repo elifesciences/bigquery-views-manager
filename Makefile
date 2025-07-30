@@ -147,7 +147,7 @@ dev-example-data-update-dataset:
 
 .PHONY: build
 build:
-	$(DOCKER_COMPOSE) build venv bigquery-views-manager
+	$(DOCKER_COMPOSE) build bigquery-views-manager
 
 
 build-dev: build

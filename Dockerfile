@@ -1,13 +1,24 @@
-ARG venv_image
 ARG python_base_image_tag
-FROM ${venv_image} as venv
 FROM python:${python_base_image_tag}
-
-COPY --from=venv /.venv/ /.venv/
-ENV PYTHONUSERBASE=/.venv PATH=/.venv/bin:$PATH
 
 ARG PROJECT_HOME=/opt/bigquery-views-manager
 WORKDIR ${PROJECT_HOME}
+
+RUN python3 -m venv /.venv
+ENV VIRTUAL_ENV=/.venv PYTHONUSERBASE=/.venv PATH=/.venv/bin:$PATH
+
+COPY requirements.build.txt ./
+RUN pip install --disable-pip-version-check -r requirements.build.txt
+
+COPY requirements.txt ./
+RUN pip install --disable-pip-version-check -r requirements.txt
+
+ARG install_dev
+COPY requirements.dev.txt ./
+RUN pip install --disable-pip-version-check -r requirements.dev.txt
+RUN if [ "${install_dev}" = "y" ]; then \
+    pip install --disable-pip-version-check -r requirements.dev.txt; \
+fi
 
 COPY *.sh *.py *.txt README.md pytest.ini .pylintrc .flake8 setup.cfg ./
 COPY bigquery_views_manager bigquery_views_manager
