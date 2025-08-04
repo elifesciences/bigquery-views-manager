@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import logging
 import re
 from pathlib import Path
-from typing import Container, Dict, Iterable, List, Optional, Sequence, Set, TypeVar, Union
+from typing import Container, Dict, Iterable, List, Mapping, Optional, Sequence, Set, TypeVar, Union
 from collections import OrderedDict
 
 import yaml
@@ -197,7 +197,7 @@ def determine_view_insert_order(
 
 @dataclass(frozen=True)
 class ViewCondition:
-    if_condition: Dict[str, str]
+    if_condition: Mapping[str, str]
     materialize_as: Optional[str] = None
 
     @staticmethod
@@ -207,8 +207,8 @@ class ViewCondition:
             materialize_as=value.get('materialize_as')
         )
 
-    def to_value(self) -> Dict[str, Union[str, Dict[str, str]]]:
-        value: Dict[str, Union[str, Dict[str, str]]] = {}
+    def to_value(self) -> Dict[str, Union[str, Mapping[str, str]]]:
+        value: Dict[str, Union[str, Mapping[str, str]]] = {}
         if self.if_condition is not None:
             value['if'] = self.if_condition
         if self.materialize_as is not None:
