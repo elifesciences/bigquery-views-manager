@@ -243,18 +243,12 @@ class ViewCondition:
         return True
 
 
+@dataclass(frozen=True)
 class ViewConfig:
-    def __init__(
-        self,
-        view_name: str,
-        materialize: Optional[bool] = None,
-        materialize_as: Optional[str] = None,
-        conditions: Optional[List[ViewCondition]] = None
-    ):
-        self.view_name = view_name
-        self.materialize = materialize
-        self.materialize_as = materialize_as
-        self.conditions = conditions or []
+    view_name: str
+    materialize: Optional[bool] = None
+    materialize_as: Optional[str] = None
+    conditions: Optional[List[ViewCondition]] = None
 
     @staticmethod
     def from_value(value: Union[str, dict]) -> 'ViewConfig':
@@ -291,15 +285,6 @@ class ViewConfig:
     def __str__(self):
         return self.view_name
 
-    def __repr__(self):
-        return (
-            type(self).__name__
-            + f'({repr(self.view_name)}'
-            + f', materialize={repr(self.materialize)}'
-            + f', materialize_as={repr(self.materialize_as)}'
-            + f', conditions={repr(self.conditions)})'
-        )
-
     @property
     def resolved_materialize_as(self):
         if self.materialize_as:
@@ -315,6 +300,8 @@ class ViewConfig:
         })
 
     def resolve_conditions(self, condition_value: dict) -> 'ViewConfig':
+        if not self.conditions:
+            return self
         for condition in self.conditions:
             if not condition.is_matching(condition_value):
                 continue
