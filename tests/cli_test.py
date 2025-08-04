@@ -35,9 +35,9 @@ def _delete_views_or_tables_mock():
         yield mock
 
 
-@pytest.fixture(name='materialize_views_mock', autouse=True)
-def _materialize_views_mock():
-    with patch.object(target_module, 'materialize_views') as mock:
+@pytest.fixture(name='materialize_views_if_necessary_mock', autouse=True)
+def _materialize_views_if_necessary_mock():
+    with patch.object(target_module, 'materialize_views_if_necessary') as mock:
         yield mock
 
 
@@ -102,7 +102,7 @@ class TestMaterializeViewsSubCommand:
     def test_should_materialize_simple_view(
         self,
         temp_dir: Path,
-        materialize_views_mock: MagicMock
+        materialize_views_if_necessary_mock: MagicMock
     ):
         view_config_path = temp_dir / 'views.yml'
         view_config_path.write_text('\n'.join(['- view1:', '    materialize: true']))
@@ -111,7 +111,7 @@ class TestMaterializeViewsSubCommand:
             '--dataset=dataset1',
             f'--view-list-config={view_config_path}'
         ])
-        materialize_views_mock.assert_called()
+        materialize_views_if_necessary_mock.assert_called()
 
 
 class TestDeleteMaterializedTablesSubCommand:

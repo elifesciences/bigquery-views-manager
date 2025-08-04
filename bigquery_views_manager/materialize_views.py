@@ -1,6 +1,7 @@
 import logging
 import time
 from collections import OrderedDict
+from collections.abc import Container
 from itertools import islice
 from dataclasses import dataclass
 from typing import Optional, Sequence
@@ -148,13 +149,17 @@ def materialize_views_if_necessary(
     project: str,
     dataset: str,
     view_list_config: ViewListConfig,
+    selected_view_names: Optional[Container[str]] = None
 ) -> MaterializeViewListResult:
     start = time.perf_counter()
     total_bytes_processed = 0
     total_rows = 0
     result_list = []
     for view_config in view_list_config:
-        if not view_config.is_materialized():
+        if (
+            not view_config.is_materialized()
+            or (selected_view_names and view_config.view_name not in selected_view_names)
+        ):
             continue
         destination_dataset_and_table_dict = view_config.get_destination_dataset_and_table_name(
             dataset

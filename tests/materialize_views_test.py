@@ -214,3 +214,23 @@ class TestMaterializeViewsIfNecessary:
                 total_bytes_billed=ANY
             )]
         )
+
+    def test_should_only_materialize_selected_views(self, bq_client):
+        return_value = materialize_views_if_necessary(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset='dataset_1',
+            view_list_config=ViewListConfig([
+                ViewConfig(
+                    view_name=VIEW_1,
+                    materialize=True
+                ),
+                ViewConfig(
+                    view_name=VIEW_2,
+                    materialize=True
+                )
+            ]),
+            selected_view_names=[VIEW_1]
+        )
+        assert len(return_value.result_list) == 1
+        assert return_value.result_list[0].source_view_name == VIEW_1
