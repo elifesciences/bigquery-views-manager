@@ -1,7 +1,8 @@
+from dataclasses import dataclass, field
 import logging
 import re
 from pathlib import Path
-from typing import Container, Dict, Iterable, List, Optional, Set, TypeVar, Union
+from typing import Container, Dict, Iterable, List, Mapping, Optional, Sequence, Set, TypeVar, Union
 from collections import OrderedDict
 
 import yaml
@@ -194,14 +195,10 @@ def determine_view_insert_order(
     )
 
 
+@dataclass(frozen=True)
 class ViewCondition:
-    def __init__(
-        self,
-        if_condition: Dict[str, str],
-        materialize_as: Optional[str] = None
-    ):
-        self.if_condition = if_condition
-        self.materialize_as = materialize_as
+    if_condition: Mapping[str, str]
+    materialize_as: Optional[str] = None
 
     @staticmethod
     def from_value(value: dict) -> 'ViewCondition':
@@ -210,23 +207,13 @@ class ViewCondition:
             materialize_as=value.get('materialize_as')
         )
 
-    def to_value(self) -> Dict[str, Union[str, Dict[str, str]]]:
-        value: Dict[str, Union[str, Dict[str, str]]] = {}
+    def to_value(self) -> Dict[str, Union[str, Mapping[str, str]]]:
+        value: Dict[str, Union[str, Mapping[str, str]]] = {}
         if self.if_condition is not None:
             value['if'] = self.if_condition
         if self.materialize_as is not None:
             value['materialize_as'] = self.materialize_as
         return value
-
-    def __str__(self):
-        return repr(self)
-
-    def __repr__(self):
-        return (
-            type(self).__name__
-            + f'(if_condition={repr(self.if_condition)}'
-            + f', materialize_as={repr(self.materialize_as)})'
-        )
 
     def get_values(self) -> dict:
         return {
@@ -242,18 +229,12 @@ class ViewCondition:
         return True
 
 
+@dataclass(frozen=True)
 class ViewConfig:
-    def __init__(
-        self,
-        view_name: str,
-        materialize: Optional[bool] = None,
-        materialize_as: Optional[str] = None,
-        conditions: Optional[List[ViewCondition]] = None
-    ):
-        self.view_name = view_name
-        self.materialize = materialize
-        self.materialize_as = materialize_as
-        self.conditions = conditions or []
+    view_name: str
+    materialize: Optional[bool] = None
+    materialize_as: Optional[str] = None
+    conditions: Sequence[ViewCondition] = field(default_factory=list)
 
     @staticmethod
     def from_value(value: Union[str, dict]) -> 'ViewConfig':
@@ -290,15 +271,6 @@ class ViewConfig:
     def __str__(self):
         return self.view_name
 
-    def __repr__(self):
-        return (
-            type(self).__name__
-            + f'({repr(self.view_name)}'
-            + f', materialize={repr(self.materialize)}'
-            + f', materialize_as={repr(self.materialize_as)}'
-            + f', conditions={repr(self.conditions)})'
-        )
-
     @property
     def resolved_materialize_as(self):
         if self.materialize_as:
@@ -314,6 +286,8 @@ class ViewConfig:
         })
 
     def resolve_conditions(self, condition_value: dict) -> 'ViewConfig':
+        if not self.conditions:
+            return self
         for condition in self.conditions:
             if not condition.is_matching(condition_value):
                 continue
@@ -339,15 +313,9 @@ class ViewConfig:
         }
 
 
+@dataclass(frozen=True)
 class ViewListConfig:
-    def __init__(self, view_config_list: List[ViewConfig]):
-        self.view_config_list = view_config_list
-
-    def __str__(self):
-        return str(self.view_config_list)
-
-    def __repr__(self):
-        return f'{type(self).__name__}({repr(self.view_config_list)})'
+    view_config_list: Sequence[ViewConfig]
 
     def __len__(self):
         return len(self.view_config_list)
@@ -372,7 +340,7 @@ class ViewListConfig:
         return any(view.view_name == view_name for view in self.view_config_list)
 
     def add_view(self, view: ViewConfig) -> 'ViewListConfig':
-        return ViewListConfig(self.view_config_list + [view])
+        return ViewListConfig(list(self.view_config_list) + [view])
 
     def sort_insert_order(self, base_dir: str | Path) -> 'ViewListConfig':
         dummy_dataset = 'dummy_dataset'
