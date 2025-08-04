@@ -320,6 +320,24 @@ class ViewConfig:
             return self.apply_conditional_values(condition)
         return self
 
+    def is_materialized(self) -> bool:
+        return bool(self.resolved_materialize_as)
+
+    def get_destination_dataset_and_table_name(
+        self,
+        dataset: str,
+    ) -> DatasetViewDataTypedDict:
+        resolved_materialize_as = self.resolved_materialize_as
+        assert resolved_materialize_as
+        full_name_parts = resolved_materialize_as.split('.', maxsplit=1)
+        if len(full_name_parts) == 1:
+            full_name_parts = (dataset, full_name_parts[0])
+        output_dataset_name, output_table_name = full_name_parts
+        return {
+            'dataset_name': output_dataset_name,
+            'table_name': output_table_name
+        }
+
 
 class ViewListConfig:
     def __init__(self, view_config_list: List[ViewConfig]):

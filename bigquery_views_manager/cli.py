@@ -21,7 +21,7 @@ from .view_list import (
 )
 
 from .update_views import update_or_create_views
-from .materialize_views import materialize_views
+from .materialize_views import materialize_views_if_necessary
 from .diff_views import diff_views
 from .get_views import get_views
 from .delete_views_or_tables import delete_views_or_tables
@@ -206,28 +206,13 @@ class MaterializeViewsSubCommand(SubCommand):
             'dataset': args.dataset
         })
         LOGGER.info('view_list_config: %s', view_list_config)
-        views_ordered_dict_all = view_list_config.to_views_ordered_dict(
-            args.dataset
-        )
-        LOGGER.debug('views_ordered_dict_all: %s', views_ordered_dict_all)
-        materialized_view_ordered_dict_all = view_list_config.to_materialized_view_ordered_dict(
-            args.dataset
-        )
-        LOGGER.debug('materialized_view_ordered_dict_all: %s', materialized_view_ordered_dict_all)
 
-        materialized_view_ordered_dict = (
-            get_mapped_materialized_view_subset(
-                materialized_view_ordered_dict_all, args.view_names
-            )
-            if args.view_names
-            else materialized_view_ordered_dict_all
-        )
-
-        materialize_views(
-            client,
-            materialized_view_dict=materialized_view_ordered_dict,
-            source_view_dict=views_ordered_dict_all,
+        materialize_views_if_necessary(
+            client=client,
             project=client.project,
+            dataset=args.dataset,
+            view_list_config=view_list_config,
+            selected_view_names=args.view_names
         )
 
 
