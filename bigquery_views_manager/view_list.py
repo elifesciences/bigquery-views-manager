@@ -1,7 +1,8 @@
+from dataclasses import dataclass
 import logging
 import re
 from pathlib import Path
-from typing import Container, Dict, Iterable, List, Optional, Set, TypeVar, Union
+from typing import Container, Dict, Iterable, List, Optional, Sequence, Set, TypeVar, Union
 from collections import OrderedDict
 
 import yaml
@@ -339,15 +340,9 @@ class ViewConfig:
         }
 
 
+@dataclass(frozen=True)
 class ViewListConfig:
-    def __init__(self, view_config_list: List[ViewConfig]):
-        self.view_config_list = view_config_list
-
-    def __str__(self):
-        return str(self.view_config_list)
-
-    def __repr__(self):
-        return f'{type(self).__name__}({repr(self.view_config_list)})'
+    view_config_list: Sequence[ViewConfig]
 
     def __len__(self):
         return len(self.view_config_list)
@@ -372,7 +367,7 @@ class ViewListConfig:
         return any(view.view_name == view_name for view in self.view_config_list)
 
     def add_view(self, view: ViewConfig) -> 'ViewListConfig':
-        return ViewListConfig(self.view_config_list + [view])
+        return ViewListConfig(list(self.view_config_list) + [view])
 
     def sort_insert_order(self, base_dir: str | Path) -> 'ViewListConfig':
         dummy_dataset = 'dummy_dataset'
