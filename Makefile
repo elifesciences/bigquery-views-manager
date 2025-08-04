@@ -75,7 +75,7 @@ dev-pytest:
 
 
 dev-watch:
-	$(PYTHON) -m pytest_watch --verbose -- -p no:cacheprovider -k 'not slow' $(ARGS)
+	$(PYTHON) -m pytest_watch --  --verbose  --verbose -p no:cacheprovider -k 'not slow' $(ARGS)
 
 
 dev-watch-slow:
