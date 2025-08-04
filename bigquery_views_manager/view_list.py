@@ -248,7 +248,7 @@ class ViewConfig:
     view_name: str
     materialize: Optional[bool] = None
     materialize_as: Optional[str] = None
-    conditions: List[ViewCondition] = field(default_factory=list)
+    conditions: Sequence[ViewCondition] = field(default_factory=list)
 
     @staticmethod
     def from_value(value: Union[str, dict]) -> 'ViewConfig':
