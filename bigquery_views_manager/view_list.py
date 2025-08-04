@@ -195,14 +195,10 @@ def determine_view_insert_order(
     )
 
 
+@dataclass(frozen=True)
 class ViewCondition:
-    def __init__(
-        self,
-        if_condition: Dict[str, str],
-        materialize_as: Optional[str] = None
-    ):
-        self.if_condition = if_condition
-        self.materialize_as = materialize_as
+    if_condition: Dict[str, str]
+    materialize_as: Optional[str] = None
 
     @staticmethod
     def from_value(value: dict) -> 'ViewCondition':
@@ -218,16 +214,6 @@ class ViewCondition:
         if self.materialize_as is not None:
             value['materialize_as'] = self.materialize_as
         return value
-
-    def __str__(self):
-        return repr(self)
-
-    def __repr__(self):
-        return (
-            type(self).__name__
-            + f'(if_condition={repr(self.if_condition)}'
-            + f', materialize_as={repr(self.materialize_as)})'
-        )
 
     def get_values(self) -> dict:
         return {
