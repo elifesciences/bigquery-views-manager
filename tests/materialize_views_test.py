@@ -3,13 +3,15 @@ from unittest.mock import ANY, patch
 
 import pytest
 
+from bigquery_views_manager.view_list import ViewConfig, ViewListConfig
 import bigquery_views_manager.materialize_views as materialize_views_module
 from bigquery_views_manager.materialize_views import (
     MaterializeViewListResult,
     MaterializeViewResult,
     get_select_all_from_query,
     materialize_view,
-    materialize_views
+    materialize_views,
+    materialize_views_if_necessary
 )
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 
@@ -143,6 +145,60 @@ class TestMaterializeViews:
             materialized_view_dict=materialized_view_dict,
             source_view_dict=source_view_dict,
             project=PROJECT_1
+        )
+        assert return_value == MaterializeViewListResult(
+            result_list=[MaterializeViewResult(
+                source_dataset=SOURCE_DATASET_1,
+                source_view_name=VIEW_1,
+                destination_dataset=DESTINATION_DATASET_1,
+                destination_table_name=TABLE_1,
+                total_bytes_processed=ANY,
+                total_rows=ANY,
+                duration=ANY,
+                cache_hit=ANY,
+                slot_millis=ANY,
+                total_bytes_billed=ANY
+            )]
+        )
+
+
+class TestMaterializeViewsIfNecessary:
+    def test_should_return_empty_list_when_there_is_no_views(self, bq_client):
+        return_value = materialize_views_if_necessary(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset='dataset_1',
+            view_list_config=ViewListConfig([])
+        )
+        assert return_value == MaterializeViewListResult(result_list=[])
+        assert not return_value
+
+    def test_should_return_empty_list_when_there_is_no_view_to_materialize(self, bq_client):
+        return_value = materialize_views_if_necessary(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset='dataset_1',
+            view_list_config=ViewListConfig([
+                ViewConfig(
+                    view_name=VIEW_1,
+                    materialize=False
+                )
+            ])
+        )
+        assert return_value == MaterializeViewListResult(result_list=[])
+        assert not return_value
+
+    def test_should_return_result(self, bq_client):
+        return_value = materialize_views_if_necessary(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset=SOURCE_DATASET_1,
+            view_list_config=ViewListConfig([
+                ViewConfig(
+                    view_name=VIEW_1,
+                    materialize_as=f'{DESTINATION_DATASET_1}.{TABLE_1}'
+                )
+            ])
         )
         assert return_value == MaterializeViewListResult(
             result_list=[MaterializeViewResult(
