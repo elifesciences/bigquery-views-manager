@@ -96,24 +96,49 @@ class TestGetViewDependenciesFromViewDefinition:
 
     def test_should_return_list_of_dependencies_when_there_is_joined_table(self):
         result = get_view_dependencies_from_view_definition(
-            'SELECT * FROM project_1.dataset_1.table_1 AS t1 '
-            'JOIN project_1.dataset_1.table_2 AS t2 ON t1.id = t2.id'
+            'SELECT * '
+            'FROM project_1.dataset_1.table_1 AS t1 '
+            'JOIN project_1.dataset_1.table_2 AS t2'
+            ' ON t1.id = t2.id'
         )
         assert result == ['project_1.dataset_1.table_1', 'project_1.dataset_1.table_2']
 
     def test_should_return_list_of_dependencies_when_there_are_multiple_joins(self):
         result = get_view_dependencies_from_view_definition(
             'SELECT * '
-            'FROM project_1.dataset_1.table_1 '
+            'FROM project_1.dataset_1.table_1 AS t1 '
             'JOIN project_1.dataset_1.table_2'
-            ' ON table_1.id = table_2.id '
-            'LEFT JOIN project_1.dataset_1.table_3 '
-            'ON table_1.id = table_3.id'
+            ' ON t1.id = table_2.id '
+            'LEFT JOIN project_1.dataset_1.table_3'
+            ' ON t1.id = table_3.id'
         )
         assert result == [
             'project_1.dataset_1.table_1',
             'project_1.dataset_1.table_2',
             'project_1.dataset_1.table_3'
+        ]
+
+    def test_should_return_list_of_dependencies_when_there_are_sub_queries(self):
+        result = get_view_dependencies_from_view_definition(
+            'WITH t_table_0 AS ('
+            '   SELECT * '
+            '   FROM project_1.dataset_1.table_1 '
+            '   JOIN project_1.dataset_1.table_2 ON table_1.id = table_2.id '
+            '   JOIN project_1.dataset_1.table_3 ON table_2.id = table_3.id'
+            '),\n'
+            't_table_00 AS ('
+            '   SELECT * '
+            '   FROM t_table_0 '
+            '   JOIN project_1.dataset_1.table_4 ON t_table_0.id = table_4.id'
+            ')\n'
+            'SELECT * '
+            'FROM t_table_00'
+        )
+        assert result == [
+            'project_1.dataset_1.table_1',
+            'project_1.dataset_1.table_2',
+            'project_1.dataset_1.table_3',
+            'project_1.dataset_1.table_4'
         ]
 
 

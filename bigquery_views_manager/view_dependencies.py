@@ -41,7 +41,19 @@ def get_view_definition_map(
 def get_view_dependencies_from_view_definition(
     view_definition: str
 ) -> Sequence[str]:
-    return re.findall(r'\b(?:FROM|JOIN)\s+([a-zA-Z0-9_.]+)', view_definition, re.IGNORECASE)
+    # This regex finds all alias names before AS (
+    cte_aliases = re.findall(r'\b([a-zA-Z0-9_]+)\s+AS\s*\(', view_definition, re.IGNORECASE)
+
+    # Extract all tables after FROM or JOIN
+    tables = re.findall(r'\b(?:FROM|JOIN)\s+([a-zA-Z0-9_.]+)', view_definition, re.IGNORECASE)
+
+    # Remove any table that is an alias
+    seen = {}
+    for table in tables:
+        if table not in cte_aliases and table not in seen:
+            seen[table] = None
+
+    return list(seen.keys())
 
 
 def get_view_dependencies(
