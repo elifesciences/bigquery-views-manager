@@ -12,6 +12,8 @@ from bigquery_views_manager.view_dependencies import (
 
 PROJECT_1 = 'project_1'
 DATASET_1 = 'dataset_1'
+VIEW_NAME_1 = 'view_name_1'
+VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
 
 
 @pytest.fixture(name='get_view_definition_map_mock')
@@ -62,6 +64,24 @@ class TestGetViewDefinitionMap:
                 dataset=DATASET_1
             )
         )
+
+    def test_should_return_view_definition_map(
+        self,
+        bq_client: MagicMock,
+        iter_dict_from_bq_query_mock: MagicMock
+    ):
+        iter_dict_from_bq_query_mock.return_value = iter([{
+            'table_name': VIEW_NAME_1,
+            'view_definition': VIEW_DEFINITION_1
+        }])
+        expected_result: dict = {
+            VIEW_NAME_1: VIEW_DEFINITION_1
+        }
+        assert get_view_definition_map(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == expected_result
 
 
 class TestGetViewDependencies:
