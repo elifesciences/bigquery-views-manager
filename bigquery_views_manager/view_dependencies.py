@@ -1,5 +1,8 @@
 from typing import Mapping, Sequence
+
 from google.cloud import bigquery
+
+import bigquery_views_manager.utils.bigquery as bigquery_utils
 
 
 def get_view_definition_query(
@@ -17,11 +20,13 @@ def get_view_definition_map(
     project: str,
     dataset: str
 ) -> Mapping[str, str]:
-    query_job = client.query(get_view_definition_query(
-        project=project,
-        dataset=dataset
+    list(bigquery_utils.iter_dict_from_bq_query(
+        client=client,
+        query=get_view_definition_query(
+            project=project,
+            dataset=dataset
+        )
     ))
-    query_job.result()
     return {}
 
 
