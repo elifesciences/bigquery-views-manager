@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Mapping, Sequence
 
 from google.cloud import bigquery
@@ -40,8 +41,7 @@ def get_view_definition_map(
 def get_view_dependencies_from_view_definition(
     view_definition: str
 ) -> Sequence[str]:
-    LOGGER.debug('view_definition: %r', view_definition)
-    return []
+    return re.findall(r'\b(?:FROM|JOIN)\s+([a-zA-Z0-9_.]+)', view_definition, re.IGNORECASE)
 
 
 def get_view_dependencies(

@@ -90,6 +90,25 @@ class TestGetViewDependenciesFromViewDefinition:
         expected_result: Sequence = []
         assert get_view_dependencies_from_view_definition('SELECT 1') == expected_result
 
+    def test_should_return_list_of_dependencies_when_there_is_a(self):
+        result = get_view_dependencies_from_view_definition('SELECT * FROM table_1')
+        assert result == ['table_1']
+
+    def test_should_return_list_of_dependencies_when_there_is_joined_table(self):
+        result = get_view_dependencies_from_view_definition(
+            'SELECT * FROM table_1 AS t1 JOIN table_2 AS t2 ON t1.id = t2.id'
+        )
+        assert result == ['table_1', 'table_2']
+
+    def test_should_return_list_of_dependencies_when_there_are_multiple_joins(self):
+        result = get_view_dependencies_from_view_definition(
+            'SELECT * '
+            'FROM table_1 '
+            'JOIN table_2 ON table_1.id = table_2.id '
+            'LEFT JOIN table_3 ON table_1.id = table_3.id'
+        )
+        assert result == ['table_1', 'table_2', 'table_3']
+
 
 class TestGetViewDependencies:
     def test_should_return_empty_dict_when_there_are_no_views(
