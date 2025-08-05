@@ -1,8 +1,12 @@
+import logging
 from typing import Mapping, Sequence
 
 from google.cloud import bigquery
 
 import bigquery_views_manager.utils.bigquery as bigquery_utils
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def get_view_definition_query(
@@ -33,14 +37,24 @@ def get_view_definition_map(
     }
 
 
+def get_view_dependencies_from_view_definition(
+    view_definition: str
+) -> Sequence[str]:
+    LOGGER.debug('view_definition: %r', view_definition)
+    return []
+
+
 def get_view_dependencies(
     client: bigquery.Client,
     project: str,
     dataset: str
 ) -> Mapping[str, Sequence[str]]:
-    get_view_definition_map(
+    view_definition_map = get_view_definition_map(
         client=client,
         project=project,
         dataset=dataset
     )
-    return {}
+    return {
+        view_name: get_view_dependencies_from_view_definition(view_definition)
+        for view_name, view_definition in view_definition_map.items()
+    }

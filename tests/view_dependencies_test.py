@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import Iterator, Sequence
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -7,7 +7,8 @@ import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
     get_view_definition_map,
     get_view_definition_query,
-    get_view_dependencies
+    get_view_dependencies,
+    get_view_dependencies_from_view_definition
 )
 
 PROJECT_1 = 'project_1'
@@ -84,6 +85,12 @@ class TestGetViewDefinitionMap:
         ) == expected_result
 
 
+class TestGetViewDependenciesFromViewDefinition:
+    def test_should_return_empty_sequence_if_view_has_no_from(self):
+        expected_result: Sequence = []
+        assert get_view_dependencies_from_view_definition('SELECT 1') == expected_result
+
+
 class TestGetViewDependencies:
     def test_should_return_empty_dict_when_there_are_no_views(
         self,
@@ -112,3 +119,23 @@ class TestGetViewDependencies:
             project=PROJECT_1,
             dataset=DATASET_1
         )
+
+    def test_should_return_dependency_dict(
+        self,
+        bq_client: MagicMock,
+        get_view_definition_map_mock: MagicMock
+    ):
+        get_view_definition_map_mock.return_value = {
+            VIEW_NAME_1: VIEW_DEFINITION_1
+        }
+        result = get_view_dependencies(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset=DATASET_1
+        )
+        expected_result: dict = {
+            VIEW_NAME_1: get_view_dependencies_from_view_definition(
+                VIEW_DEFINITION_1
+            )
+        }
+        assert result == expected_result
