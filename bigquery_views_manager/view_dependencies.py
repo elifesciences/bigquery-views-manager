@@ -4,7 +4,7 @@ from google.cloud import bigquery
 
 def get_view_definition_query(
     project: str,
-    dataset: str,
+    dataset: str
 ) -> str:
     return (
         'SELECT table_name, view_definition\n'
