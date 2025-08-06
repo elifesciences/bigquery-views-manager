@@ -90,8 +90,12 @@ class TestGetViewDependenciesFromViewDefinition:
         expected_result: Sequence = []
         assert get_view_dependencies_from_view_definition('SELECT 1') == expected_result
 
-    def test_should_return_list_of_dependencies_when_there_is_a(self):
+    def test_should_return_list_of_dependencies_when_there_is_a_from(self):
         result = get_view_dependencies_from_view_definition('SELECT * FROM table_1')
+        assert result == ['table_1']
+
+    def test_should_return_list_of_dependencies_when_there_is_a_from_with_backticks(self):
+        result = get_view_dependencies_from_view_definition('SELECT * FROM `table_1`')
         assert result == ['table_1']
 
     def test_should_return_list_of_dependencies_when_there_is_joined_table(self):

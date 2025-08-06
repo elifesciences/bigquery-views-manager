@@ -45,7 +45,7 @@ def get_view_dependencies_from_view_definition(
     cte_aliases = re.findall(r'\b([a-zA-Z0-9_]+)\s+AS\s*\(', view_definition, re.IGNORECASE)
 
     # Extract all tables after FROM or JOIN
-    tables = re.findall(r'\b(?:FROM|JOIN)\s+([a-zA-Z0-9_.]+)', view_definition, re.IGNORECASE)
+    tables = re.findall(r'\b(?:FROM|JOIN)\s+`?([a-zA-Z0-9_.]+)`?', view_definition, re.IGNORECASE)
 
     # Remove any table that is an alias
     seen: dict = {}
