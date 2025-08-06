@@ -1,4 +1,4 @@
-from typing import Iterator, Sequence
+from typing import Iterator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -87,33 +87,41 @@ class TestGetViewDefinitionMap:
 
 class TestGetViewDependenciesFromViewDefinition:
     def test_should_return_empty_sequence_if_view_has_no_from(self):
-        expected_result: Sequence = []
+        expected_result: set = set()
         assert get_view_dependencies_from_view_definition('SELECT 1') == expected_result
 
-    def test_should_return_list_of_dependencies_when_there_is_a_from(self):
+    def test_should_return_set_of_dependencies_when_there_is_a_from(self):
         result = get_view_dependencies_from_view_definition('SELECT * FROM dataset_1.table_1')
-        assert result == ['dataset_1.table_1']
+        assert result == {'dataset_1.table_1'}
 
     def test_should_ignore_dependencies_without_a_dataset(self):
         result = get_view_dependencies_from_view_definition(
             'SELECT * FROM table_1 JOIN dataset_1.table_2 ON table_1.id = table_2.id'
         )
-        assert result == ['dataset_1.table_2']
+        assert result == {'dataset_1.table_2'}
 
-    def test_should_return_list_of_dependencies_when_there_is_a_from_with_backticks(self):
+    def test_should_not_return_same_dependency_twice(self):
+        result = get_view_dependencies_from_view_definition(
+            'SELECT * FROM dataset_1.table_1 '
+            'UNION ALL '
+            'SELECT * FROM dataset_1.table_1'
+        )
+        assert result == {'dataset_1.table_1'}
+
+    def test_should_return_set_of_dependencies_when_there_is_a_from_with_backticks(self):
         result = get_view_dependencies_from_view_definition('SELECT * FROM `dataset_1.table_1`')
-        assert result == ['dataset_1.table_1']
+        assert result == {'dataset_1.table_1'}
 
-    def test_should_return_list_of_dependencies_when_there_is_joined_table(self):
+    def test_should_return_set_of_dependencies_when_there_is_joined_table(self):
         result = get_view_dependencies_from_view_definition(
             'SELECT * '
             'FROM project_1.dataset_1.table_1 AS t1 '
             'JOIN project_1.dataset_1.table_2 AS t2'
             ' ON t1.id = t2.id'
         )
-        assert result == ['project_1.dataset_1.table_1', 'project_1.dataset_1.table_2']
+        assert result == {'project_1.dataset_1.table_1', 'project_1.dataset_1.table_2'}
 
-    def test_should_return_list_of_dependencies_when_there_are_multiple_joins(self):
+    def test_should_return_set_of_dependencies_when_there_are_multiple_joins(self):
         result = get_view_dependencies_from_view_definition(
             'SELECT * '
             'FROM project_1.dataset_1.table_1 AS t1 '
@@ -122,13 +130,13 @@ class TestGetViewDependenciesFromViewDefinition:
             'LEFT JOIN project_1.dataset_1.table_3'
             ' ON t1.id = table_3.id'
         )
-        assert result == [
+        assert result == {
             'project_1.dataset_1.table_1',
             'project_1.dataset_1.table_2',
             'project_1.dataset_1.table_3'
-        ]
+        }
 
-    def test_should_return_list_of_dependencies_when_there_are_sub_queries(self):
+    def test_should_return_set_of_dependencies_when_there_are_sub_queries(self):
         result = get_view_dependencies_from_view_definition(
             'WITH t_table_0 AS ('
             '   SELECT * '
@@ -144,12 +152,12 @@ class TestGetViewDependenciesFromViewDefinition:
             'SELECT * '
             'FROM t_table_00'
         )
-        assert result == [
+        assert result == {
             'project_1.dataset_1.table_1',
             'project_1.dataset_1.table_2',
             'project_1.dataset_1.table_3',
             'project_1.dataset_1.table_4'
-        ]
+        }
 
 
 class TestGetViewDependencies:
