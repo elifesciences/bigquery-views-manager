@@ -1,3 +1,4 @@
+from collections.abc import Set
 import logging
 import re
 from typing import Mapping
@@ -40,7 +41,7 @@ def get_view_definition_map(
 
 def get_view_dependencies_from_view_definition(
     view_definition: str
-) -> set[str]:
+) -> Set[str]:
     return set(re.findall(
         r'\b(?:FROM|JOIN)\s+`?([a-zA-Z0-9\-_.]+\.[a-zA-Z0-9_.]+)`?', view_definition, re.IGNORECASE
     ))
@@ -50,7 +51,7 @@ def get_view_dependencies(
     client: bigquery.Client,
     project: str,
     dataset: str
-) -> Mapping[str, set[str]]:
+) -> Mapping[str, Set[str]]:
     view_definition_map = get_view_definition_map(
         client=client,
         project=project,

@@ -1,3 +1,4 @@
+from collections.abc import Set
 from typing import Iterator
 from unittest.mock import MagicMock, patch
 
@@ -87,7 +88,7 @@ class TestGetViewDefinitionMap:
 
 class TestGetViewDependenciesFromViewDefinition:
     def test_should_return_empty_sequence_if_view_has_no_from(self):
-        expected_result: set = set()
+        expected_result: Set = set()
         assert get_view_dependencies_from_view_definition('SELECT 1') == expected_result
 
     def test_should_return_set_of_dependencies_when_there_is_a_from(self):
