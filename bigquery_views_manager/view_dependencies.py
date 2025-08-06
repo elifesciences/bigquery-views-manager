@@ -42,7 +42,7 @@ def get_view_dependencies_from_view_definition(
     view_definition: str
 ) -> set[str]:
     return set(re.findall(
-        r'\b(?:FROM|JOIN)\s+`?([a-zA-Z0-9_.]+\.[a-zA-Z0-9_.]+)`?', view_definition, re.IGNORECASE
+        r'\b(?:FROM|JOIN)\s+`?([a-zA-Z0-9\-_.]+\.[a-zA-Z0-9_.]+)`?', view_definition, re.IGNORECASE
     ))
 
 
@@ -56,6 +56,7 @@ def get_view_dependencies(
         project=project,
         dataset=dataset
     )
+    LOGGER.debug('view_definition_map: %r', view_definition_map)
     return {
         view_name: get_view_dependencies_from_view_definition(view_definition)
         for view_name, view_definition in view_definition_map.items()
