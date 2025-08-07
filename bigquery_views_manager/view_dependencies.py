@@ -102,6 +102,16 @@ def get_table_or_view_last_modified_timestamp_query(
     )
 
 
+def get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(
+    dataset_refs: Set[DatasetRef]
+) -> str:
+    assert dataset_refs
+    dataset_ref = list(dataset_refs)[0]
+    return get_table_or_view_last_modified_timestamp_query(
+        project=dataset_ref.project, dataset=dataset_ref.dataset
+    )
+
+
 def get_dataset_ref_for_full_table_or_view_name(
     full_view_or_table_name: str
 ) -> DatasetRef:

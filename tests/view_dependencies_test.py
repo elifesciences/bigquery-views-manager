@@ -12,6 +12,7 @@ from bigquery_views_manager.view_dependencies import (
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_table_or_view_name,
     get_table_or_view_last_modified_timestamp_query,
+    get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs,
     get_view_definition_map,
     get_view_definition_query,
     get_view_dependencies,
@@ -297,6 +298,19 @@ class TestGetTableOrViewLastModifiedTimestampQuery:
                 TIMESTAMP_MILLIS(last_modified_time) AS last_modified_timestamp
             FROM `project_1.dataset_1.__TABLES__`
             '''
+        )
+
+
+class TestGetTableOrViewLastModifiedTimestampQueryForMultipleDatasetRefs:
+    def test_should_fail_for_empty_set(self):
+        with pytest.raises(AssertionError):
+            get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(set())
+
+    def test_should_return_query_for_single_dataset_ref(self):
+        assert get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs({
+            DatasetRef(project=PROJECT_1, dataset=DATASET_1)
+        }) == get_table_or_view_last_modified_timestamp_query(
+            project=PROJECT_1, dataset=DATASET_1
         )
 
 
