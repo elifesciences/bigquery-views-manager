@@ -86,10 +86,7 @@ def get_flat_view_dependencies(
     }
 
 
-def get_table_or_view_last_modified_timestamp_query(
-    project: str,
-    dataset: str
-) -> str:
+def get_table_or_view_last_modified_timestamp_query(dataset_ref: DatasetRef) -> str:
     return textwrap.dedent(
         f'''
         SELECT
@@ -97,7 +94,7 @@ def get_table_or_view_last_modified_timestamp_query(
             dataset_id,
             table_id,
             TIMESTAMP_MILLIS(last_modified_time) AS last_modified_timestamp
-        FROM `{project}.{dataset}.__TABLES__`
+        FROM `{dataset_ref.project}.{dataset_ref.dataset}.__TABLES__`
         '''
     )
 
@@ -107,9 +104,7 @@ def get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(
 ) -> str:
     assert dataset_refs
     dataset_ref = list(dataset_refs)[0]
-    return get_table_or_view_last_modified_timestamp_query(
-        project=dataset_ref.project, dataset=dataset_ref.dataset
-    )
+    return get_table_or_view_last_modified_timestamp_query(dataset_ref=dataset_ref)
 
 
 def get_dataset_ref_for_full_table_or_view_name(

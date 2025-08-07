@@ -21,6 +21,9 @@ from bigquery_views_manager.view_dependencies import (
 
 PROJECT_1 = 'project_1'
 DATASET_1 = 'dataset_1'
+
+DATASET_REF_1 = DatasetRef(project=PROJECT_1, dataset=DATASET_1)
+
 VIEW_NAME_1 = 'view_name_1'
 VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
 
@@ -286,10 +289,10 @@ class TestGetFlatViewDependencies:
 
 class TestGetTableOrViewLastModifiedTimestampQuery:
     def test_should_return_query_with_project_and_dataset_replaced(self):
-        assert get_table_or_view_last_modified_timestamp_query(
+        assert get_table_or_view_last_modified_timestamp_query(DatasetRef(
             project='project_1',
             dataset='dataset_1'
-        ) == textwrap.dedent(
+        )) == textwrap.dedent(
             '''
             SELECT
                 project_id,
@@ -308,9 +311,9 @@ class TestGetTableOrViewLastModifiedTimestampQueryForMultipleDatasetRefs:
 
     def test_should_return_query_for_single_dataset_ref(self):
         assert get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs({
-            DatasetRef(project=PROJECT_1, dataset=DATASET_1)
+            DATASET_REF_1
         }) == get_table_or_view_last_modified_timestamp_query(
-            project=PROJECT_1, dataset=DATASET_1
+            DATASET_REF_1
         )
 
 
