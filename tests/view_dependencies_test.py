@@ -1,4 +1,5 @@
 from collections.abc import Set
+from datetime import datetime
 import textwrap
 from typing import Iterator
 from unittest.mock import MagicMock, patch
@@ -8,9 +9,11 @@ import pytest
 import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
     DatasetRef,
+    LastModifiedBigQueryResultTypedDict,
     get_dataset_ref_for_full_table_or_view_name,
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_table_or_view_name,
+    get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs,
     get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref,
     get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs,
     get_view_definition_map,
@@ -29,6 +32,8 @@ DATASET_REF_3 = DatasetRef(project=PROJECT_1, dataset='dataset_3')
 VIEW_NAME_1 = 'view_name_1'
 VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
 
+TIMESTAMP_1 = datetime.fromisoformat('2001-01-01T00:00:00+00:00')
+
 EMPTY_DICT: dict = {}
 EMPTY_SET: Set = set()
 
@@ -36,6 +41,18 @@ EMPTY_SET: Set = set()
 @pytest.fixture(name='get_view_definition_map_mock')
 def _get_view_definition_map_mock() -> Iterator[MagicMock]:
     with patch.object(view_dependencies_module, 'get_view_definition_map') as mock:
+        yield mock
+
+
+@pytest.fixture(
+    name='get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock'
+)
+def _get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock(
+) -> Iterator[MagicMock]:
+    with patch.object(
+        view_dependencies_module,
+        'get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs'
+    ) as mock:
         yield mock
 
 
@@ -297,9 +314,7 @@ class TestGetTableOrViewLastModifiedTimestampQueryForSingleDatasetRef:
         )) == textwrap.dedent(
             '''
             SELECT
-                project_id,
-                dataset_id,
-                table_id,
+                CONCAT(project_id, '.', dataset_id, '.', table_id) AS full_table_or_view_name,
                 TIMESTAMP_MILLIS(last_modified_time) AS last_modified_timestamp
             FROM `project_1.dataset_1.__TABLES__`
             '''
@@ -341,6 +356,53 @@ class TestGetTableOrViewLastModifiedTimestampQueryForMultipleDatasetRefs:
         ) == expected_unioned_query
 
 
+class TestGetLastModifiedTimestampByFullTableOrViewNameForDatasetRefs:
+    def test_should_return_empty_dict_if_bq_results_are_empty(
+        self,
+        bq_client: MagicMock,
+        iter_dict_from_bq_query_mock: MagicMock
+    ):
+        iter_dict_from_bq_query_mock.return_value = iter([])
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs(
+            client=bq_client,
+            dataset_refs=[DATASET_REF_1]
+        ) == EMPTY_DICT
+
+    def test_should_call_iter_dict_from_bq_query_mock(
+        self,
+        bq_client: MagicMock,
+        iter_dict_from_bq_query_mock: MagicMock
+    ):
+        get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs(
+            client=bq_client,
+            dataset_refs=[DATASET_REF_1]
+        )
+        iter_dict_from_bq_query_mock.assert_called_with(
+            client=bq_client,
+            query=get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(
+                dataset_refs=[DATASET_REF_1]
+            )
+        )
+
+    def test_should_return_last_modified_timestamp_by_full_table_or_view_name_map(
+        self,
+        bq_client: MagicMock,
+        iter_dict_from_bq_query_mock: MagicMock
+    ):
+        bigquery_result_row: LastModifiedBigQueryResultTypedDict = {
+            'full_table_or_view_name': f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}',
+            'last_modified_timestamp': TIMESTAMP_1
+        }
+        iter_dict_from_bq_query_mock.return_value = iter([bigquery_result_row])
+        expected_result: dict = {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
+        }
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs(
+            client=bq_client,
+            dataset_refs=[DATASET_REF_1]
+        ) == expected_result
+
+
 class TestGetDatasetRefForFullTableOrViewName:
     def test_should_parse_full_table_or_view_name(self):
         assert get_dataset_ref_for_full_table_or_view_name(
@@ -355,5 +417,30 @@ class TestGetDatasetRefForFullTableOrViewName:
 
 
 class TestGetLastModifiedTimestampByFullViewOrTable:
-    def test_should_return_empty_dict_without_dependencies(self):
-        assert get_last_modified_timestamp_by_full_table_or_view_name(set()) == EMPTY_DICT
+    def test_should_return_empty_dict_without_dependencies(self, bq_client: MagicMock):
+        assert get_last_modified_timestamp_by_full_table_or_view_name(
+            client=bq_client,
+            table_or_view_names=set()
+        ) == EMPTY_DICT
+
+    def test_should_return_dict_from_bigquery_results(
+        self,
+        bq_client: MagicMock,
+        get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock: MagicMock
+    ):
+        assert get_last_modified_timestamp_by_full_table_or_view_name(
+            client=bq_client,
+            table_or_view_names={
+                f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}'
+            }
+        ) == (
+            get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock
+            .return_value
+        )
+        (
+            get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock
+            .assert_called_once_with(
+                client=bq_client,
+                dataset_refs={DatasetRef(project=PROJECT_1, dataset=DATASET_1)}
+            )
+        )
