@@ -8,6 +8,7 @@ from typing import Iterable, Mapping, TypedDict, cast
 
 from google.cloud import bigquery
 
+from bigquery_views_manager.utils.json import get_json
 import bigquery_views_manager.utils.bigquery as bigquery_utils
 
 
@@ -158,7 +159,10 @@ def get_last_modified_timestamp_by_full_table_or_view_name_map(
         client=client,
         dataset_refs=dataset_refs
     )
-    LOGGER.info('all_last_modified_timestamp_map: %r', all_last_modified_timestamp_map)
+    LOGGER.info(
+        'all_last_modified_timestamp_map:\n```json\n%s\n```',
+        get_json(all_last_modified_timestamp_map)
+    )
     return {
         table_or_view_name: all_last_modified_timestamp_map[table_or_view_name]
         for table_or_view_name in table_or_view_names
