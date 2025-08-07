@@ -11,7 +11,7 @@ from bigquery_views_manager.view_dependencies import (
     get_dataset_ref_for_full_table_or_view_name,
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_table_or_view_name,
-    get_table_or_view_last_modified_timestamp_query,
+    get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref,
     get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs,
     get_view_definition_map,
     get_view_definition_query,
@@ -287,9 +287,9 @@ class TestGetFlatViewDependencies:
         }) == {'table_1', 'table_2', 'common'}
 
 
-class TestGetTableOrViewLastModifiedTimestampQuery:
+class TestGetTableOrViewLastModifiedTimestampQueryForSingleDatasetRef:
     def test_should_return_query_with_project_and_dataset_replaced(self):
-        assert get_table_or_view_last_modified_timestamp_query(DatasetRef(
+        assert get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(DatasetRef(
             project='project_1',
             dataset='dataset_1'
         )) == textwrap.dedent(
@@ -312,7 +312,7 @@ class TestGetTableOrViewLastModifiedTimestampQueryForMultipleDatasetRefs:
     def test_should_return_query_for_single_dataset_ref(self):
         assert get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs({
             DATASET_REF_1
-        }) == get_table_or_view_last_modified_timestamp_query(
+        }) == get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
             DATASET_REF_1
         )
 

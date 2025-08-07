@@ -86,7 +86,9 @@ def get_flat_view_dependencies(
     }
 
 
-def get_table_or_view_last_modified_timestamp_query(dataset_ref: DatasetRef) -> str:
+def get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+    dataset_ref: DatasetRef
+) -> str:
     return textwrap.dedent(
         f'''
         SELECT
@@ -104,7 +106,9 @@ def get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(
 ) -> str:
     assert dataset_refs
     dataset_ref = list(dataset_refs)[0]
-    return get_table_or_view_last_modified_timestamp_query(dataset_ref=dataset_ref)
+    return get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+        dataset_ref=dataset_ref
+    )
 
 
 def get_dataset_ref_for_full_table_or_view_name(
