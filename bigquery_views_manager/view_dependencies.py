@@ -1,4 +1,5 @@
 from collections.abc import Set
+from datetime import datetime
 import logging
 import re
 from typing import Mapping
@@ -64,3 +65,10 @@ def get_view_dependencies(
         view_name: get_view_dependencies_from_view_definition(view_definition)
         for view_name, view_definition in view_definition_map.items()
     }
+
+
+def get_last_modified_timestamp_by_full_view_or_table(
+    view_or_table_names: Set[str]
+) -> Mapping[str, datetime]:
+    LOGGER.debug('view_or_table_names: %r', view_or_table_names)
+    return {}

@@ -7,6 +7,7 @@ import pytest
 
 import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
+    get_last_modified_timestamp_by_full_view_or_table,
     get_view_definition_map,
     get_view_definition_query,
     get_view_dependencies,
@@ -253,3 +254,9 @@ class TestGetViewDependencies:
             )
         }
         assert result == expected_result
+
+
+class TestGetLastModifiedTimestampByFullViewOrTable:
+    def test_should_return_empty_dict_without_dependencies(self):
+        expected_result: dict = {}
+        assert get_last_modified_timestamp_by_full_view_or_table(set()) == expected_result

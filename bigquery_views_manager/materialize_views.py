@@ -10,7 +10,10 @@ from typing import Mapping, Optional, Sequence
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
 
-from bigquery_views_manager.view_dependencies import get_view_dependencies
+from bigquery_views_manager.view_dependencies import (
+    get_last_modified_timestamp_by_full_view_or_table,
+    get_view_dependencies
+)
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 from bigquery_views_manager.view_list import ViewListConfig
 
@@ -180,6 +183,13 @@ def materialize_views_if_necessary(
     LOGGER.info(
         'view_dependencies:\n```json\n%s\n```',
         get_view_dependencies_json(view_dependencies)
+    )
+    last_modified_timestamp_by_full_view_or_table = (
+        get_last_modified_timestamp_by_full_view_or_table(set())
+    )
+    LOGGER.info(
+        'last_modified_timestamp_by_full_view_or_table:\n```json\n%s\n```',
+        json.dumps(last_modified_timestamp_by_full_view_or_table, indent=2)
     )
     for view_config in view_list_config:
         if (
