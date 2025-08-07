@@ -71,7 +71,11 @@ def get_flat_view_dependencies(
     view_dependencies: Mapping[str, Set[str]]
 ) -> Set[str]:
     LOGGER.debug('view_dependencies: %r', view_dependencies)
-    return set()
+    return {
+        value
+        for values in view_dependencies.values()
+        for value in values
+    }
 
 
 def get_last_modified_timestamp_by_full_view_or_table(
