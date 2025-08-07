@@ -1,16 +1,15 @@
-from datetime import datetime
-import json
 import logging
 import time
 from collections import OrderedDict
 from collections.abc import Container
 from itertools import islice
 from dataclasses import dataclass
-from typing import Any, Optional, Sequence
+from typing import Optional, Sequence
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
 
+from bigquery_views_manager.utils.json import get_json
 from bigquery_views_manager.view_dependencies import (
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_table_or_view_name_map,
@@ -149,19 +148,6 @@ def materialize_views(
         duration / len(materialized_view_dict),
     )
     return MaterializeViewListResult(result_list)
-
-
-class JsonEncoder(json.JSONEncoder):
-    def default(self, obj):  # pylint: disable=arguments-renamed
-        if isinstance(obj, set):
-            return list(sorted(obj))
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        return super().default(obj)
-
-
-def get_json(obj: Any):
-    return json.dumps(obj, cls=JsonEncoder, indent=2)
 
 
 def materialize_views_if_necessary(  # pylint: disable=too-many-locals
