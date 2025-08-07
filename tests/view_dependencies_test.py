@@ -7,6 +7,7 @@ import pytest
 
 import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
+    get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_view_or_table,
     get_view_definition_map,
     get_view_definition_query,
@@ -254,6 +255,18 @@ class TestGetViewDependencies:
             )
         }
         assert result == expected_result
+
+
+class TestGetFlatViewDependencies:
+    def test_should_return_empty_set_for_empty_view_dependencies(self):
+        expected_result: Set = set()
+        assert get_flat_view_dependencies({}) == expected_result
+
+    def test_should_return_empty_set_for_views_without_dependencies(self):
+        expected_result: Set = set()
+        assert get_flat_view_dependencies({
+            'view_1': set()
+        }) == expected_result
 
 
 class TestGetLastModifiedTimestampByFullViewOrTable:
