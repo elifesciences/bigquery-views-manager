@@ -21,6 +21,7 @@ VIEW_NAME_1 = 'view_name_1'
 VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
 
 EMPTY_DICT: dict = {}
+EMPTY_SET: Set = set()
 
 
 @pytest.fixture(name='get_view_definition_map_mock')
@@ -259,14 +260,12 @@ class TestGetViewDependencies:
 
 class TestGetFlatViewDependencies:
     def test_should_return_empty_set_for_empty_view_dependencies(self):
-        expected_result: Set = set()
-        assert get_flat_view_dependencies({}) == expected_result
+        assert get_flat_view_dependencies({}) == EMPTY_SET
 
     def test_should_return_empty_set_for_views_without_dependencies(self):
-        expected_result: Set = set()
         assert get_flat_view_dependencies({
             'view_1': set()
-        }) == expected_result
+        }) == EMPTY_SET
 
 
 class TestGetLastModifiedTimestampByFullViewOrTable:
