@@ -1,14 +1,16 @@
+import json
 import logging
 import time
 from collections import OrderedDict
-from collections.abc import Container
+from collections.abc import Container, Set
 from itertools import islice
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Mapping, Optional, Sequence
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
 
+from bigquery_views_manager.view_dependencies import get_view_dependencies
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 from bigquery_views_manager.view_list import ViewListConfig
 
@@ -144,6 +146,21 @@ def materialize_views(
     return MaterializeViewListResult(result_list)
 
 
+class SetEncoder(json.JSONEncoder):
+    def default(self, obj):  # pylint: disable=arguments-renamed
+        if isinstance(obj, set):
+            return list(sorted(obj))
+        return super().default(obj)
+
+
+def get_view_dependencies_json(view_dependencies: Mapping[str, Set[str]]):
+    return json.dumps(
+        view_dependencies,
+        cls=SetEncoder,
+        indent=2
+    )
+
+
 def materialize_views_if_necessary(
     client: bigquery.Client,
     project: str,
@@ -155,6 +172,15 @@ def materialize_views_if_necessary(
     total_bytes_processed = 0
     total_rows = 0
     result_list = []
+    view_dependencies = get_view_dependencies(
+        client=client,
+        project=project,
+        dataset=dataset
+    )
+    LOGGER.info(
+        'view_dependencies:\n```json\n%s\n```',
+        get_view_dependencies_json(view_dependencies)
+    )
     for view_config in view_list_config:
         if (
             not view_config.is_materialized()
