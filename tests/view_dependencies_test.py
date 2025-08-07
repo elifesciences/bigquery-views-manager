@@ -30,6 +30,7 @@ DATASET_REF_2 = DatasetRef(project=PROJECT_1, dataset='dataset_2')
 DATASET_REF_3 = DatasetRef(project=PROJECT_1, dataset='dataset_3')
 
 VIEW_NAME_1 = 'view_name_1'
+VIEW_NAME_2 = 'view_name_2'
 VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
 
 TIMESTAMP_1 = datetime.fromisoformat('2001-01-01T00:00:00+00:00')
@@ -425,6 +426,9 @@ class TestGetLastModifiedTimestampByFullViewOrTableMap:
         bq_client: MagicMock,
         get_last_modified_timestamp_map_for_dataset_refs_mock: MagicMock
     ):
+        get_last_modified_timestamp_map_for_dataset_refs_mock.return_value = {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
+        }
         assert get_last_modified_timestamp_by_full_table_or_view_name_map(
             client=bq_client,
             table_or_view_names={
@@ -435,3 +439,21 @@ class TestGetLastModifiedTimestampByFullViewOrTableMap:
             client=bq_client,
             dataset_refs={DatasetRef(project=PROJECT_1, dataset=DATASET_1)}
         )
+
+    def test_should_return_views_from_original_set(
+        self,
+        bq_client: MagicMock,
+        get_last_modified_timestamp_map_for_dataset_refs_mock: MagicMock
+    ):
+        get_last_modified_timestamp_map_for_dataset_refs_mock.return_value = {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1,
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_2}': TIMESTAMP_1
+        }
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map(
+            client=bq_client,
+            table_or_view_names={
+                f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}'
+            }
+        ) == {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
+        }
