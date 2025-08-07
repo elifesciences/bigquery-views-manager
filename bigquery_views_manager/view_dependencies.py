@@ -4,7 +4,7 @@ from datetime import datetime
 import logging
 import re
 import textwrap
-from typing import Mapping
+from typing import Iterable, Mapping
 
 from google.cloud import bigquery
 
@@ -102,13 +102,15 @@ def get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
 
 
 def get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(
-    dataset_refs: Set[DatasetRef]
+    dataset_refs: Iterable[DatasetRef]
 ) -> str:
     assert dataset_refs
-    dataset_ref = list(dataset_refs)[0]
-    return get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
-        dataset_ref=dataset_ref
-    )
+    return '\n\nUNION ALL\n\n'.join([
+        get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+            dataset_ref=dataset_ref
+        )
+        for dataset_ref in dataset_refs
+    ])
 
 
 def get_dataset_ref_for_full_table_or_view_name(

@@ -23,6 +23,8 @@ PROJECT_1 = 'project_1'
 DATASET_1 = 'dataset_1'
 
 DATASET_REF_1 = DatasetRef(project=PROJECT_1, dataset=DATASET_1)
+DATASET_REF_2 = DatasetRef(project=PROJECT_1, dataset='dataset_2')
+DATASET_REF_3 = DatasetRef(project=PROJECT_1, dataset='dataset_3')
 
 VIEW_NAME_1 = 'view_name_1'
 VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
@@ -315,6 +317,28 @@ class TestGetTableOrViewLastModifiedTimestampQueryForMultipleDatasetRefs:
         }) == get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
             DATASET_REF_1
         )
+
+    def test_should_return_unioned_query_for_multiple_dataset_refs(self):
+        dataset_refs = [DATASET_REF_1, DATASET_REF_2, DATASET_REF_3]
+        expected_query_1 = get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+            DATASET_REF_1
+        )
+        expected_query_2 = get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+            DATASET_REF_2
+        )
+        expected_query_3 = get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+            DATASET_REF_3
+        )
+        expected_unioned_query = (
+            expected_query_1
+            + '\n\nUNION ALL\n\n'
+            + expected_query_2
+            + '\n\nUNION ALL\n\n'
+            + expected_query_3
+        )
+        assert get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(
+            dataset_refs
+        ) == expected_unioned_query
 
 
 class TestGetDatasetRefForFullTableOrViewName:
