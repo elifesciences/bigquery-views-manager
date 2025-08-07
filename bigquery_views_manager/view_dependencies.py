@@ -123,7 +123,7 @@ def get_dataset_ref_for_full_table_or_view_name(
     return DatasetRef(project=project, dataset=dataset)
 
 
-def get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs(
+def get_last_modified_timestamp_map_for_dataset_refs(
     client: bigquery.Client,
     dataset_refs: Iterable[DatasetRef]
 ) -> Mapping[str, datetime]:
@@ -154,7 +154,7 @@ def get_last_modified_timestamp_by_full_table_or_view_name(
         for full_table_or_view_name in table_or_view_names
     }
     LOGGER.info('dataset_refs: %r', dataset_refs)
-    return get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs(
+    return get_last_modified_timestamp_map_for_dataset_refs(
         client=client,
         dataset_refs=dataset_refs
     )

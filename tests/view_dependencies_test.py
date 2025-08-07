@@ -13,7 +13,7 @@ from bigquery_views_manager.view_dependencies import (
     get_dataset_ref_for_full_table_or_view_name,
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_table_or_view_name,
-    get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs,
+    get_last_modified_timestamp_map_for_dataset_refs,
     get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref,
     get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs,
     get_view_definition_map,
@@ -44,14 +44,11 @@ def _get_view_definition_map_mock() -> Iterator[MagicMock]:
         yield mock
 
 
-@pytest.fixture(
-    name='get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock'
-)
-def _get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock(
-) -> Iterator[MagicMock]:
+@pytest.fixture(name='get_last_modified_timestamp_map_for_dataset_refs_mock')
+def _get_last_modified_timestamp_map_for_dataset_refs_mock() -> Iterator[MagicMock]:
     with patch.object(
         view_dependencies_module,
-        'get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs'
+        'get_last_modified_timestamp_map_for_dataset_refs'
     ) as mock:
         yield mock
 
@@ -356,14 +353,14 @@ class TestGetTableOrViewLastModifiedTimestampQueryForMultipleDatasetRefs:
         ) == expected_unioned_query
 
 
-class TestGetLastModifiedTimestampByFullTableOrViewNameForDatasetRefs:
+class TestGetLastModifiedTimestampMapForDatasetRefs:
     def test_should_return_empty_dict_if_bq_results_are_empty(
         self,
         bq_client: MagicMock,
         iter_dict_from_bq_query_mock: MagicMock
     ):
         iter_dict_from_bq_query_mock.return_value = iter([])
-        assert get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs(
+        assert get_last_modified_timestamp_map_for_dataset_refs(
             client=bq_client,
             dataset_refs=[DATASET_REF_1]
         ) == EMPTY_DICT
@@ -373,7 +370,7 @@ class TestGetLastModifiedTimestampByFullTableOrViewNameForDatasetRefs:
         bq_client: MagicMock,
         iter_dict_from_bq_query_mock: MagicMock
     ):
-        get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs(
+        get_last_modified_timestamp_map_for_dataset_refs(
             client=bq_client,
             dataset_refs=[DATASET_REF_1]
         )
@@ -397,7 +394,7 @@ class TestGetLastModifiedTimestampByFullTableOrViewNameForDatasetRefs:
         expected_result: dict = {
             f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
         }
-        assert get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs(
+        assert get_last_modified_timestamp_map_for_dataset_refs(
             client=bq_client,
             dataset_refs=[DATASET_REF_1]
         ) == expected_result
@@ -426,21 +423,15 @@ class TestGetLastModifiedTimestampByFullViewOrTable:
     def test_should_return_dict_from_bigquery_results(
         self,
         bq_client: MagicMock,
-        get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock: MagicMock
+        get_last_modified_timestamp_map_for_dataset_refs_mock: MagicMock
     ):
         assert get_last_modified_timestamp_by_full_table_or_view_name(
             client=bq_client,
             table_or_view_names={
                 f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}'
             }
-        ) == (
-            get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock
-            .return_value
-        )
-        (
-            get_last_modified_timestamp_by_full_table_or_view_name_map_for_dataset_refs_mock
-            .assert_called_once_with(
-                client=bq_client,
-                dataset_refs={DatasetRef(project=PROJECT_1, dataset=DATASET_1)}
-            )
+        ) == get_last_modified_timestamp_map_for_dataset_refs_mock.return_value
+        get_last_modified_timestamp_map_for_dataset_refs_mock.assert_called_once_with(
+            client=bq_client,
+            dataset_refs={DatasetRef(project=PROJECT_1, dataset=DATASET_1)}
         )
