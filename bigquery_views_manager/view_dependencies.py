@@ -159,7 +159,7 @@ def get_last_modified_timestamp_by_full_table_or_view_name_map(
         client=client,
         dataset_refs=dataset_refs
     )
-    LOGGER.info(
+    LOGGER.debug(
         'all_last_modified_timestamp_map:\n```json\n%s\n```',
         get_json(all_last_modified_timestamp_map)
     )
