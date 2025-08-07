@@ -109,13 +109,13 @@ def get_dataset_ref_for_full_table_or_view_name(
     return DatasetRef(project=project, dataset=dataset)
 
 
-def get_last_modified_timestamp_by_full_view_or_table(
-    view_or_table_names: Set[str]
+def get_last_modified_timestamp_by_full_table_or_view_name(
+    table_or_view_names: Set[str]
 ) -> Mapping[str, datetime]:
-    LOGGER.debug('view_or_table_names: %r', view_or_table_names)
+    LOGGER.debug('table_or_view_names: %r', table_or_view_names)
     dataset_refs = {
         get_dataset_ref_for_full_table_or_view_name(full_table_or_view_name)
-        for full_table_or_view_name in view_or_table_names
+        for full_table_or_view_name in table_or_view_names
     }
     LOGGER.info('dataset_refs: %r', dataset_refs)
     return {}

@@ -10,7 +10,7 @@ from bigquery_views_manager.view_dependencies import (
     DatasetRef,
     get_dataset_ref_for_full_table_or_view_name,
     get_flat_view_dependencies,
-    get_last_modified_timestamp_by_full_view_or_table,
+    get_last_modified_timestamp_by_full_table_or_view_name,
     get_table_or_view_last_modified_timestamp_query,
     get_view_definition_map,
     get_view_definition_query,
@@ -315,4 +315,4 @@ class TestGetDatasetRefForFullTableOrViewName:
 
 class TestGetLastModifiedTimestampByFullViewOrTable:
     def test_should_return_empty_dict_without_dependencies(self):
-        assert get_last_modified_timestamp_by_full_view_or_table(set()) == EMPTY_DICT
+        assert get_last_modified_timestamp_by_full_table_or_view_name(set()) == EMPTY_DICT
