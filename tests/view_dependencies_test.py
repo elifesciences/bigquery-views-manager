@@ -12,7 +12,7 @@ from bigquery_views_manager.view_dependencies import (
     LastModifiedBigQueryResultTypedDict,
     get_dataset_ref_for_full_table_or_view_name,
     get_flat_view_dependencies,
-    get_last_modified_timestamp_by_full_table_or_view_name,
+    get_last_modified_timestamp_by_full_table_or_view_name_map,
     get_last_modified_timestamp_map_for_dataset_refs,
     get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref,
     get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs,
@@ -413,9 +413,9 @@ class TestGetDatasetRefForFullTableOrViewName:
             )
 
 
-class TestGetLastModifiedTimestampByFullViewOrTable:
+class TestGetLastModifiedTimestampByFullViewOrTableMap:
     def test_should_return_empty_dict_without_dependencies(self, bq_client: MagicMock):
-        assert get_last_modified_timestamp_by_full_table_or_view_name(
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map(
             client=bq_client,
             table_or_view_names=set()
         ) == EMPTY_DICT
@@ -425,7 +425,7 @@ class TestGetLastModifiedTimestampByFullViewOrTable:
         bq_client: MagicMock,
         get_last_modified_timestamp_map_for_dataset_refs_mock: MagicMock
     ):
-        assert get_last_modified_timestamp_by_full_table_or_view_name(
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map(
             client=bq_client,
             table_or_view_names={
                 f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}'

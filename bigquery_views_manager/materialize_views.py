@@ -13,7 +13,7 @@ from google.cloud.bigquery.job import QueryJobConfig
 
 from bigquery_views_manager.view_dependencies import (
     get_flat_view_dependencies,
-    get_last_modified_timestamp_by_full_table_or_view_name,
+    get_last_modified_timestamp_by_full_table_or_view_name_map,
     get_view_dependencies
 )
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
@@ -186,15 +186,15 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     )
     flat_view_dependencies = get_flat_view_dependencies(view_dependencies)
     LOGGER.info('flat_view_dependencies: %r', flat_view_dependencies)
-    last_modified_timestamp_by_full_table_or_view_name = (
-        get_last_modified_timestamp_by_full_table_or_view_name(
+    last_modified_timestamp_by_full_table_or_view_name_map = (
+        get_last_modified_timestamp_by_full_table_or_view_name_map(
             client=client,
             table_or_view_names=flat_view_dependencies
         )
     )
     LOGGER.info(
-        'last_modified_timestamp_by_full_table_or_view_name:\n```json\n%s\n```',
-        get_json(last_modified_timestamp_by_full_table_or_view_name)
+        'last_modified_timestamp_by_full_table_or_view_name_map:\n```json\n%s\n```',
+        get_json(last_modified_timestamp_by_full_table_or_view_name_map)
     )
     for view_config in view_list_config:
         if (

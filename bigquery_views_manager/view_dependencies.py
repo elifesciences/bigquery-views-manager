@@ -142,7 +142,7 @@ def get_last_modified_timestamp_map_for_dataset_refs(
     }
 
 
-def get_last_modified_timestamp_by_full_table_or_view_name(
+def get_last_modified_timestamp_by_full_table_or_view_name_map(
     client: bigquery.Client,
     table_or_view_names: Set[str]
 ) -> Mapping[str, datetime]:
