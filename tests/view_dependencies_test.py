@@ -20,6 +20,8 @@ DATASET_1 = 'dataset_1'
 VIEW_NAME_1 = 'view_name_1'
 VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
 
+EMPTY_DICT: dict = {}
+
 
 @pytest.fixture(name='get_view_definition_map_mock')
 def _get_view_definition_map_mock() -> Iterator[MagicMock]:
@@ -45,12 +47,11 @@ class TestGetViewDefinitionMap:
         iter_dict_from_bq_query_mock: MagicMock
     ):
         iter_dict_from_bq_query_mock.return_value = iter([])
-        expected_result: dict = {}
         assert get_view_definition_map(
             client=bq_client,
             project=PROJECT_1,
             dataset=DATASET_1
-        ) == expected_result
+        ) == EMPTY_DICT
 
     def test_should_call_iter_dict_from_bq_query_mock(
         self,
@@ -217,8 +218,7 @@ class TestGetViewDependencies:
             project=PROJECT_1,
             dataset=DATASET_1
         )
-        expected_result: dict = {}
-        assert result == expected_result
+        assert result == EMPTY_DICT
 
     def test_should_retrieve_view_definitions_for_dataset(
         self,
@@ -271,5 +271,4 @@ class TestGetFlatViewDependencies:
 
 class TestGetLastModifiedTimestampByFullViewOrTable:
     def test_should_return_empty_dict_without_dependencies(self):
-        expected_result: dict = {}
-        assert get_last_modified_timestamp_by_full_view_or_table(set()) == expected_result
+        assert get_last_modified_timestamp_by_full_view_or_table(set()) == EMPTY_DICT
