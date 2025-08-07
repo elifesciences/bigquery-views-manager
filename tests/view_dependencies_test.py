@@ -9,6 +9,7 @@ import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_view_or_table,
+    get_table_or_view_last_modified_timestamp_query,
     get_view_definition_map,
     get_view_definition_query,
     get_view_dependencies,
@@ -278,6 +279,23 @@ class TestGetFlatViewDependencies:
             'view_1': {'table_1', 'common'},
             'view_2': {'table_2', 'common'}
         }) == {'table_1', 'table_2', 'common'}
+
+
+class TestGetTableOrViewLastModifiedTimestampQuery:
+    def test_should_return_query_with_project_and_dataset_replaced(self):
+        assert get_table_or_view_last_modified_timestamp_query(
+            project='project_1',
+            dataset='dataset_1'
+        ) == textwrap.dedent(
+            '''
+            SELECT
+                project_id,
+                dataset_id,
+                table_id,
+                TIMESTAMP_MILLIS(last_modified_time) AS last_modified_timestamp
+            FROM `project_1.dataset_1.__TABLES__`
+            '''
+        )
 
 
 class TestGetLastModifiedTimestampByFullViewOrTable:

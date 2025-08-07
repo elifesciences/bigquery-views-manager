@@ -2,6 +2,7 @@ from collections.abc import Set
 from datetime import datetime
 import logging
 import re
+import textwrap
 from typing import Mapping
 
 from google.cloud import bigquery
@@ -76,6 +77,22 @@ def get_flat_view_dependencies(
         for values in view_dependencies.values()
         for value in values
     }
+
+
+def get_table_or_view_last_modified_timestamp_query(
+    project: str,
+    dataset: str
+) -> str:
+    return textwrap.dedent(
+        f'''
+        SELECT
+            project_id,
+            dataset_id,
+            table_id,
+            TIMESTAMP_MILLIS(last_modified_time) AS last_modified_timestamp
+        FROM `{project}.{dataset}.__TABLES__`
+        '''
+    )
 
 
 def get_last_modified_timestamp_by_full_view_or_table(
