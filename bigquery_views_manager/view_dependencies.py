@@ -43,7 +43,9 @@ def get_view_dependencies_from_view_definition(
     view_definition: str
 ) -> Set[str]:
     return set(re.findall(
-        r'\b(?:FROM|JOIN)\s+`?([a-zA-Z0-9\-_.]+\.[a-zA-Z0-9_.]+)`?', view_definition, re.IGNORECASE
+        r'\b(?:FROM|JOIN)\s+`?((?:[a-zA-Z0-9\-_.]+\.){2}[a-zA-Z0-9_.]+)`?',
+        view_definition,
+        re.IGNORECASE
     ))
 
 

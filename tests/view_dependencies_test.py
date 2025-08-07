@@ -93,12 +93,16 @@ class TestGetViewDependenciesFromViewDefinition:
         assert get_view_dependencies_from_view_definition('SELECT 1') == expected_result
 
     def test_should_return_set_of_dependencies_when_there_is_a_from(self):
-        result = get_view_dependencies_from_view_definition('SELECT * FROM dataset_1.table_1')
-        assert result == {'dataset_1.table_1'}
+        result = get_view_dependencies_from_view_definition(
+            'SELECT * FROM project_1.dataset_1.table_1'
+        )
+        assert result == {'project_1.dataset_1.table_1'}
 
     def test_should_return_set_of_dependencies_with_line_feed_before_from(self):
-        result = get_view_dependencies_from_view_definition('SELECT *\nFROM dataset_1.table_1')
-        assert result == {'dataset_1.table_1'}
+        result = get_view_dependencies_from_view_definition(
+            'SELECT *\nFROM project_1.dataset_1.table_1'
+        )
+        assert result == {'project_1.dataset_1.table_1'}
 
     def test_should_return_set_of_dependencies_for_project_with_hyphens(self):
         result = get_view_dependencies_from_view_definition(
@@ -106,23 +110,28 @@ class TestGetViewDependenciesFromViewDefinition:
         )
         assert result == {'project-1.dataset_1.table_1'}
 
-    def test_should_ignore_dependencies_without_a_dataset(self):
-        result = get_view_dependencies_from_view_definition(
-            'SELECT * FROM table_1 JOIN dataset_1.table_2 ON table_1.id = table_2.id'
-        )
-        assert result == {'dataset_1.table_2'}
+    def test_should_ignore_dependencies_without_a_project(self):
+        result = get_view_dependencies_from_view_definition(textwrap.dedent(
+            '''
+            SELECT * FROM dataset_1.table_1
+            CROSS JOIN project_1.dataset_1.table_2
+            '''
+        ))
+        assert result == {'project_1.dataset_1.table_2'}
 
     def test_should_not_return_same_dependency_twice(self):
         result = get_view_dependencies_from_view_definition(
-            'SELECT * FROM dataset_1.table_1 '
+            'SELECT * FROM project_1.dataset_1.table_1 '
             'UNION ALL '
-            'SELECT * FROM dataset_1.table_1'
+            'SELECT * FROM project_1.dataset_1.table_1'
         )
-        assert result == {'dataset_1.table_1'}
+        assert result == {'project_1.dataset_1.table_1'}
 
     def test_should_return_set_of_dependencies_when_there_is_a_from_with_backticks(self):
-        result = get_view_dependencies_from_view_definition('SELECT * FROM `dataset_1.table_1`')
-        assert result == {'dataset_1.table_1'}
+        result = get_view_dependencies_from_view_definition(
+            'SELECT * FROM `project_1.dataset_1.table_1`'
+        )
+        assert result == {'project_1.dataset_1.table_1'}
 
     def test_should_return_set_of_dependencies_when_there_is_joined_table(self):
         result = get_view_dependencies_from_view_definition(
