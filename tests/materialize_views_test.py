@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from typing import OrderedDict
 from unittest.mock import ANY, patch
@@ -10,7 +11,7 @@ from bigquery_views_manager.materialize_views import (
     MaterializeViewListResult,
     MaterializeViewResult,
     get_select_all_from_query,
-    get_view_dependencies_json,
+    get_json,
     materialize_view,
     materialize_views,
     materialize_views_if_necessary
@@ -27,6 +28,8 @@ VIEW_2 = "view2"
 TABLE_1 = "table1"
 
 VIEW_QUERY_1 = "SELECT * FROM `project1.dataset1.table1`"
+
+TIMESTAMP_1 = datetime.fromisoformat('2001-01-01T00:00:00+00:00')
 
 
 @pytest.fixture(name="bigquery", autouse=True)
@@ -164,13 +167,16 @@ class TestMaterializeViews:
         )
 
 
-class Test_get_view_dependencies_json:
+class TestGetJson:
     def test_should_format_view_dependencies_with_set_as_list(self):
-        assert json.loads(get_view_dependencies_json({
+        assert json.loads(get_json({
             'view_1': {'table_1', 'table_2'}
         })) == {
             'view_1': ['table_1', 'table_2']
         }
+
+    def test_should_format_datetime(self):
+        assert get_json(TIMESTAMP_1) == json.dumps(TIMESTAMP_1.isoformat())
 
 
 class TestMaterializeViewsIfNecessary:

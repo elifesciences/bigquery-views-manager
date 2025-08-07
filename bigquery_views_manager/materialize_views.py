@@ -1,11 +1,12 @@
+from datetime import datetime
 import json
 import logging
 import time
 from collections import OrderedDict
-from collections.abc import Container, Set
+from collections.abc import Container
 from itertools import islice
 from dataclasses import dataclass
-from typing import Mapping, Optional, Sequence
+from typing import Any, Optional, Sequence
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
@@ -150,19 +151,17 @@ def materialize_views(
     return MaterializeViewListResult(result_list)
 
 
-class SetEncoder(json.JSONEncoder):
+class JsonEncoder(json.JSONEncoder):
     def default(self, obj):  # pylint: disable=arguments-renamed
         if isinstance(obj, set):
             return list(sorted(obj))
+        if isinstance(obj, datetime):
+            return obj.isoformat()
         return super().default(obj)
 
 
-def get_view_dependencies_json(view_dependencies: Mapping[str, Set[str]]):
-    return json.dumps(
-        view_dependencies,
-        cls=SetEncoder,
-        indent=2
-    )
+def get_json(obj: Any):
+    return json.dumps(obj, cls=JsonEncoder, indent=2)
 
 
 def materialize_views_if_necessary(  # pylint: disable=too-many-locals
@@ -183,7 +182,7 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     )
     LOGGER.info(
         'view_dependencies:\n```json\n%s\n```',
-        get_view_dependencies_json(view_dependencies)
+        get_json(view_dependencies)
     )
     flat_view_dependencies = get_flat_view_dependencies(view_dependencies)
     LOGGER.info('flat_view_dependencies: %r', flat_view_dependencies)
@@ -195,7 +194,7 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     )
     LOGGER.info(
         'last_modified_timestamp_by_full_table_or_view_name:\n```json\n%s\n```',
-        json.dumps(last_modified_timestamp_by_full_table_or_view_name, indent=2)
+        get_json(last_modified_timestamp_by_full_table_or_view_name)
     )
     for view_config in view_list_config:
         if (
