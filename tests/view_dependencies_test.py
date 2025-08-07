@@ -7,6 +7,8 @@ import pytest
 
 import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
+    DatasetRef,
+    get_dataset_ref_for_full_table_or_view_name,
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_view_or_table,
     get_table_or_view_last_modified_timestamp_query,
@@ -296,6 +298,19 @@ class TestGetTableOrViewLastModifiedTimestampQuery:
             FROM `project_1.dataset_1.__TABLES__`
             '''
         )
+
+
+class TestGetDatasetRefForFullTableOrViewName:
+    def test_should_parse_full_table_or_view_name(self):
+        assert get_dataset_ref_for_full_table_or_view_name(
+            'project_1.dataset_1.view_1'
+        ) == DatasetRef(project='project_1', dataset='dataset_1')
+
+    def test_should_fail_if_passed_in_string_does_not_have_three_parts(self):
+        with pytest.raises(ValueError):
+            get_dataset_ref_for_full_table_or_view_name(
+                'dataset_1.view_1'
+            )
 
 
 class TestGetLastModifiedTimestampByFullViewOrTable:

@@ -1,4 +1,5 @@
 from collections.abc import Set
+from dataclasses import dataclass
 from datetime import datetime
 import logging
 import re
@@ -11,6 +12,12 @@ import bigquery_views_manager.utils.bigquery as bigquery_utils
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class DatasetRef:
+    project: str
+    dataset: str
 
 
 def get_view_definition_query(
@@ -95,8 +102,20 @@ def get_table_or_view_last_modified_timestamp_query(
     )
 
 
+def get_dataset_ref_for_full_table_or_view_name(
+    full_view_or_table_name: str
+) -> DatasetRef:
+    project, dataset, _table_or_view_name = full_view_or_table_name.split('.')
+    return DatasetRef(project=project, dataset=dataset)
+
+
 def get_last_modified_timestamp_by_full_view_or_table(
     view_or_table_names: Set[str]
 ) -> Mapping[str, datetime]:
     LOGGER.debug('view_or_table_names: %r', view_or_table_names)
+    dataset_refs = {
+        get_dataset_ref_for_full_table_or_view_name(full_table_or_view_name)
+        for full_table_or_view_name in view_or_table_names
+    }
+    LOGGER.info('dataset_refs: %r', dataset_refs)
     return {}
