@@ -154,12 +154,12 @@ def get_last_modified_timestamp_by_full_table_or_view_name_map(
         for full_table_or_view_name in table_or_view_names
     }
     LOGGER.info('dataset_refs: %r', dataset_refs)
-    last_modified_timestamp_map = get_last_modified_timestamp_map_for_dataset_refs(
+    all_last_modified_timestamp_map = get_last_modified_timestamp_map_for_dataset_refs(
         client=client,
         dataset_refs=dataset_refs
     )
-    LOGGER.info('last_modified_timestamp_map: %r', last_modified_timestamp_map)
+    LOGGER.info('all_last_modified_timestamp_map: %r', all_last_modified_timestamp_map)
     return {
-        table_or_view_name: last_modified_timestamp_map[table_or_view_name]
+        table_or_view_name: all_last_modified_timestamp_map[table_or_view_name]
         for table_or_view_name in table_or_view_names
     }
