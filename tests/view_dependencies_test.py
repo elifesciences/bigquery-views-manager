@@ -1,4 +1,5 @@
 from collections.abc import Set
+import textwrap
 from typing import Iterator
 from unittest.mock import MagicMock, patch
 
@@ -169,6 +170,16 @@ class TestGetViewDependenciesFromViewDefinition:
             'project_1.dataset_1.table_3',
             'project_1.dataset_1.table_4'
         }
+
+    def test_should_ignore_implicit_unnest_from_as_alias(self):
+        result = get_view_dependencies_from_view_definition(textwrap.dedent(
+            '''
+            SELECT *
+            FROM `project_1.dataset_1.table_1` AS t
+            JOIN t.nested AS n
+            '''
+        ))
+        assert result == {'project_1.dataset_1.table_1'}
 
 
 class TestGetViewDependencies:
