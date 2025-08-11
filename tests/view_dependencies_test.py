@@ -440,14 +440,14 @@ class TestGetLastModifiedTimestampByFullViewOrTableMap:
             dataset_refs={DatasetRef(project=PROJECT_1, dataset=DATASET_1)}
         )
 
-    def test_should_return_views_from_original_set(
+    def test_should_return_views_from_selected_table_or_view_names(
         self,
         bq_client: MagicMock,
         get_last_modified_timestamp_map_for_dataset_refs_mock: MagicMock
     ):
         get_last_modified_timestamp_map_for_dataset_refs_mock.return_value = {
             f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1,
-            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_2}': TIMESTAMP_1
+            f'{PROJECT_1}.{DATASET_1}.other_view': TIMESTAMP_1
         }
         assert get_last_modified_timestamp_by_full_table_or_view_name_map(
             client=bq_client,
