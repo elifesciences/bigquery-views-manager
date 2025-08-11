@@ -84,7 +84,7 @@ def get_flat_view_dependencies(
         value
         for values in view_dependencies.values()
         for value in values
-    }
+    } | set(view_dependencies.keys())
 
 
 class LastModifiedBigQueryResultTypedDict(TypedDict):

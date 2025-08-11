@@ -286,22 +286,22 @@ class TestGetFlatViewDependencies:
     def test_should_return_empty_set_for_empty_view_dependencies(self):
         assert get_flat_view_dependencies({}) == EMPTY_SET
 
-    def test_should_return_empty_set_for_views_without_dependencies(self):
+    def test_should_return_target_view_itself_for_views_without_dependencies(self):
         assert get_flat_view_dependencies({
             'view_1': set()
-        }) == EMPTY_SET
+        }) == {'view_1'}
 
     def test_should_find_dependencies_across_multiple_views(self):
         assert get_flat_view_dependencies({
             'view_1': {'table_1'},
             'view_2': {'table_2'}
-        }) == {'table_1', 'table_2'}
+        }) == {'view_1', 'view_2', 'table_1', 'table_2'}
 
     def test_should_include_common_dependencies_only_once(self):
         assert get_flat_view_dependencies({
-            'view_1': {'table_1', 'common'},
-            'view_2': {'table_2', 'common'}
-        }) == {'table_1', 'table_2', 'common'}
+            'view_1': {'table_1', 'common_table_1'},
+            'view_2': {'table_2', 'common_table_1'}
+        }) == {'view_1', 'view_2', 'table_1', 'table_2', 'common_table_1'}
 
 
 class TestGetTableOrViewLastModifiedTimestampQueryForSingleDatasetRef:
