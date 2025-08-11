@@ -77,14 +77,19 @@ def get_view_dependencies(
 
 
 def get_flat_view_dependencies(
-    view_dependencies: Mapping[str, Set[str]]
+    view_dependencies: Mapping[str, Set[str]],
+    project: str,
+    dataset: str
 ) -> Set[str]:
     LOGGER.debug('view_dependencies: %r', view_dependencies)
     return {
         value
         for values in view_dependencies.values()
         for value in values
-    } | set(view_dependencies.keys())
+    } | {
+        f'{project}.{dataset}.{view_name}'
+        for view_name in view_dependencies.keys()
+    }
 
 
 class LastModifiedBigQueryResultTypedDict(TypedDict):

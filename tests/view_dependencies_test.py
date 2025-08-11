@@ -284,24 +284,51 @@ class TestGetViewDependencies:
 
 class TestGetFlatViewDependencies:
     def test_should_return_empty_set_for_empty_view_dependencies(self):
-        assert get_flat_view_dependencies({}) == EMPTY_SET
+        assert get_flat_view_dependencies(
+            {},
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == EMPTY_SET
 
-    def test_should_return_target_view_itself_for_views_without_dependencies(self):
-        assert get_flat_view_dependencies({
-            'view_1': set()
-        }) == {'view_1'}
+    def test_should_return_full_target_view_name_for_views_without_dependencies(self):
+        assert get_flat_view_dependencies(
+            {
+                'view_1': set()
+            },
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == {f'{PROJECT_1}.{DATASET_1}.view_1'}
 
     def test_should_find_dependencies_across_multiple_views(self):
-        assert get_flat_view_dependencies({
-            'view_1': {'table_1'},
-            'view_2': {'table_2'}
-        }) == {'view_1', 'view_2', 'table_1', 'table_2'}
+        assert get_flat_view_dependencies(
+            {
+                'view_1': {'table_1'},
+                'view_2': {'table_2'}
+            },
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == {
+            f'{PROJECT_1}.{DATASET_1}.view_1',
+            f'{PROJECT_1}.{DATASET_1}.view_2',
+            'table_1',
+            'table_2'
+        }
 
     def test_should_include_common_dependencies_only_once(self):
-        assert get_flat_view_dependencies({
-            'view_1': {'table_1', 'common_table_1'},
-            'view_2': {'table_2', 'common_table_1'}
-        }) == {'view_1', 'view_2', 'table_1', 'table_2', 'common_table_1'}
+        assert get_flat_view_dependencies(
+            {
+                'view_1': {'table_1', 'common_table_1'},
+                'view_2': {'table_2', 'common_table_1'}
+            },
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == {
+            f'{PROJECT_1}.{DATASET_1}.view_1',
+            f'{PROJECT_1}.{DATASET_1}.view_2',
+            'table_1',
+            'table_2',
+            'common_table_1'
+        }
 
 
 class TestGetTableOrViewLastModifiedTimestampQueryForSingleDatasetRef:
