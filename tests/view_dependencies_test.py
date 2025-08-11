@@ -1,4 +1,5 @@
 from collections.abc import Set
+from datetime import datetime
 import textwrap
 from typing import Iterator
 from unittest.mock import MagicMock, patch
@@ -7,6 +8,14 @@ import pytest
 
 import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
+    DatasetRef,
+    LastModifiedBigQueryResultTypedDict,
+    get_dataset_ref_for_full_table_or_view_name,
+    get_flat_view_dependencies,
+    get_last_modified_timestamp_by_full_table_or_view_name_map,
+    get_last_modified_timestamp_map_for_dataset_refs,
+    get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref,
+    get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs,
     get_view_definition_map,
     get_view_definition_query,
     get_view_dependencies,
@@ -15,13 +24,33 @@ from bigquery_views_manager.view_dependencies import (
 
 PROJECT_1 = 'project_1'
 DATASET_1 = 'dataset_1'
+
+DATASET_REF_1 = DatasetRef(project=PROJECT_1, dataset=DATASET_1)
+DATASET_REF_2 = DatasetRef(project=PROJECT_1, dataset='dataset_2')
+DATASET_REF_3 = DatasetRef(project=PROJECT_1, dataset='dataset_3')
+
 VIEW_NAME_1 = 'view_name_1'
+VIEW_NAME_2 = 'view_name_2'
 VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
+
+TIMESTAMP_1 = datetime.fromisoformat('2001-01-01T00:00:00+00:00')
+
+EMPTY_DICT: dict = {}
+EMPTY_SET: Set = set()
 
 
 @pytest.fixture(name='get_view_definition_map_mock')
 def _get_view_definition_map_mock() -> Iterator[MagicMock]:
     with patch.object(view_dependencies_module, 'get_view_definition_map') as mock:
+        yield mock
+
+
+@pytest.fixture(name='get_last_modified_timestamp_map_for_dataset_refs_mock')
+def _get_last_modified_timestamp_map_for_dataset_refs_mock() -> Iterator[MagicMock]:
+    with patch.object(
+        view_dependencies_module,
+        'get_last_modified_timestamp_map_for_dataset_refs'
+    ) as mock:
         yield mock
 
 
@@ -43,12 +72,11 @@ class TestGetViewDefinitionMap:
         iter_dict_from_bq_query_mock: MagicMock
     ):
         iter_dict_from_bq_query_mock.return_value = iter([])
-        expected_result: dict = {}
         assert get_view_definition_map(
             client=bq_client,
             project=PROJECT_1,
             dataset=DATASET_1
-        ) == expected_result
+        ) == EMPTY_DICT
 
     def test_should_call_iter_dict_from_bq_query_mock(
         self,
@@ -215,8 +243,7 @@ class TestGetViewDependencies:
             project=PROJECT_1,
             dataset=DATASET_1
         )
-        expected_result: dict = {}
-        assert result == expected_result
+        assert result == EMPTY_DICT
 
     def test_should_retrieve_view_definitions_for_dataset(
         self,
@@ -253,3 +280,207 @@ class TestGetViewDependencies:
             )
         }
         assert result == expected_result
+
+
+class TestGetFlatViewDependencies:
+    def test_should_return_empty_set_for_empty_view_dependencies(self):
+        assert get_flat_view_dependencies(
+            {},
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == EMPTY_SET
+
+    def test_should_return_full_target_view_name_for_views_without_dependencies(self):
+        assert get_flat_view_dependencies(
+            {
+                'view_1': set()
+            },
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == {f'{PROJECT_1}.{DATASET_1}.view_1'}
+
+    def test_should_find_dependencies_across_multiple_views(self):
+        assert get_flat_view_dependencies(
+            {
+                'view_1': {'table_1'},
+                'view_2': {'table_2'}
+            },
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == {
+            f'{PROJECT_1}.{DATASET_1}.view_1',
+            f'{PROJECT_1}.{DATASET_1}.view_2',
+            'table_1',
+            'table_2'
+        }
+
+    def test_should_include_common_dependencies_only_once(self):
+        assert get_flat_view_dependencies(
+            {
+                'view_1': {'table_1', 'common_table_1'},
+                'view_2': {'table_2', 'common_table_1'}
+            },
+            project=PROJECT_1,
+            dataset=DATASET_1
+        ) == {
+            f'{PROJECT_1}.{DATASET_1}.view_1',
+            f'{PROJECT_1}.{DATASET_1}.view_2',
+            'table_1',
+            'table_2',
+            'common_table_1'
+        }
+
+
+class TestGetTableOrViewLastModifiedTimestampQueryForSingleDatasetRef:
+    def test_should_return_query_with_project_and_dataset_replaced(self):
+        assert get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(DatasetRef(
+            project='project_1',
+            dataset='dataset_1'
+        )) == textwrap.dedent(
+            '''
+            SELECT
+                CONCAT(project_id, '.', dataset_id, '.', table_id) AS full_table_or_view_name,
+                TIMESTAMP_MILLIS(last_modified_time) AS last_modified_timestamp
+            FROM `project_1.dataset_1.__TABLES__`
+            '''
+        )
+
+
+class TestGetTableOrViewLastModifiedTimestampQueryForMultipleDatasetRefs:
+    def test_should_fail_for_empty_set(self):
+        with pytest.raises(AssertionError):
+            get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(set())
+
+    def test_should_return_query_for_single_dataset_ref(self):
+        assert get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs({
+            DATASET_REF_1
+        }) == get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+            DATASET_REF_1
+        )
+
+    def test_should_return_unioned_query_for_multiple_dataset_refs(self):
+        dataset_refs = [DATASET_REF_1, DATASET_REF_2, DATASET_REF_3]
+        expected_query_1 = get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+            DATASET_REF_1
+        )
+        expected_query_2 = get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+            DATASET_REF_2
+        )
+        expected_query_3 = get_table_or_view_last_modified_timestamp_query_for_single_dataset_ref(
+            DATASET_REF_3
+        )
+        expected_unioned_query = (
+            expected_query_1
+            + '\n\nUNION ALL\n\n'
+            + expected_query_2
+            + '\n\nUNION ALL\n\n'
+            + expected_query_3
+        )
+        assert get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(
+            dataset_refs
+        ) == expected_unioned_query
+
+
+class TestGetLastModifiedTimestampMapForDatasetRefs:
+    def test_should_return_empty_dict_if_bq_results_are_empty(
+        self,
+        bq_client: MagicMock,
+        iter_dict_from_bq_query_mock: MagicMock
+    ):
+        iter_dict_from_bq_query_mock.return_value = iter([])
+        assert get_last_modified_timestamp_map_for_dataset_refs(
+            client=bq_client,
+            dataset_refs=[DATASET_REF_1]
+        ) == EMPTY_DICT
+
+    def test_should_call_iter_dict_from_bq_query_mock(
+        self,
+        bq_client: MagicMock,
+        iter_dict_from_bq_query_mock: MagicMock
+    ):
+        get_last_modified_timestamp_map_for_dataset_refs(
+            client=bq_client,
+            dataset_refs=[DATASET_REF_1]
+        )
+        iter_dict_from_bq_query_mock.assert_called_with(
+            client=bq_client,
+            query=get_table_or_view_last_modified_timestamp_query_for_multiple_dataset_refs(
+                dataset_refs=[DATASET_REF_1]
+            )
+        )
+
+    def test_should_return_last_modified_timestamp_by_full_table_or_view_name_map(
+        self,
+        bq_client: MagicMock,
+        iter_dict_from_bq_query_mock: MagicMock
+    ):
+        bigquery_result_row: LastModifiedBigQueryResultTypedDict = {
+            'full_table_or_view_name': f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}',
+            'last_modified_timestamp': TIMESTAMP_1
+        }
+        iter_dict_from_bq_query_mock.return_value = iter([bigquery_result_row])
+        expected_result: dict = {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
+        }
+        assert get_last_modified_timestamp_map_for_dataset_refs(
+            client=bq_client,
+            dataset_refs=[DATASET_REF_1]
+        ) == expected_result
+
+
+class TestGetDatasetRefForFullTableOrViewName:
+    def test_should_parse_full_table_or_view_name(self):
+        assert get_dataset_ref_for_full_table_or_view_name(
+            'project_1.dataset_1.view_1'
+        ) == DatasetRef(project='project_1', dataset='dataset_1')
+
+    def test_should_fail_if_passed_in_string_does_not_have_three_parts(self):
+        with pytest.raises(ValueError):
+            get_dataset_ref_for_full_table_or_view_name(
+                'dataset_1.view_1'
+            )
+
+
+class TestGetLastModifiedTimestampByFullViewOrTableMap:
+    def test_should_return_empty_dict_without_dependencies(self, bq_client: MagicMock):
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map(
+            client=bq_client,
+            table_or_view_names=set()
+        ) == EMPTY_DICT
+
+    def test_should_return_dict_from_bigquery_results(
+        self,
+        bq_client: MagicMock,
+        get_last_modified_timestamp_map_for_dataset_refs_mock: MagicMock
+    ):
+        get_last_modified_timestamp_map_for_dataset_refs_mock.return_value = {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
+        }
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map(
+            client=bq_client,
+            table_or_view_names={
+                f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}'
+            }
+        ) == get_last_modified_timestamp_map_for_dataset_refs_mock.return_value
+        get_last_modified_timestamp_map_for_dataset_refs_mock.assert_called_once_with(
+            client=bq_client,
+            dataset_refs={DatasetRef(project=PROJECT_1, dataset=DATASET_1)}
+        )
+
+    def test_should_return_views_from_selected_table_or_view_names(
+        self,
+        bq_client: MagicMock,
+        get_last_modified_timestamp_map_for_dataset_refs_mock: MagicMock
+    ):
+        get_last_modified_timestamp_map_for_dataset_refs_mock.return_value = {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1,
+            f'{PROJECT_1}.{DATASET_1}.other_view': TIMESTAMP_1
+        }
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map(
+            client=bq_client,
+            table_or_view_names={
+                f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}'
+            }
+        ) == {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
+        }

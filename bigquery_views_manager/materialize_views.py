@@ -1,16 +1,20 @@
-import json
 import logging
 import time
 from collections import OrderedDict
-from collections.abc import Container, Set
+from collections.abc import Container
 from itertools import islice
 from dataclasses import dataclass
-from typing import Mapping, Optional, Sequence
+from typing import Optional, Sequence
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
 
-from bigquery_views_manager.view_dependencies import get_view_dependencies
+from bigquery_views_manager.utils.json import get_json
+from bigquery_views_manager.view_dependencies import (
+    get_flat_view_dependencies,
+    get_last_modified_timestamp_by_full_table_or_view_name_map,
+    get_view_dependencies
+)
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 from bigquery_views_manager.view_list import ViewListConfig
 
@@ -146,22 +150,7 @@ def materialize_views(
     return MaterializeViewListResult(result_list)
 
 
-class SetEncoder(json.JSONEncoder):
-    def default(self, obj):  # pylint: disable=arguments-renamed
-        if isinstance(obj, set):
-            return list(sorted(obj))
-        return super().default(obj)
-
-
-def get_view_dependencies_json(view_dependencies: Mapping[str, Set[str]]):
-    return json.dumps(
-        view_dependencies,
-        cls=SetEncoder,
-        indent=2
-    )
-
-
-def materialize_views_if_necessary(
+def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     client: bigquery.Client,
     project: str,
     dataset: str,
@@ -179,7 +168,23 @@ def materialize_views_if_necessary(
     )
     LOGGER.info(
         'view_dependencies:\n```json\n%s\n```',
-        get_view_dependencies_json(view_dependencies)
+        get_json(view_dependencies)
+    )
+    flat_view_dependencies = get_flat_view_dependencies(
+        view_dependencies,
+        project=project,
+        dataset=dataset
+    )
+    LOGGER.info('flat_view_dependencies: %r', flat_view_dependencies)
+    last_modified_timestamp_by_full_table_or_view_name_map = (
+        get_last_modified_timestamp_by_full_table_or_view_name_map(
+            client=client,
+            table_or_view_names=flat_view_dependencies
+        )
+    )
+    LOGGER.info(
+        'last_modified_timestamp_by_full_table_or_view_name_map:\n```json\n%s\n```',
+        get_json(last_modified_timestamp_by_full_table_or_view_name_map)
     )
     for view_config in view_list_config:
         if (

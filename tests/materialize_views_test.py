@@ -1,4 +1,3 @@
-import json
 from typing import OrderedDict
 from unittest.mock import ANY, patch
 
@@ -10,7 +9,6 @@ from bigquery_views_manager.materialize_views import (
     MaterializeViewListResult,
     MaterializeViewResult,
     get_select_all_from_query,
-    get_view_dependencies_json,
     materialize_view,
     materialize_views,
     materialize_views_if_necessary
@@ -162,15 +160,6 @@ class TestMaterializeViews:
                 total_bytes_billed=ANY
             )]
         )
-
-
-class Test_get_view_dependencies_json:
-    def test_should_format_view_dependencies_with_set_as_list(self):
-        assert json.loads(get_view_dependencies_json({
-            'view_1': {'table_1', 'table_2'}
-        })) == {
-            'view_1': ['table_1', 'table_2']
-        }
 
 
 class TestMaterializeViewsIfNecessary:
