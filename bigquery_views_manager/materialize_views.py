@@ -157,6 +157,8 @@ def materialize_views(
 
 @dataclass(frozen=True)
 class MaterializeViewState:
+    project: str
+    dataset: str
     view_dependencies: Mapping[str, Set[str]]
     last_modified_timestamp_map: dict[str, datetime]
 
@@ -200,8 +202,6 @@ class MaterializeViewState:
 
 def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-locals,too-many-arguments
     client: bigquery.Client,
-    project: str,
-    dataset: str,
     view_list_config: ViewListConfig,
     state: MaterializeViewState,
     selected_view_names: Optional[Container[str]] = None
@@ -226,16 +226,18 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
             latest_timestamp_of_dependencies
         )
         destination_dataset_and_table_dict = view_config.get_destination_dataset_and_table_name(
-            dataset
+            state.dataset
         )
         destination_dataset = destination_dataset_and_table_dict['dataset_name']
         destination_table_name = destination_dataset_and_table_dict['table_name']
-        full_destination_table_name = f'{project}.{destination_dataset}.{destination_table_name}'
+        full_destination_table_name = (
+            f'{state.project}.{destination_dataset}.{destination_table_name}'
+        )
         LOGGER.debug('full_destination_table_name: %r', full_destination_table_name)
         result = materialize_view(
             client=client,
-            project=project,
-            source_dataset=dataset,
+            project=state.project,
+            source_dataset=state.dataset,
             source_view_name=view_config.view_name,
             destination_dataset=destination_dataset,
             destination_table_name=destination_table_name
@@ -297,13 +299,13 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
         get_json(last_modified_timestamp_by_full_table_or_view_name_map)
     )
     state = MaterializeViewState(
+        project=project,
+        dataset=dataset,
         view_dependencies=view_dependencies,
         last_modified_timestamp_map=dict(last_modified_timestamp_by_full_table_or_view_name_map)
     )
     return materialize_views_if_necessary_with_state(
         client=client,
-        project=project,
-        dataset=dataset,
         view_list_config=view_list_config,
         state=state,
         selected_view_names=selected_view_names
