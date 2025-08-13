@@ -1,5 +1,5 @@
-from typing import OrderedDict
-from unittest.mock import ANY, patch
+from typing import Iterator, OrderedDict
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 
@@ -8,6 +8,7 @@ import bigquery_views_manager.materialize_views as materialize_views_module
 from bigquery_views_manager.materialize_views import (
     MaterializeViewListResult,
     MaterializeViewResult,
+    MaterializeViewState,
     get_select_all_from_query,
     materialize_view,
     materialize_views,
@@ -36,6 +37,32 @@ def _bigquery():
 @pytest.fixture(name="QueryJobConfig")
 def _query_job_config():
     with patch.object(materialize_views_module, "QueryJobConfig") as mock:
+        yield mock
+
+
+@pytest.fixture(name="get_view_dependencies_mock")
+def _get_view_dependencies_mock() -> Iterator[MagicMock]:
+    with patch.object(materialize_views_module, "get_view_dependencies") as mock:
+        mock.return_value = {}
+        yield mock
+
+
+@pytest.fixture(name="get_last_modified_timestamp_by_full_table_or_view_name_map_mock")
+def _get_last_modified_timestamp_by_full_table_or_view_name_map_mock() -> Iterator[MagicMock]:
+    with patch.object(
+        materialize_views_module,
+        "get_last_modified_timestamp_by_full_table_or_view_name_map"
+    ) as mock:
+        mock.return_value = {}
+        yield mock
+
+
+@pytest.fixture(name="materialize_views_if_necessary_with_state_mock")
+def _materialize_views_if_necessary_with_state_mock() -> Iterator[MagicMock]:
+    with patch.object(
+        materialize_views_module,
+        "materialize_views_if_necessary_with_state"
+    ) as mock:
         yield mock
 
 
@@ -234,3 +261,38 @@ class TestMaterializeViewsIfNecessary:
         )
         assert len(return_value.result_list) == 1
         assert return_value.result_list[0].source_view_name == VIEW_1
+
+    def test_should_call_materialize_views_if_necessary_with_state(
+        self,
+        bq_client: MagicMock,
+        materialize_views_if_necessary_with_state_mock: MagicMock,
+        get_view_dependencies_mock: MagicMock,
+        get_last_modified_timestamp_by_full_table_or_view_name_map_mock: MagicMock
+    ):
+        view_list_config = ViewListConfig([
+            ViewConfig(
+                view_name=VIEW_1,
+                materialize=True
+            )
+        ])
+        return_value = materialize_views_if_necessary(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset='dataset_1',
+            view_list_config=view_list_config,
+            selected_view_names=[VIEW_1]
+        )
+        assert return_value == materialize_views_if_necessary_with_state_mock.return_value
+        materialize_views_if_necessary_with_state_mock.assert_called_with(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset='dataset_1',
+            view_list_config=view_list_config,
+            state=MaterializeViewState(
+                view_dependencies=get_view_dependencies_mock.return_value,
+                last_modified_timestamp_map=(
+                    get_last_modified_timestamp_by_full_table_or_view_name_map_mock.return_value
+                )
+            ),
+            selected_view_names=[VIEW_1]
+        )

@@ -1,10 +1,11 @@
+from datetime import datetime
 import logging
 import time
 from collections import OrderedDict
-from collections.abc import Container
+from collections.abc import Container, Set
 from itertools import islice
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Mapping, Optional, Sequence
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import QueryJobConfig
@@ -150,42 +151,25 @@ def materialize_views(
     return MaterializeViewListResult(result_list)
 
 
-def materialize_views_if_necessary(  # pylint: disable=too-many-locals
+@dataclass(frozen=True)
+class MaterializeViewState:
+    view_dependencies: Mapping[str, Set[str]]
+    last_modified_timestamp_map: Mapping[str, datetime]
+
+
+def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-locals,too-many-arguments
     client: bigquery.Client,
     project: str,
     dataset: str,
     view_list_config: ViewListConfig,
+    state: MaterializeViewState,
     selected_view_names: Optional[Container[str]] = None
 ) -> MaterializeViewListResult:
+    LOGGER.debug('state: %r', state)
     start = time.perf_counter()
     total_bytes_processed = 0
     total_rows = 0
     result_list = []
-    view_dependencies = get_view_dependencies(
-        client=client,
-        project=project,
-        dataset=dataset
-    )
-    LOGGER.info(
-        'view_dependencies:\n```json\n%s\n```',
-        get_json(view_dependencies)
-    )
-    flat_view_dependencies = get_flat_view_dependencies(
-        view_dependencies,
-        project=project,
-        dataset=dataset
-    )
-    LOGGER.info('flat_view_dependencies: %r', flat_view_dependencies)
-    last_modified_timestamp_by_full_table_or_view_name_map = (
-        get_last_modified_timestamp_by_full_table_or_view_name_map(
-            client=client,
-            table_or_view_names=flat_view_dependencies
-        )
-    )
-    LOGGER.info(
-        'last_modified_timestamp_by_full_table_or_view_name_map:\n```json\n%s\n```',
-        get_json(last_modified_timestamp_by_full_table_or_view_name_map)
-    )
     for view_config in view_list_config:
         if (
             not view_config.is_materialized()
@@ -224,3 +208,49 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     else:
         LOGGER.info('There are no views to materialize.')
     return MaterializeViewListResult(result_list)
+
+
+def materialize_views_if_necessary(  # pylint: disable=too-many-locals
+    client: bigquery.Client,
+    project: str,
+    dataset: str,
+    view_list_config: ViewListConfig,
+    selected_view_names: Optional[Container[str]] = None
+) -> MaterializeViewListResult:
+    view_dependencies = get_view_dependencies(
+        client=client,
+        project=project,
+        dataset=dataset
+    )
+    LOGGER.info(
+        'view_dependencies:\n```json\n%s\n```',
+        get_json(view_dependencies)
+    )
+    flat_view_dependencies = get_flat_view_dependencies(
+        view_dependencies,
+        project=project,
+        dataset=dataset
+    )
+    LOGGER.info('flat_view_dependencies: %r', flat_view_dependencies)
+    last_modified_timestamp_by_full_table_or_view_name_map = (
+        get_last_modified_timestamp_by_full_table_or_view_name_map(
+            client=client,
+            table_or_view_names=flat_view_dependencies
+        )
+    )
+    LOGGER.info(
+        'last_modified_timestamp_by_full_table_or_view_name_map:\n```json\n%s\n```',
+        get_json(last_modified_timestamp_by_full_table_or_view_name_map)
+    )
+    state = MaterializeViewState(
+        view_dependencies=view_dependencies,
+        last_modified_timestamp_map=last_modified_timestamp_by_full_table_or_view_name_map
+    )
+    return materialize_views_if_necessary_with_state(
+        client=client,
+        project=project,
+        dataset=dataset,
+        view_list_config=view_list_config,
+        state=state,
+        selected_view_names=selected_view_names
+    )
