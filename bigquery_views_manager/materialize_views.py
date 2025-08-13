@@ -154,7 +154,13 @@ def materialize_views(
 @dataclass(frozen=True)
 class MaterializeViewState:
     view_dependencies: Mapping[str, Set[str]]
-    last_modified_timestamp_map: Mapping[str, datetime]
+    last_modified_timestamp_map: dict[str, datetime]
+
+    def get_timestamp(self, full_table_or_view_name: str) -> datetime:
+        return self.last_modified_timestamp_map[full_table_or_view_name]
+
+    def update_timestamp(self, full_table_or_view_name: str, timestamp: datetime):
+        self.last_modified_timestamp_map[full_table_or_view_name] = timestamp
 
 
 def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-locals,too-many-arguments
@@ -244,7 +250,7 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     )
     state = MaterializeViewState(
         view_dependencies=view_dependencies,
-        last_modified_timestamp_map=last_modified_timestamp_by_full_table_or_view_name_map
+        last_modified_timestamp_map=dict(last_modified_timestamp_by_full_table_or_view_name_map)
     )
     return materialize_views_if_necessary_with_state(
         client=client,

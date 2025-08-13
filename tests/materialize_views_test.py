@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterator, OrderedDict
 from unittest.mock import ANY, MagicMock, patch
 
@@ -26,6 +27,10 @@ VIEW_2 = 'view2'
 TABLE_1 = 'table1'
 
 VIEW_QUERY_1 = 'SELECT * FROM `project1.dataset1.table1`'
+
+TIMESTAMP_1 = datetime.fromisoformat('2001-01-01T00:00:00+00:00')
+TIMESTAMP_2 = datetime.fromisoformat('2001-01-02T00:00:00+00:00')
+TIMESTAMP_3 = datetime.fromisoformat('2001-01-03T00:00:00+00:00')
 
 
 @pytest.fixture(name='bigquery', autouse=True)
@@ -187,6 +192,20 @@ class TestMaterializeViews:
                 total_bytes_billed=ANY
             )]
         )
+
+
+class TestMaterializeViewState:
+    def test_should_update_last_modified_timestamp(self):
+        state = MaterializeViewState(
+            view_dependencies={VIEW_1: {f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}'}},
+            last_modified_timestamp_map={
+                f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}': TIMESTAMP_1,
+                f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}': TIMESTAMP_2
+            }
+        )
+        assert state.get_timestamp(f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}') == TIMESTAMP_2
+        state.update_timestamp(f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}', TIMESTAMP_3)
+        assert state.get_timestamp(f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}') == TIMESTAMP_3
 
 
 class TestMaterializeViewsIfNecessary:
