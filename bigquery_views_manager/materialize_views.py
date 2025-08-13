@@ -49,7 +49,7 @@ def get_select_all_from_query(
     project: str,
     dataset: str
 ) -> str:
-    return f"SELECT * FROM `{project}.{dataset}.{view_name}`"
+    return f'SELECT * FROM `{project}.{dataset}.{view_name}`'
 
 
 def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
@@ -62,13 +62,13 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
 ) -> MaterializeViewResult:
     query = get_select_all_from_query(source_view_name, project=project, dataset=source_dataset)
     LOGGER.info(
-        "materializing view: %s.%s -> %s.%s",
+        'materializing view: %s.%s -> %s.%s',
         source_dataset,
         source_view_name,
         destination_dataset,
         destination_table_name
     )
-    LOGGER.debug("materialize_view: %s=%s", destination_table_name, [query])
+    LOGGER.debug('materialize_view: %s=%s', destination_table_name, [query])
 
     start = time.perf_counter()
     dataset_ref = client.dataset(destination_dataset)
@@ -96,7 +96,7 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
     )
     if LOGGER.isEnabledFor(logging.DEBUG):
         sample_result = list(islice(result, 3))
-        LOGGER.debug("sample_result: %s", sample_result)
+        LOGGER.debug('sample_result: %s', sample_result)
     return MaterializeViewResult(
         source_dataset=source_dataset,
         source_view_name=source_view_name,
@@ -117,7 +117,7 @@ def materialize_views(
     source_view_dict: OrderedDict[str, DatasetViewDataTypedDict],
     project: str,
 ) -> MaterializeViewListResult:
-    LOGGER.info("view_names: %s", materialized_view_dict)
+    LOGGER.info('view_names: %s', materialized_view_dict)
     if not materialized_view_dict:
         return MaterializeViewListResult(result_list=[])
     start = time.perf_counter()

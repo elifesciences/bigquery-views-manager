@@ -16,52 +16,52 @@ from bigquery_views_manager.materialize_views import (
 )
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 
-PROJECT_1 = "project1"
-SOURCE_DATASET_1 = "dataset1"
-DESTINATION_DATASET_1 = "dataset2"
+PROJECT_1 = 'project1'
+SOURCE_DATASET_1 = 'dataset1'
+DESTINATION_DATASET_1 = 'dataset2'
 
-VIEW_1 = "view1"
-VIEW_2 = "view2"
+VIEW_1 = 'view1'
+VIEW_2 = 'view2'
 
-TABLE_1 = "table1"
+TABLE_1 = 'table1'
 
-VIEW_QUERY_1 = "SELECT * FROM `project1.dataset1.table1`"
+VIEW_QUERY_1 = 'SELECT * FROM `project1.dataset1.table1`'
 
 
-@pytest.fixture(name="bigquery", autouse=True)
+@pytest.fixture(name='bigquery', autouse=True)
 def _bigquery():
-    with patch.object(materialize_views_module, "bigquery") as mock:
+    with patch.object(materialize_views_module, 'bigquery') as mock:
         yield mock
 
 
-@pytest.fixture(name="QueryJobConfig")
+@pytest.fixture(name='QueryJobConfig')
 def _query_job_config():
-    with patch.object(materialize_views_module, "QueryJobConfig") as mock:
+    with patch.object(materialize_views_module, 'QueryJobConfig') as mock:
         yield mock
 
 
-@pytest.fixture(name="get_view_dependencies_mock")
+@pytest.fixture(name='get_view_dependencies_mock')
 def _get_view_dependencies_mock() -> Iterator[MagicMock]:
-    with patch.object(materialize_views_module, "get_view_dependencies") as mock:
+    with patch.object(materialize_views_module, 'get_view_dependencies') as mock:
         mock.return_value = {}
         yield mock
 
 
-@pytest.fixture(name="get_last_modified_timestamp_by_full_table_or_view_name_map_mock")
+@pytest.fixture(name='get_last_modified_timestamp_by_full_table_or_view_name_map_mock')
 def _get_last_modified_timestamp_by_full_table_or_view_name_map_mock() -> Iterator[MagicMock]:
     with patch.object(
         materialize_views_module,
-        "get_last_modified_timestamp_by_full_table_or_view_name_map"
+        'get_last_modified_timestamp_by_full_table_or_view_name_map'
     ) as mock:
         mock.return_value = {}
         yield mock
 
 
-@pytest.fixture(name="materialize_views_if_necessary_with_state_mock")
+@pytest.fixture(name='materialize_views_if_necessary_with_state_mock')
 def _materialize_views_if_necessary_with_state_mock() -> Iterator[MagicMock]:
     with patch.object(
         materialize_views_module,
-        "materialize_views_if_necessary_with_state"
+        'materialize_views_if_necessary_with_state'
     ) as mock:
         yield mock
 
@@ -70,7 +70,7 @@ class TestGetSelectAllFromQuery:
     def test_should_substitute_values(self):
         assert (get_select_all_from_query(
             VIEW_1, project=PROJECT_1, dataset=SOURCE_DATASET_1)) == (
-                f"SELECT * FROM `{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}`")
+                f'SELECT * FROM `{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}`')
 
 
 # pylint: disable=invalid-name
