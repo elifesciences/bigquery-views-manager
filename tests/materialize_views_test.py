@@ -13,7 +13,8 @@ from bigquery_views_manager.materialize_views import (
     get_select_all_from_query,
     materialize_view,
     materialize_views,
-    materialize_views_if_necessary
+    materialize_views_if_necessary,
+    materialize_views_if_necessary_with_state
 )
 from bigquery_views_manager.materialize_views_typing import DatasetViewDataTypedDict
 
@@ -45,6 +46,12 @@ def _bigquery():
 @pytest.fixture(name='QueryJobConfig')
 def _query_job_config():
     with patch.object(materialize_views_module, 'QueryJobConfig') as mock:
+        yield mock
+
+
+@pytest.fixture(name='get_current_timestamp_mock')
+def _get_current_timestamp_mock() -> Iterator[MagicMock]:
+    with patch.object(materialize_views_module, 'get_current_timestamp') as mock:
         yield mock
 
 
@@ -208,6 +215,36 @@ class TestMaterializeViewState:
         )
         assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_2
         state.update_timestamp(FULL_TABLE_NAME_1, TIMESTAMP_3)
+        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_3
+
+
+class TestMaterializeViewsIfNecessaryWithState:
+    def test_should_update_timestamp_after_materializing(
+        self,
+        bq_client: MagicMock,
+        get_current_timestamp_mock: MagicMock
+    ):
+        state = MaterializeViewState(
+            view_dependencies={VIEW_1: {FULL_TABLE_NAME_1}},
+            last_modified_timestamp_map={
+                FULL_VIEW_NAME_1: TIMESTAMP_1,
+                FULL_TABLE_NAME_1: TIMESTAMP_2
+            }
+        )
+        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_2
+        get_current_timestamp_mock.return_value = TIMESTAMP_3
+        materialize_views_if_necessary_with_state(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset=SOURCE_DATASET_1,
+            view_list_config=ViewListConfig([
+                ViewConfig(
+                    view_name=VIEW_1,
+                    materialize_as=f'{SOURCE_DATASET_1}.{TABLE_1}'
+                )
+            ]),
+            state=state
+        )
         assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_3
 
 

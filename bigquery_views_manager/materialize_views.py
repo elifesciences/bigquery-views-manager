@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import time
 from collections import OrderedDict
@@ -42,6 +42,10 @@ class MaterializeViewListResult:
 
     def __bool__(self):
         return bool(self.result_list)
+
+
+def get_current_timestamp() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def get_select_all_from_query(
@@ -185,14 +189,19 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
         destination_dataset_and_table_dict = view_config.get_destination_dataset_and_table_name(
             dataset
         )
+        destination_dataset = destination_dataset_and_table_dict['dataset_name']
+        destination_table_name = destination_dataset_and_table_dict['table_name']
+        full_destination_table_name = f'{project}.{destination_dataset}.{destination_table_name}'
+        LOGGER.debug('full_destination_table_name: %r', full_destination_table_name)
         result = materialize_view(
             client=client,
             project=project,
             source_dataset=dataset,
             source_view_name=view_config.view_name,
-            destination_dataset=destination_dataset_and_table_dict['dataset_name'],
-            destination_table_name=destination_dataset_and_table_dict['table_name']
+            destination_dataset=destination_dataset,
+            destination_table_name=destination_table_name
         )
+        state.update_timestamp(full_destination_table_name, get_current_timestamp())
         result_list.append(result)
         total_bytes_processed += (result.total_bytes_processed or 0)
         total_rows += (result.total_rows or 0)
