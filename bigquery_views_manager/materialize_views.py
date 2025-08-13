@@ -187,17 +187,16 @@ class MaterializeViewState:
             for short_dependency in short_dependencies
             if short_dependency in self.view_dependencies
         }
+        direct_timestamps = {
+            self.get_timestamp(dependency)
+            for dependency in dependencies
+        }
         indirect_timestamps = {
             self.get_latest_timestamp_of_dependencies(view_dependency)
             for view_dependency in view_dependencies
         }
         view_timestamp = self.get_timestamp(self.get_full_view_name(view_name))
-        return max({
-            view_timestamp
-        } | {
-            self.get_timestamp(dependency)
-            for dependency in dependencies
-        } | indirect_timestamps)
+        return max({view_timestamp} | direct_timestamps | indirect_timestamps)
 
 
 def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-locals,too-many-arguments
