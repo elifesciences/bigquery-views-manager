@@ -334,7 +334,16 @@ class TestMaterializeViewsIfNecessary:
         assert return_value == MaterializeViewListResult(result_list=[])
         assert not return_value
 
-    def test_should_return_result(self, bq_client):
+    def test_should_return_result(
+        self,
+        bq_client: MagicMock,
+        get_view_dependencies_mock: MagicMock,
+        get_last_modified_timestamp_by_full_table_or_view_name_map_mock: MagicMock
+    ):
+        get_view_dependencies_mock.return_value = {VIEW_1: set()}
+        get_last_modified_timestamp_by_full_table_or_view_name_map_mock.return_value = {
+            FULL_VIEW_NAME_1: TIMESTAMP_1
+        }
         return_value = materialize_views_if_necessary(
             client=bq_client,
             project=PROJECT_1,
@@ -361,7 +370,20 @@ class TestMaterializeViewsIfNecessary:
             )]
         )
 
-    def test_should_only_materialize_selected_views(self, bq_client):
+    def test_should_only_materialize_selected_views(
+        self,
+        bq_client: MagicMock,
+        get_view_dependencies_mock: MagicMock,
+        get_last_modified_timestamp_by_full_table_or_view_name_map_mock: MagicMock
+    ):
+        get_view_dependencies_mock.return_value = {
+            VIEW_1: set(),
+            VIEW_2: set()
+        }
+        get_last_modified_timestamp_by_full_table_or_view_name_map_mock.return_value = {
+            FULL_VIEW_NAME_1: TIMESTAMP_1,
+            FULL_VIEW_NAME_2: TIMESTAMP_2
+        }
         return_value = materialize_views_if_necessary(
             client=bq_client,
             project=PROJECT_1,
