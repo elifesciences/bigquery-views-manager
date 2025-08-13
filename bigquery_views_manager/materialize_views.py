@@ -220,7 +220,7 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
             view_config.view_name
         )
         LOGGER.info(
-            'latest_timestamp_of_dependencies (for %r): %r',
+            'latest_timestamp_of_dependencies (view name: %r): %r',
             view_config.view_name,
             latest_timestamp_of_dependencies.isoformat()
         )
