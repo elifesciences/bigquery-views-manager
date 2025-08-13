@@ -26,6 +26,9 @@ VIEW_2 = 'view2'
 
 TABLE_1 = 'table1'
 
+FULL_VIEW_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}'
+FULL_TABLE_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}'
+
 VIEW_QUERY_1 = 'SELECT * FROM `project1.dataset1.table1`'
 
 TIMESTAMP_1 = datetime.fromisoformat('2001-01-01T00:00:00+00:00')
@@ -197,15 +200,15 @@ class TestMaterializeViews:
 class TestMaterializeViewState:
     def test_should_update_last_modified_timestamp(self):
         state = MaterializeViewState(
-            view_dependencies={VIEW_1: {f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}'}},
+            view_dependencies={VIEW_1: {FULL_TABLE_NAME_1}},
             last_modified_timestamp_map={
-                f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}': TIMESTAMP_1,
-                f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}': TIMESTAMP_2
+                FULL_VIEW_NAME_1: TIMESTAMP_1,
+                FULL_TABLE_NAME_1: TIMESTAMP_2
             }
         )
-        assert state.get_timestamp(f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}') == TIMESTAMP_2
-        state.update_timestamp(f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}', TIMESTAMP_3)
-        assert state.get_timestamp(f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}') == TIMESTAMP_3
+        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_2
+        state.update_timestamp(FULL_TABLE_NAME_1, TIMESTAMP_3)
+        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_3
 
 
 class TestMaterializeViewsIfNecessary:
