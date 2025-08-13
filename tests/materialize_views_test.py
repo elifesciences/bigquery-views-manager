@@ -348,6 +348,39 @@ class TestMaterializeViewsIfNecessaryWithState:
             )]
         )
 
+    def test_should_only_materialize_selected_views(
+        self,
+        bq_client: MagicMock
+    ):
+        return_value = materialize_views_if_necessary_with_state(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset='dataset_1',
+            view_list_config=ViewListConfig([
+                ViewConfig(
+                    view_name=VIEW_1,
+                    materialize=True
+                ),
+                ViewConfig(
+                    view_name=VIEW_2,
+                    materialize=True
+                )
+            ]),
+            state=MaterializeViewState(
+                view_dependencies={
+                    VIEW_1: set(),
+                    VIEW_2: set()
+                },
+                last_modified_timestamp_map={
+                    FULL_VIEW_NAME_1: TIMESTAMP_1,
+                    FULL_VIEW_NAME_2: TIMESTAMP_2
+                }
+            ),
+            selected_view_names=[VIEW_1]
+        )
+        assert len(return_value.result_list) == 1
+        assert return_value.result_list[0].source_view_name == VIEW_1
+
     def test_should_update_timestamp_after_materializing(
         self,
         bq_client: MagicMock,
@@ -378,39 +411,6 @@ class TestMaterializeViewsIfNecessaryWithState:
 
 
 class TestMaterializeViewsIfNecessary:
-    def test_should_only_materialize_selected_views(
-        self,
-        bq_client: MagicMock,
-        get_view_dependencies_mock: MagicMock,
-        get_last_modified_timestamp_by_full_table_or_view_name_map_mock: MagicMock
-    ):
-        get_view_dependencies_mock.return_value = {
-            VIEW_1: set(),
-            VIEW_2: set()
-        }
-        get_last_modified_timestamp_by_full_table_or_view_name_map_mock.return_value = {
-            FULL_VIEW_NAME_1: TIMESTAMP_1,
-            FULL_VIEW_NAME_2: TIMESTAMP_2
-        }
-        return_value = materialize_views_if_necessary(
-            client=bq_client,
-            project=PROJECT_1,
-            dataset='dataset_1',
-            view_list_config=ViewListConfig([
-                ViewConfig(
-                    view_name=VIEW_1,
-                    materialize=True
-                ),
-                ViewConfig(
-                    view_name=VIEW_2,
-                    materialize=True
-                )
-            ]),
-            selected_view_names=[VIEW_1]
-        )
-        assert len(return_value.result_list) == 1
-        assert return_value.result_list[0].source_view_name == VIEW_1
-
     def test_should_call_materialize_views_if_necessary_with_state(
         self,
         bq_client: MagicMock,
