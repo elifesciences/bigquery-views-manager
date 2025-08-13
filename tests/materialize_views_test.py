@@ -22,16 +22,16 @@ PROJECT_1 = 'project1'
 SOURCE_DATASET_1 = 'dataset1'
 DESTINATION_DATASET_1 = 'dataset2'
 
-VIEW_1 = 'view1'
-VIEW_2 = 'view2'
+VIEW_NAME_1 = 'view1'
+VIEW_NAME_2 = 'view2'
 
-TABLE_1 = 'table1'
-TABLE_2 = 'table2'
+TABLE_NAME_1 = 'table1'
+TABLE_NAME_2 = 'table2'
 
-FULL_VIEW_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}'
-FULL_VIEW_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_2}'
-FULL_TABLE_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}'
-FULL_TABLE_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_2}'
+FULL_VIEW_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_NAME_1}'
+FULL_VIEW_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_NAME_2}'
+FULL_TABLE_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_NAME_1}'
+FULL_TABLE_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_NAME_2}'
 
 VIEW_QUERY_1 = 'SELECT * FROM `project1.dataset1.table1`'
 
@@ -87,8 +87,8 @@ def _materialize_views_if_necessary_with_state_mock() -> Iterator[MagicMock]:
 class TestGetSelectAllFromQuery:
     def test_should_substitute_values(self):
         assert (get_select_all_from_query(
-            VIEW_1, project=PROJECT_1, dataset=SOURCE_DATASET_1)) == (
-                f'SELECT * FROM `{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}`')
+            VIEW_NAME_1, project=PROJECT_1, dataset=SOURCE_DATASET_1)) == (
+                f'SELECT * FROM `{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_NAME_1}`')
 
 
 # pylint: disable=invalid-name
@@ -96,14 +96,14 @@ class TestMaterializeView:
     def test_should_call_query(self, bq_client, QueryJobConfig):
         materialize_view(
             bq_client,
-            source_view_name=VIEW_1,
-            destination_table_name=TABLE_1,
+            source_view_name=VIEW_NAME_1,
+            destination_table_name=TABLE_NAME_1,
             project=PROJECT_1,
             source_dataset=SOURCE_DATASET_1,
             destination_dataset=DESTINATION_DATASET_1,
         )
         bq_client.query.assert_called_with(
-            get_select_all_from_query(VIEW_1, project=PROJECT_1, dataset=SOURCE_DATASET_1),
+            get_select_all_from_query(VIEW_NAME_1, project=PROJECT_1, dataset=SOURCE_DATASET_1),
             job_config=QueryJobConfig.return_value,
         )
 
@@ -115,8 +115,8 @@ class TestMaterializeView:
     ):
         materialize_view(
             bq_client,
-            source_view_name=VIEW_1,
-            destination_table_name=TABLE_1,
+            source_view_name=VIEW_NAME_1,
+            destination_table_name=TABLE_NAME_1,
             project=PROJECT_1,
             source_dataset=SOURCE_DATASET_1,
             destination_dataset=DESTINATION_DATASET_1,
@@ -127,8 +127,8 @@ class TestMaterializeView:
     def test_should_call_result_on_query_job(self, bq_client):
         materialize_view(
             bq_client,
-            source_view_name=VIEW_1,
-            destination_table_name=TABLE_1,
+            source_view_name=VIEW_NAME_1,
+            destination_table_name=TABLE_NAME_1,
             project=PROJECT_1,
             source_dataset=SOURCE_DATASET_1,
             destination_dataset=DESTINATION_DATASET_1,
@@ -138,8 +138,8 @@ class TestMaterializeView:
     def test_should_return_results(self, bq_client):
         return_value = materialize_view(
             bq_client,
-            source_view_name=VIEW_1,
-            destination_table_name=TABLE_1,
+            source_view_name=VIEW_NAME_1,
+            destination_table_name=TABLE_NAME_1,
             project=PROJECT_1,
             source_dataset=SOURCE_DATASET_1,
             destination_dataset=DESTINATION_DATASET_1,
@@ -154,9 +154,9 @@ class TestMaterializeView:
         assert return_value.slot_millis == query_job.slot_millis
         assert return_value.total_bytes_billed == return_value.total_bytes_billed
         assert return_value.source_dataset == SOURCE_DATASET_1
-        assert return_value.source_view_name == VIEW_1
+        assert return_value.source_view_name == VIEW_NAME_1
         assert return_value.destination_dataset == DESTINATION_DATASET_1
-        assert return_value.destination_table_name == TABLE_1
+        assert return_value.destination_table_name == TABLE_NAME_1
 
 
 class TestMaterializeViews:
@@ -173,11 +173,11 @@ class TestMaterializeViews:
     def test_should_return_result(self, bq_client):
         destination_dataset_view_dict: DatasetViewDataTypedDict = {
             'dataset_name': DESTINATION_DATASET_1,
-            'table_name': TABLE_1
+            'table_name': TABLE_NAME_1
         }
         source_dataset_view_dict: DatasetViewDataTypedDict = {
             'dataset_name': SOURCE_DATASET_1,
-            'table_name': VIEW_1
+            'table_name': VIEW_NAME_1
         }
         materialized_view_dict = OrderedDict[str, DatasetViewDataTypedDict]({
             'view_template_file_name_1': destination_dataset_view_dict
@@ -194,9 +194,9 @@ class TestMaterializeViews:
         assert return_value == MaterializeViewListResult(
             result_list=[MaterializeViewResult(
                 source_dataset=SOURCE_DATASET_1,
-                source_view_name=VIEW_1,
+                source_view_name=VIEW_NAME_1,
                 destination_dataset=DESTINATION_DATASET_1,
-                destination_table_name=TABLE_1,
+                destination_table_name=TABLE_NAME_1,
                 total_bytes_processed=ANY,
                 total_rows=ANY,
                 duration=ANY,
@@ -213,7 +213,7 @@ class TestMaterializeViewState:
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                view_dependencies={VIEW_1: {FULL_TABLE_NAME_1}},
+                view_dependencies={VIEW_NAME_1: {FULL_TABLE_NAME_1}},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
                     FULL_TABLE_NAME_1: TIMESTAMP_2
@@ -228,57 +228,57 @@ class TestMaterializeViewState:
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                view_dependencies={VIEW_1: set()},
+                view_dependencies={VIEW_NAME_1: set()},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1
                 }
             )
             with pytest.raises(KeyError):
-                state.get_latest_timestamp_of_dependencies(VIEW_2)
+                state.get_latest_timestamp_of_dependencies(VIEW_NAME_2)
 
         def test_should_return_timestamp_of_view_itself_if_view_has_no_dependencies(self):
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                view_dependencies={VIEW_1: set()},
+                view_dependencies={VIEW_NAME_1: set()},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1
                 }
             )
-            assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_1
+            assert state.get_latest_timestamp_of_dependencies(VIEW_NAME_1) == TIMESTAMP_1
 
         def test_should_return_timestamp_of_single_dependency(self):
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                view_dependencies={VIEW_1: {FULL_TABLE_NAME_1}},
+                view_dependencies={VIEW_NAME_1: {FULL_TABLE_NAME_1}},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
                     FULL_TABLE_NAME_1: TIMESTAMP_2
                 }
             )
-            assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_2
+            assert state.get_latest_timestamp_of_dependencies(VIEW_NAME_1) == TIMESTAMP_2
 
         def test_should_return_latest_timestamp_of_multiple_dependencies(self):
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                view_dependencies={VIEW_1: {FULL_TABLE_NAME_1, FULL_TABLE_NAME_2}},
+                view_dependencies={VIEW_NAME_1: {FULL_TABLE_NAME_1, FULL_TABLE_NAME_2}},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
                     FULL_TABLE_NAME_1: TIMESTAMP_2,
                     FULL_TABLE_NAME_2: TIMESTAMP_3
                 }
             )
-            assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_3
+            assert state.get_latest_timestamp_of_dependencies(VIEW_NAME_1) == TIMESTAMP_3
 
         def test_should_return_timestamp_of_indirect_dependencies(self):
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
                 view_dependencies={
-                    VIEW_1: {FULL_TABLE_NAME_1, FULL_VIEW_NAME_2},
-                    VIEW_2: {FULL_TABLE_NAME_2}
+                    VIEW_NAME_1: {FULL_TABLE_NAME_1, FULL_VIEW_NAME_2},
+                    VIEW_NAME_2: {FULL_TABLE_NAME_2}
                 },
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
@@ -287,7 +287,7 @@ class TestMaterializeViewState:
                     FULL_TABLE_NAME_2: TIMESTAMP_3
                 }
             )
-            assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_3
+            assert state.get_latest_timestamp_of_dependencies(VIEW_NAME_1) == TIMESTAMP_3
 
 
 class TestMaterializeViewsIfNecessaryWithState:
@@ -310,7 +310,7 @@ class TestMaterializeViewsIfNecessaryWithState:
             client=bq_client,
             view_list_config=ViewListConfig([
                 ViewConfig(
-                    view_name=VIEW_1,
+                    view_name=VIEW_NAME_1,
                     materialize=False
                 )
             ]),
@@ -332,14 +332,14 @@ class TestMaterializeViewsIfNecessaryWithState:
             client=bq_client,
             view_list_config=ViewListConfig([
                 ViewConfig(
-                    view_name=VIEW_1,
-                    materialize_as=f'{DESTINATION_DATASET_1}.{TABLE_1}'
+                    view_name=VIEW_NAME_1,
+                    materialize_as=f'{DESTINATION_DATASET_1}.{TABLE_NAME_1}'
                 )
             ]),
             state=MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                view_dependencies={VIEW_1: set()},
+                view_dependencies={VIEW_NAME_1: set()},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1
                 }
@@ -348,9 +348,9 @@ class TestMaterializeViewsIfNecessaryWithState:
         assert return_value == MaterializeViewListResult(
             result_list=[MaterializeViewResult(
                 source_dataset=SOURCE_DATASET_1,
-                source_view_name=VIEW_1,
+                source_view_name=VIEW_NAME_1,
                 destination_dataset=DESTINATION_DATASET_1,
-                destination_table_name=TABLE_1,
+                destination_table_name=TABLE_NAME_1,
                 total_bytes_processed=ANY,
                 total_rows=ANY,
                 duration=ANY,
@@ -368,11 +368,11 @@ class TestMaterializeViewsIfNecessaryWithState:
             client=bq_client,
             view_list_config=ViewListConfig([
                 ViewConfig(
-                    view_name=VIEW_1,
+                    view_name=VIEW_NAME_1,
                     materialize=True
                 ),
                 ViewConfig(
-                    view_name=VIEW_2,
+                    view_name=VIEW_NAME_2,
                     materialize=True
                 )
             ]),
@@ -380,18 +380,18 @@ class TestMaterializeViewsIfNecessaryWithState:
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
                 view_dependencies={
-                    VIEW_1: set(),
-                    VIEW_2: set()
+                    VIEW_NAME_1: set(),
+                    VIEW_NAME_2: set()
                 },
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
                     FULL_VIEW_NAME_2: TIMESTAMP_2
                 }
             ),
-            selected_view_names=[VIEW_1]
+            selected_view_names=[VIEW_NAME_1]
         )
         assert len(return_value.result_list) == 1
-        assert return_value.result_list[0].source_view_name == VIEW_1
+        assert return_value.result_list[0].source_view_name == VIEW_NAME_1
 
     def test_should_update_timestamp_after_materializing(
         self,
@@ -401,7 +401,7 @@ class TestMaterializeViewsIfNecessaryWithState:
         state = MaterializeViewState(
             project=PROJECT_1,
             dataset=SOURCE_DATASET_1,
-            view_dependencies={VIEW_1: {FULL_TABLE_NAME_1}},
+            view_dependencies={VIEW_NAME_1: {FULL_TABLE_NAME_1}},
             last_modified_timestamp_map={
                 FULL_VIEW_NAME_1: TIMESTAMP_1,
                 FULL_TABLE_NAME_1: TIMESTAMP_2
@@ -413,8 +413,8 @@ class TestMaterializeViewsIfNecessaryWithState:
             client=bq_client,
             view_list_config=ViewListConfig([
                 ViewConfig(
-                    view_name=VIEW_1,
-                    materialize_as=f'{SOURCE_DATASET_1}.{TABLE_1}'
+                    view_name=VIEW_NAME_1,
+                    materialize_as=f'{SOURCE_DATASET_1}.{TABLE_NAME_1}'
                 )
             ]),
             state=state
@@ -432,7 +432,7 @@ class TestMaterializeViewsIfNecessary:
     ):
         view_list_config = ViewListConfig([
             ViewConfig(
-                view_name=VIEW_1,
+                view_name=VIEW_NAME_1,
                 materialize=True
             )
         ])
@@ -441,7 +441,7 @@ class TestMaterializeViewsIfNecessary:
             project=PROJECT_1,
             dataset='dataset_1',
             view_list_config=view_list_config,
-            selected_view_names=[VIEW_1]
+            selected_view_names=[VIEW_NAME_1]
         )
         assert return_value == materialize_views_if_necessary_with_state_mock.return_value
         materialize_views_if_necessary_with_state_mock.assert_called_with(
@@ -455,5 +455,5 @@ class TestMaterializeViewsIfNecessary:
                     get_last_modified_timestamp_by_full_table_or_view_name_map_mock.return_value
                 )
             ),
-            selected_view_names=[VIEW_1]
+            selected_view_names=[VIEW_NAME_1]
         )
