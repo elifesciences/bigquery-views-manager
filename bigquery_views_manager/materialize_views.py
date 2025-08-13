@@ -170,9 +170,12 @@ class MaterializeViewState:
         self,
         view_name: str
     ) -> Optional[datetime]:
-        if view_name not in self.view_dependencies[view_name]:
+        if view_name not in self.view_dependencies:
             raise KeyError(f'View {repr(view_name)} not in view dependencies')
-        return None
+        dependencies = self.view_dependencies[view_name]
+        if not dependencies:
+            return None
+        return self.get_timestamp(sorted(dependencies)[0])
 
 
 def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-locals,too-many-arguments
