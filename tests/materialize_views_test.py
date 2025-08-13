@@ -26,10 +26,12 @@ VIEW_1 = 'view1'
 VIEW_2 = 'view2'
 
 TABLE_1 = 'table1'
+TABLE_2 = 'table2'
 
 FULL_VIEW_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}'
 FULL_VIEW_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_2}'
 FULL_TABLE_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}'
+FULL_TABLE_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_2}'
 
 VIEW_QUERY_1 = 'SELECT * FROM `project1.dataset1.table1`'
 
@@ -248,6 +250,17 @@ class TestMaterializeViewState:
                 }
             )
             assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_2
+
+        def test_should_return_latest_timestamp_of_multiple_dependencies(self):
+            state = MaterializeViewState(
+                view_dependencies={VIEW_1: {FULL_TABLE_NAME_1, FULL_TABLE_NAME_2}},
+                last_modified_timestamp_map={
+                    FULL_VIEW_NAME_1: TIMESTAMP_1,
+                    FULL_TABLE_NAME_1: TIMESTAMP_2,
+                    FULL_TABLE_NAME_2: TIMESTAMP_3
+                }
+            )
+            assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_3
 
 
 class TestMaterializeViewsIfNecessaryWithState:

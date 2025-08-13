@@ -175,7 +175,10 @@ class MaterializeViewState:
         dependencies = self.view_dependencies[view_name]
         if not dependencies:
             return None
-        return self.get_timestamp(sorted(dependencies)[0])
+        return max({
+            self.get_timestamp(dependency)
+            for dependency in dependencies
+        })
 
 
 def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-locals,too-many-arguments
