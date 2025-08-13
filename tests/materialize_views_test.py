@@ -28,6 +28,7 @@ VIEW_2 = 'view2'
 TABLE_1 = 'table1'
 
 FULL_VIEW_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_1}'
+FULL_VIEW_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_2}'
 FULL_TABLE_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_1}'
 
 VIEW_QUERY_1 = 'SELECT * FROM `project1.dataset1.table1`'
@@ -205,17 +206,38 @@ class TestMaterializeViews:
 
 
 class TestMaterializeViewState:
-    def test_should_update_last_modified_timestamp(self):
-        state = MaterializeViewState(
-            view_dependencies={VIEW_1: {FULL_TABLE_NAME_1}},
-            last_modified_timestamp_map={
-                FULL_VIEW_NAME_1: TIMESTAMP_1,
-                FULL_TABLE_NAME_1: TIMESTAMP_2
-            }
-        )
-        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_2
-        state.update_timestamp(FULL_TABLE_NAME_1, TIMESTAMP_3)
-        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_3
+    class TestUpdateTimestamp:
+        def test_should_update_last_modified_timestamp(self):
+            state = MaterializeViewState(
+                view_dependencies={VIEW_1: {FULL_TABLE_NAME_1}},
+                last_modified_timestamp_map={
+                    FULL_VIEW_NAME_1: TIMESTAMP_1,
+                    FULL_TABLE_NAME_1: TIMESTAMP_2
+                }
+            )
+            assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_2
+            state.update_timestamp(FULL_TABLE_NAME_1, TIMESTAMP_3)
+            assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_3
+
+    class TestGetLatestTimestampOfDependencies:
+        def test_should_fail_if_view_is_not_in_dependencies_map(self):
+            state = MaterializeViewState(
+                view_dependencies={VIEW_1: set()},
+                last_modified_timestamp_map={
+                    FULL_VIEW_NAME_1: TIMESTAMP_1
+                }
+            )
+            with pytest.raises(KeyError):
+                state.get_latest_timestamp_of_dependencies(VIEW_2)
+
+        def test_should_return_none_if_view_has_no_dependencies(self):
+            state = MaterializeViewState(
+                view_dependencies={VIEW_1: set()},
+                last_modified_timestamp_map={
+                    FULL_VIEW_NAME_1: TIMESTAMP_1
+                }
+            )
+            assert state.get_latest_timestamp_of_dependencies(VIEW_1) is None
 
 
 class TestMaterializeViewsIfNecessaryWithState:

@@ -166,6 +166,14 @@ class MaterializeViewState:
     def update_timestamp(self, full_table_or_view_name: str, timestamp: datetime):
         self.last_modified_timestamp_map[full_table_or_view_name] = timestamp
 
+    def get_latest_timestamp_of_dependencies(  # pylint: disable=useless-return
+        self,
+        view_name: str
+    ) -> Optional[datetime]:
+        if view_name not in self.view_dependencies[view_name]:
+            raise KeyError(f'View {repr(view_name)} not in view dependencies')
+        return None
+
 
 def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-locals,too-many-arguments
     client: bigquery.Client,
