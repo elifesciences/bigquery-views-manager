@@ -293,6 +293,25 @@ class TestMaterializeViewsIfNecessaryWithState:
         assert return_value == MaterializeViewListResult(result_list=[])
         assert not return_value
 
+    def test_should_return_empty_list_when_there_is_no_view_to_materialize(self, bq_client):
+        return_value = materialize_views_if_necessary_with_state(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset='dataset_1',
+            view_list_config=ViewListConfig([
+                ViewConfig(
+                    view_name=VIEW_1,
+                    materialize=False
+                )
+            ]),
+            state=MaterializeViewState(
+                view_dependencies={},
+                last_modified_timestamp_map={}
+            )
+        )
+        assert return_value == MaterializeViewListResult(result_list=[])
+        assert not return_value
+
     def test_should_update_timestamp_after_materializing(
         self,
         bq_client: MagicMock,
@@ -323,21 +342,6 @@ class TestMaterializeViewsIfNecessaryWithState:
 
 
 class TestMaterializeViewsIfNecessary:
-    def test_should_return_empty_list_when_there_is_no_view_to_materialize(self, bq_client):
-        return_value = materialize_views_if_necessary(
-            client=bq_client,
-            project=PROJECT_1,
-            dataset='dataset_1',
-            view_list_config=ViewListConfig([
-                ViewConfig(
-                    view_name=VIEW_1,
-                    materialize=False
-                )
-            ])
-        )
-        assert return_value == MaterializeViewListResult(result_list=[])
-        assert not return_value
-
     def test_should_return_result(
         self,
         bq_client: MagicMock,
