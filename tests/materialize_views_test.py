@@ -236,7 +236,7 @@ class TestMaterializeViewState:
             with pytest.raises(KeyError):
                 state.get_latest_timestamp_of_dependencies(VIEW_2)
 
-        def test_should_return_none_if_view_has_no_dependencies(self):
+        def test_should_return_timestamp_of_view_itself_if_view_has_no_dependencies(self):
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
@@ -245,7 +245,7 @@ class TestMaterializeViewState:
                     FULL_VIEW_NAME_1: TIMESTAMP_1
                 }
             )
-            assert state.get_latest_timestamp_of_dependencies(VIEW_1) is None
+            assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_1
 
         def test_should_return_timestamp_of_single_dependency(self):
             state = MaterializeViewState(
@@ -378,7 +378,7 @@ class TestMaterializeViewsIfNecessaryWithState:
             ]),
             state=MaterializeViewState(
                 project=PROJECT_1,
-                dataset='dataset_1',
+                dataset=SOURCE_DATASET_1,
                 view_dependencies={
                     VIEW_1: set(),
                     VIEW_2: set()

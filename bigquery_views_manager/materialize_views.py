@@ -168,15 +168,16 @@ class MaterializeViewState:
     def update_timestamp(self, full_table_or_view_name: str, timestamp: datetime):
         self.last_modified_timestamp_map[full_table_or_view_name] = timestamp
 
+    def get_full_view_name(self, view_name: str) -> str:
+        return f'{self.project}.{self.dataset}.{view_name}'
+
     def get_latest_timestamp_of_dependencies(  # pylint: disable=useless-return
         self,
         view_name: str
-    ) -> Optional[datetime]:
+    ) -> datetime:
         if view_name not in self.view_dependencies:
             raise KeyError(f'View {repr(view_name)} not in view dependencies')
         dependencies = self.view_dependencies[view_name]
-        if not dependencies:
-            return None
         short_dependencies = {
             dependency.rsplit('.', maxsplit=1)[-1]
             for dependency in dependencies
@@ -186,18 +187,17 @@ class MaterializeViewState:
             for short_dependency in short_dependencies
             if short_dependency in self.view_dependencies
         }
-        indirect_optional_timestamps = {
+        indirect_timestamps = {
             self.get_latest_timestamp_of_dependencies(view_dependency)
             for view_dependency in view_dependencies
         }
+        view_timestamp = self.get_timestamp(self.get_full_view_name(view_name))
         return max({
+            view_timestamp
+        } | {
             self.get_timestamp(dependency)
             for dependency in dependencies
-        } | {
-            indirect_optional_timestamp
-            for indirect_optional_timestamp in indirect_optional_timestamps
-            if indirect_optional_timestamp
-        })
+        } | indirect_timestamps)
 
 
 def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-locals,too-many-arguments
