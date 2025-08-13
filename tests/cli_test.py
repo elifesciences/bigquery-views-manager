@@ -13,10 +13,6 @@ import bigquery_views_manager.cli as target_module
 from bigquery_views_manager.cli import main
 
 
-VIEW_1 = "view1,dataset1"
-VIEW_2 = "view2,dataset2"
-
-
 @pytest.fixture(name='bigquery_mock', autouse=True)
 def _bigquery_mock():
     with patch.object(target_module, 'bigquery') as mock:
