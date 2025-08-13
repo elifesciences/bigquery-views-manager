@@ -175,9 +175,26 @@ class MaterializeViewState:
         dependencies = self.view_dependencies[view_name]
         if not dependencies:
             return None
+        short_dependencies = {
+            dependency.rsplit('.', maxsplit=1)[-1]
+            for dependency in dependencies
+        }
+        view_dependencies = {
+            short_dependency
+            for short_dependency in short_dependencies
+            if short_dependency in self.view_dependencies
+        }
+        indirect_optional_timestamps = {
+            self.get_latest_timestamp_of_dependencies(view_dependency)
+            for view_dependency in view_dependencies
+        }
         return max({
             self.get_timestamp(dependency)
             for dependency in dependencies
+        } | {
+            indirect_optional_timestamp
+            for indirect_optional_timestamp in indirect_optional_timestamps
+            if indirect_optional_timestamp
         })
 
 

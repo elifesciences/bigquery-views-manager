@@ -262,6 +262,21 @@ class TestMaterializeViewState:
             )
             assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_3
 
+        def test_should_return_timestamp_of_indirect_dependencies(self):
+            state = MaterializeViewState(
+                view_dependencies={
+                    VIEW_1: {FULL_TABLE_NAME_1, FULL_VIEW_NAME_2},
+                    VIEW_2: {FULL_TABLE_NAME_2}
+                },
+                last_modified_timestamp_map={
+                    FULL_VIEW_NAME_1: TIMESTAMP_1,
+                    FULL_VIEW_NAME_2: TIMESTAMP_1,
+                    FULL_TABLE_NAME_1: TIMESTAMP_2,
+                    FULL_TABLE_NAME_2: TIMESTAMP_3
+                }
+            )
+            assert state.get_latest_timestamp_of_dependencies(VIEW_1) == TIMESTAMP_3
+
 
 class TestMaterializeViewsIfNecessaryWithState:
     def test_should_update_timestamp_after_materializing(
