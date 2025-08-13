@@ -222,7 +222,7 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
         LOGGER.info(
             'latest_timestamp_of_dependencies (for %r): %r',
             view_config.view_name,
-            latest_timestamp_of_dependencies
+            latest_timestamp_of_dependencies.isoformat()
         )
         destination_dataset_and_table_dict = view_config.get_destination_dataset_and_table_name(
             state.dataset
