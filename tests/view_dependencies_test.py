@@ -22,6 +22,7 @@ from bigquery_views_manager.view_dependencies import (
     get_view_dependencies,
     get_view_dependencies_from_view_definition
 )
+from tests.materialize_views_test import FULL_TABLE_NAME_1, FULL_TABLE_NAME_2
 
 PROJECT_1 = 'project_1'
 DATASET_1 = 'dataset_1'
@@ -303,28 +304,29 @@ class TestGetFlatViewDependencies:
     def test_should_find_dependencies_across_multiple_views(self):
         assert get_flat_view_dependencies(
             {
-                FULL_VIEW_NAME_1: {'table_1'},
-                FULL_VIEW_NAME_2: {'table_2'}
+                FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1},
+                FULL_VIEW_NAME_2: {FULL_TABLE_NAME_2}
             }
         ) == {
             FULL_VIEW_NAME_1,
             FULL_VIEW_NAME_2,
-            'table_1',
-            'table_2'
+            FULL_TABLE_NAME_1,
+            FULL_TABLE_NAME_2
         }
 
     def test_should_include_common_dependencies_only_once(self):
+        full_common_table_name = f'{PROJECT_1}.{DATASET_1}.common_table_1'
         assert get_flat_view_dependencies(
             {
-                FULL_VIEW_NAME_1: {'table_1', 'common_table_1'},
-                FULL_VIEW_NAME_2: {'table_2', 'common_table_1'}
+                FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1, full_common_table_name},
+                FULL_VIEW_NAME_2: {FULL_TABLE_NAME_2, full_common_table_name}
             }
         ) == {
             FULL_VIEW_NAME_1,
             FULL_VIEW_NAME_2,
-            'table_1',
-            'table_2',
-            'common_table_1'
+            FULL_TABLE_NAME_1,
+            FULL_TABLE_NAME_2,
+            full_common_table_name
         }
 
 
