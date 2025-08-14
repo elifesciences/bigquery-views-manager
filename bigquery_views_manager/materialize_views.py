@@ -162,6 +162,9 @@ class MaterializeViewState:
     full_view_dependencies: Mapping[str, Set[str]]
     last_modified_timestamp_map: dict[str, datetime]
 
+    def get_timestamp_or_none(self, full_table_or_view_name: str) -> Optional[datetime]:
+        return self.last_modified_timestamp_map.get(full_table_or_view_name)
+
     def get_timestamp(self, full_table_or_view_name: str) -> datetime:
         return self.last_modified_timestamp_map[full_table_or_view_name]
 
@@ -231,6 +234,16 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
             f'{state.project}.{destination_dataset}.{destination_table_name}'
         )
         LOGGER.debug('full_destination_table_name: %r', full_destination_table_name)
+        destination_table_timestamp = state.get_timestamp_or_none(full_destination_table_name)
+        LOGGER.info(
+            'destination_table_timestamp (table name: %r): %r',
+            full_destination_table_name,
+            (
+                destination_table_timestamp.isoformat()
+                if destination_table_timestamp
+                else None
+            )
+        )
         result = materialize_view(
             client=client,
             project=state.project,
