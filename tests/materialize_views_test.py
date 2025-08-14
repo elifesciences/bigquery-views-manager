@@ -407,13 +407,13 @@ class TestMaterializeViewsIfNecessaryWithState:
         state = MaterializeViewState(
             project=PROJECT_1,
             dataset=SOURCE_DATASET_1,
-            full_view_dependencies={FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1}},
+            full_view_dependencies={FULL_VIEW_NAME_1: set()},
             last_modified_timestamp_map={
-                FULL_VIEW_NAME_1: TIMESTAMP_1,
-                FULL_TABLE_NAME_1: TIMESTAMP_2
+                FULL_VIEW_NAME_1: TIMESTAMP_2,
+                FULL_TABLE_NAME_1: TIMESTAMP_1
             }
         )
-        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_2
+        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_1
         get_current_timestamp_mock.return_value = TIMESTAMP_3
         materialize_views_if_necessary_with_state(
             client=bq_client,
