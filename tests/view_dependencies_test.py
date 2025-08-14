@@ -109,7 +109,7 @@ class TestGetViewDefinitionMap:
             'view_definition': VIEW_DEFINITION_1
         }])
         expected_result: dict = {
-            VIEW_NAME_1: VIEW_DEFINITION_1
+            FULL_VIEW_NAME_1: VIEW_DEFINITION_1
         }
         assert get_view_definition_map(
             client=bq_client,
@@ -270,7 +270,7 @@ class TestGetViewDependencies:
         get_view_definition_map_mock: MagicMock
     ):
         get_view_definition_map_mock.return_value = {
-            VIEW_NAME_1: VIEW_DEFINITION_1
+            FULL_VIEW_NAME_1: VIEW_DEFINITION_1
         }
         result = get_view_dependencies(
             client=bq_client,

@@ -44,7 +44,7 @@ def get_view_definition_map(
         )
     )
     return {
-        result_dict['table_name']: result_dict['view_definition']
+        f"{project}.{dataset}.{result_dict['table_name']}": result_dict['view_definition']
         for result_dict in query_result_dict_iterable
     }
 
@@ -81,14 +81,10 @@ def get_view_dependencies(
         dataset=dataset
     )
     LOGGER.debug('view_definition_map: %r', view_definition_map)
-    return get_full_view_dependencies(
-        project=project,
-        dataset=dataset,
-        view_dependencies={
-            view_name: get_view_dependencies_from_view_definition(view_definition)
-            for view_name, view_definition in view_definition_map.items()
-        }
-    )
+    return {
+        view_name: get_view_dependencies_from_view_definition(view_definition)
+        for view_name, view_definition in view_definition_map.items()
+    }
 
 
 def get_flat_view_dependencies(

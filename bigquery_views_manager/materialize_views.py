@@ -13,7 +13,6 @@ from google.cloud.bigquery.job import QueryJobConfig
 from bigquery_views_manager.utils.json import get_json
 from bigquery_views_manager.view_dependencies import (
     get_flat_view_dependencies,
-    get_full_view_dependencies,
     get_last_modified_timestamp_by_full_table_or_view_name_map,
     get_view_dependencies
 )
