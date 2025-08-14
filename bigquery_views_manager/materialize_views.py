@@ -278,11 +278,7 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
         'view_dependencies:\n```json\n%s\n```',
         get_json(view_dependencies)
     )
-    flat_view_dependencies = get_flat_view_dependencies(
-        view_dependencies,
-        project=project,
-        dataset=dataset
-    )
+    flat_view_dependencies = get_flat_view_dependencies(view_dependencies)
     LOGGER.info('flat_view_dependencies: %r', flat_view_dependencies)
     last_modified_timestamp_by_full_table_or_view_name_map = (
         get_last_modified_timestamp_by_full_table_or_view_name_map(
@@ -297,11 +293,7 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     state = MaterializeViewState(
         project=project,
         dataset=dataset,
-        full_view_dependencies=get_full_view_dependencies(
-            project=project,
-            dataset=dataset,
-            view_dependencies=view_dependencies
-        ),
+        full_view_dependencies=view_dependencies,
         last_modified_timestamp_map=dict(last_modified_timestamp_by_full_table_or_view_name_map)
     )
     return materialize_views_if_necessary_with_state(
