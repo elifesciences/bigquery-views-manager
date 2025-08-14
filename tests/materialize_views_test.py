@@ -211,7 +211,7 @@ class TestMaterializeViewState:
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                full_view_dependencies={VIEW_NAME_1: {FULL_TABLE_NAME_1}},
+                full_view_dependencies={FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1}},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
                     FULL_TABLE_NAME_1: TIMESTAMP_2
@@ -226,7 +226,7 @@ class TestMaterializeViewState:
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                full_view_dependencies={VIEW_NAME_1: set()},
+                full_view_dependencies={FULL_VIEW_NAME_1: set()},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1
                 }
@@ -238,7 +238,7 @@ class TestMaterializeViewState:
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                full_view_dependencies={VIEW_NAME_1: set()},
+                full_view_dependencies={FULL_VIEW_NAME_1: set()},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1
                 }
@@ -249,7 +249,7 @@ class TestMaterializeViewState:
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                full_view_dependencies={VIEW_NAME_1: {FULL_TABLE_NAME_1}},
+                full_view_dependencies={FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1}},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
                     FULL_TABLE_NAME_1: TIMESTAMP_2
@@ -261,7 +261,7 @@ class TestMaterializeViewState:
             state = MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                full_view_dependencies={VIEW_NAME_1: {FULL_TABLE_NAME_1, FULL_TABLE_NAME_2}},
+                full_view_dependencies={FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1, FULL_TABLE_NAME_2}},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
                     FULL_TABLE_NAME_1: TIMESTAMP_2,
@@ -275,8 +275,8 @@ class TestMaterializeViewState:
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
                 full_view_dependencies={
-                    VIEW_NAME_1: {FULL_TABLE_NAME_1, FULL_VIEW_NAME_2},
-                    VIEW_NAME_2: {FULL_TABLE_NAME_2}
+                    FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1, FULL_VIEW_NAME_2},
+                    FULL_VIEW_NAME_2: {FULL_TABLE_NAME_2}
                 },
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
@@ -337,7 +337,7 @@ class TestMaterializeViewsIfNecessaryWithState:
             state=MaterializeViewState(
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
-                full_view_dependencies={VIEW_NAME_1: set()},
+                full_view_dependencies={FULL_VIEW_NAME_1: set()},
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1
                 }
@@ -378,8 +378,8 @@ class TestMaterializeViewsIfNecessaryWithState:
                 project=PROJECT_1,
                 dataset=SOURCE_DATASET_1,
                 full_view_dependencies={
-                    VIEW_NAME_1: set(),
-                    VIEW_NAME_2: set()
+                    FULL_VIEW_NAME_1: set(),
+                    FULL_VIEW_NAME_2: set()
                 },
                 last_modified_timestamp_map={
                     FULL_VIEW_NAME_1: TIMESTAMP_1,
@@ -399,7 +399,7 @@ class TestMaterializeViewsIfNecessaryWithState:
         state = MaterializeViewState(
             project=PROJECT_1,
             dataset=SOURCE_DATASET_1,
-            full_view_dependencies={VIEW_NAME_1: {FULL_TABLE_NAME_1}},
+            full_view_dependencies={FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1}},
             last_modified_timestamp_map={
                 FULL_VIEW_NAME_1: TIMESTAMP_1,
                 FULL_TABLE_NAME_1: TIMESTAMP_2

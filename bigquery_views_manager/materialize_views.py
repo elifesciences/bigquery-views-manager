@@ -155,6 +155,17 @@ def materialize_views(
     return MaterializeViewListResult(result_list)
 
 
+def get_full_view_dependencies(
+    project: str,
+    dataset: str,
+    view_dependencies: Mapping[str, Set[str]]
+) -> Mapping[str, Set[str]]:
+    return {
+        f'{project}.{dataset}.{view_name}': dependencies
+        for view_name, dependencies in view_dependencies.items()
+    }
+
+
 @dataclass(frozen=True)
 class MaterializeViewState:
     project: str
@@ -175,17 +186,14 @@ class MaterializeViewState:
         self,
         view_name: str
     ) -> datetime:
-        if view_name not in self.full_view_dependencies:
-            raise KeyError(f'View {repr(view_name)} not in view dependencies')
-        dependencies = self.full_view_dependencies[view_name]
-        short_dependencies = {
+        full_view_name = self.get_full_view_name(view_name)
+        if full_view_name not in self.full_view_dependencies:
+            raise KeyError(f'View {repr(full_view_name)} not in view dependencies')
+        dependencies = self.full_view_dependencies[full_view_name]
+        view_dependencies = {
             dependency.rsplit('.', maxsplit=1)[-1]
             for dependency in dependencies
-        }
-        view_dependencies = {
-            short_dependency
-            for short_dependency in short_dependencies
-            if short_dependency in self.full_view_dependencies
+            if dependency in self.full_view_dependencies
         }
         direct_timestamps = {
             self.get_timestamp(dependency)
@@ -300,7 +308,11 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     state = MaterializeViewState(
         project=project,
         dataset=dataset,
-        full_view_dependencies=view_dependencies,
+        full_view_dependencies=get_full_view_dependencies(
+            project=project,
+            dataset=dataset,
+            view_dependencies=view_dependencies
+        ),
         last_modified_timestamp_map=dict(last_modified_timestamp_by_full_table_or_view_name_map)
     )
     return materialize_views_if_necessary_with_state(
