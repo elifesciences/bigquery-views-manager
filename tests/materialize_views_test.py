@@ -427,6 +427,32 @@ class TestMaterializeViewsIfNecessaryWithState:
         )
         assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_3
 
+    def test_should_not_materialize_if_destination_table_is_after_view_and_dependencies_timestamp(
+        self,
+        bq_client: MagicMock
+    ):
+        state = MaterializeViewState(
+            project=PROJECT_1,
+            dataset=SOURCE_DATASET_1,
+            full_view_dependencies={FULL_VIEW_NAME_1: set()},
+            last_modified_timestamp_map={
+                FULL_VIEW_NAME_1: TIMESTAMP_1,
+                FULL_TABLE_NAME_1: TIMESTAMP_2
+            }
+        )
+        assert state.get_timestamp(FULL_TABLE_NAME_1) == TIMESTAMP_2
+        result = materialize_views_if_necessary_with_state(
+            client=bq_client,
+            view_list_config=ViewListConfig([
+                ViewConfig(
+                    view_name=VIEW_NAME_1,
+                    materialize_as=f'{SOURCE_DATASET_1}.{TABLE_NAME_1}'
+                )
+            ]),
+            state=state
+        )
+        assert not result
+
 
 class TestMaterializeViewsIfNecessary:
     def test_should_call_materialize_views_if_necessary_with_state(

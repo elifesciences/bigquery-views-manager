@@ -244,6 +244,12 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
                 else None
             )
         )
+        if (
+            destination_table_timestamp
+            and destination_table_timestamp > latest_timestamp_of_view_and_dependencies
+        ):
+            LOGGER.info('Skipping materialization, destination table already up-to-date')
+            continue
         result = materialize_view(
             client=client,
             project=state.project,
