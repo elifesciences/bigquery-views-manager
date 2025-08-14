@@ -67,17 +67,6 @@ def get_view_dependencies_from_view_definition(
     ))
 
 
-def get_full_view_dependencies(
-    project: str,
-    dataset: str,
-    view_dependencies: Mapping[str, Set[str]]
-) -> Mapping[str, Set[str]]:
-    return {
-        f'{project}.{dataset}.{view_name}': dependencies
-        for view_name, dependencies in view_dependencies.items()
-    }
-
-
 def get_view_dependencies(
     client: bigquery.Client,
     project: str,
