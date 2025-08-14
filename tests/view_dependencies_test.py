@@ -10,6 +10,7 @@ import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
     DatasetRef,
     LastModifiedBigQueryResultTypedDict,
+    ViewDefinitionBigQueryResultTypedDict,
     get_dataset_ref_for_full_table_or_view_name,
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_table_or_view_name_map,
@@ -104,10 +105,11 @@ class TestGetViewDefinitionMap:
         bq_client: MagicMock,
         iter_dict_from_bq_query_mock: MagicMock
     ):
-        iter_dict_from_bq_query_mock.return_value = iter([{
+        bigquery_result_row: ViewDefinitionBigQueryResultTypedDict = {
             'table_name': VIEW_NAME_1,
             'view_definition': VIEW_DEFINITION_1
-        }])
+        }
+        iter_dict_from_bq_query_mock.return_value = iter([bigquery_result_row])
         expected_result: dict = {
             FULL_VIEW_NAME_1: VIEW_DEFINITION_1
         }

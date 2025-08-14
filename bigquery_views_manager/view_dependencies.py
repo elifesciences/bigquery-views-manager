@@ -21,6 +21,11 @@ class DatasetRef:
     dataset: str
 
 
+class ViewDefinitionBigQueryResultTypedDict(TypedDict):
+    table_name: str
+    view_definition: str
+
+
 def get_view_definition_query(
     project: str,
     dataset: str
@@ -36,11 +41,14 @@ def get_view_definition_map(
     project: str,
     dataset: str
 ) -> Mapping[str, str]:
-    query_result_dict_iterable = bigquery_utils.iter_dict_from_bq_query(
-        client=client,
-        query=get_view_definition_query(
-            project=project,
-            dataset=dataset
+    query_result_dict_iterable = cast(
+        Iterable[ViewDefinitionBigQueryResultTypedDict],
+        bigquery_utils.iter_dict_from_bq_query(
+            client=client,
+            query=get_view_definition_query(
+                project=project,
+                dataset=dataset
+            )
         )
     )
     return {
