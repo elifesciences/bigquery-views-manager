@@ -244,6 +244,11 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
                 else None
             )
         )
+        if not destination_table_timestamp:
+            LOGGER.warning(
+                'No timestamp found for destination table: %r',
+                full_destination_table_name
+            )
         if (
             destination_table_timestamp
             and destination_table_timestamp > latest_timestamp_of_view_and_dependencies
