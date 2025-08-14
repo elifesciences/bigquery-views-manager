@@ -212,13 +212,15 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
             or (selected_view_names and view_config.view_name not in selected_view_names)
         ):
             continue
-        latest_timestamp_of_dependencies = state.get_latest_timestamp_of_view_and_dependencies(
-            state.get_full_view_name(view_config.view_name)
+        latest_timestamp_of_view_and_dependencies = (
+            state.get_latest_timestamp_of_view_and_dependencies(
+                state.get_full_view_name(view_config.view_name)
+            )
         )
         LOGGER.info(
-            'latest_timestamp_of_dependencies (view name: %r): %r',
+            'latest_timestamp_of_view_and_dependencies (view name: %r): %r',
             view_config.view_name,
-            latest_timestamp_of_dependencies.isoformat()
+            latest_timestamp_of_view_and_dependencies.isoformat()
         )
         destination_dataset_and_table_dict = view_config.get_destination_dataset_and_table_name(
             state.dataset
