@@ -184,14 +184,13 @@ class MaterializeViewState:
 
     def get_latest_timestamp_of_view_and_dependencies(  # pylint: disable=useless-return
         self,
-        view_name: str
+        full_view_name: str
     ) -> datetime:
-        full_view_name = self.get_full_view_name(view_name)
         if full_view_name not in self.full_view_dependencies:
             raise KeyError(f'View {repr(full_view_name)} not in view dependencies')
         dependencies = self.full_view_dependencies[full_view_name]
         view_dependencies = {
-            dependency.rsplit('.', maxsplit=1)[-1]
+            dependency
             for dependency in dependencies
             if dependency in self.full_view_dependencies
         }
@@ -203,7 +202,7 @@ class MaterializeViewState:
             self.get_latest_timestamp_of_view_and_dependencies(view_dependency)
             for view_dependency in view_dependencies
         }
-        view_timestamp = self.get_timestamp(self.get_full_view_name(view_name))
+        view_timestamp = self.get_timestamp(full_view_name)
         return max({view_timestamp} | direct_timestamps | indirect_timestamps)
 
 
@@ -225,7 +224,7 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
         ):
             continue
         latest_timestamp_of_dependencies = state.get_latest_timestamp_of_view_and_dependencies(
-            view_config.view_name
+            state.get_full_view_name(view_config.view_name)
         )
         LOGGER.info(
             'latest_timestamp_of_dependencies (view name: %r): %r',
