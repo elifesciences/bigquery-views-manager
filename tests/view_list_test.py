@@ -145,6 +145,28 @@ class TestDetermineInsertOrderForViewNamesAndReferencedTables:
         ) == result
 
 
+class TestViewConfig:
+    def test_should_get_full_destination_table_name_for_default_name(self):
+        view_config = ViewConfig(
+            view_name='view1',
+            materialize=True
+        )
+        assert view_config.get_full_destination_table_name(
+            project='project1',
+            dataset='dataset1'
+        ) == 'project1.dataset1.mview1'
+
+    def test_should_get_full_destination_table_name_for_custom_name(self):
+        view_config = ViewConfig(
+            view_name='view1',
+            materialize_as='destination_dataset1.destination_table1'
+        )
+        assert view_config.get_full_destination_table_name(
+            project='project1',
+            dataset='dataset1'
+        ) == 'project1.destination_dataset1.destination_table1'
+
+
 class TestViewListConfig:
     def test_should_resolve_conditions(self):
         view_list_config = ViewListConfig([

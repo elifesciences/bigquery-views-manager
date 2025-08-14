@@ -230,8 +230,9 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
         )
         destination_dataset = destination_dataset_and_table_dict['dataset_name']
         destination_table_name = destination_dataset_and_table_dict['table_name']
-        full_destination_table_name = (
-            f'{state.project}.{destination_dataset}.{destination_table_name}'
+        full_destination_table_name = view_config.get_full_destination_table_name(
+            project=state.project,
+            dataset=state.dataset
         )
         LOGGER.debug('full_destination_table_name: %r', full_destination_table_name)
         destination_table_timestamp = state.get_timestamp_or_none(full_destination_table_name)
