@@ -171,7 +171,7 @@ class MaterializeViewState:
     def get_full_view_name(self, view_name: str) -> str:
         return f'{self.project}.{self.dataset}.{view_name}'
 
-    def get_latest_timestamp_of_dependencies(  # pylint: disable=useless-return
+    def get_latest_timestamp_of_view_and_dependencies(  # pylint: disable=useless-return
         self,
         view_name: str
     ) -> datetime:
@@ -192,7 +192,7 @@ class MaterializeViewState:
             for dependency in dependencies
         }
         indirect_timestamps = {
-            self.get_latest_timestamp_of_dependencies(view_dependency)
+            self.get_latest_timestamp_of_view_and_dependencies(view_dependency)
             for view_dependency in view_dependencies
         }
         view_timestamp = self.get_timestamp(self.get_full_view_name(view_name))
@@ -216,7 +216,7 @@ def materialize_views_if_necessary_with_state(  # pylint: disable=too-many-local
             or (selected_view_names and view_config.view_name not in selected_view_names)
         ):
             continue
-        latest_timestamp_of_dependencies = state.get_latest_timestamp_of_dependencies(
+        latest_timestamp_of_dependencies = state.get_latest_timestamp_of_view_and_dependencies(
             view_config.view_name
         )
         LOGGER.info(
