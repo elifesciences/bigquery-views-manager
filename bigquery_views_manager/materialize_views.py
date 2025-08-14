@@ -306,10 +306,21 @@ def materialize_views_if_necessary(  # pylint: disable=too-many-locals
     )
     flat_view_dependencies = get_flat_view_dependencies(view_dependencies)
     LOGGER.info('flat_view_dependencies: %r', flat_view_dependencies)
+    full_destination_table_names = {
+        view_config.get_full_destination_table_name(
+            project=project,
+            dataset=dataset
+        )
+        for view_config in view_list_config
+        if view_config.is_materialized()
+    }
+    LOGGER.info('full_destination_table_names: %r', full_destination_table_names)
     last_modified_timestamp_by_full_table_or_view_name_map = (
         get_last_modified_timestamp_by_full_table_or_view_name_map(
             client=client,
-            table_or_view_names=flat_view_dependencies
+            table_or_view_names=(
+                flat_view_dependencies | full_destination_table_names
+            )
         )
     )
     LOGGER.info(

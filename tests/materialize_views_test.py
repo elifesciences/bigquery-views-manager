@@ -455,6 +455,39 @@ class TestMaterializeViewsIfNecessaryWithState:
 
 
 class TestMaterializeViewsIfNecessary:
+    def test_should_fetch_last_modified_timestamps_for_view_dependencies_and_destination_tables(
+        self,
+        bq_client: MagicMock,
+        materialize_views_if_necessary_with_state_mock: MagicMock,
+        get_view_dependencies_mock: MagicMock,
+        get_last_modified_timestamp_by_full_table_or_view_name_map_mock: MagicMock
+    ):
+        view_config = ViewConfig(view_name=VIEW_NAME_1, materialize=True)
+        other_view_config = ViewConfig(view_name=VIEW_NAME_2)
+        view_list_config = ViewListConfig([view_config, other_view_config])
+        get_view_dependencies_mock.return_value = {
+            FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1}
+        }
+        materialize_views_if_necessary(
+            client=bq_client,
+            project=PROJECT_1,
+            dataset=SOURCE_DATASET_1,
+            view_list_config=view_list_config,
+            selected_view_names=[VIEW_NAME_1]
+        )
+        get_last_modified_timestamp_by_full_table_or_view_name_map_mock.assert_called_with(
+            client=bq_client,
+            table_or_view_names={
+                FULL_VIEW_NAME_1,
+                FULL_TABLE_NAME_1,
+                view_config.get_full_destination_table_name(
+                    project=PROJECT_1,
+                    dataset=SOURCE_DATASET_1
+                )
+            }
+        )
+        materialize_views_if_necessary_with_state_mock.assert_called()
+
     def test_should_call_materialize_views_if_necessary_with_state(
         self,
         bq_client: MagicMock,
