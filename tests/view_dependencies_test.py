@@ -10,6 +10,7 @@ import bigquery_views_manager.view_dependencies as view_dependencies_module
 from bigquery_views_manager.view_dependencies import (
     DatasetRef,
     LastModifiedBigQueryResultTypedDict,
+    ViewDefinitionBigQueryResultTypedDict,
     get_dataset_ref_for_full_table_or_view_name,
     get_flat_view_dependencies,
     get_last_modified_timestamp_by_full_table_or_view_name_map,
@@ -21,6 +22,7 @@ from bigquery_views_manager.view_dependencies import (
     get_view_dependencies,
     get_view_dependencies_from_view_definition
 )
+from tests.materialize_views_test import FULL_TABLE_NAME_1, FULL_TABLE_NAME_2
 
 PROJECT_1 = 'project_1'
 DATASET_1 = 'dataset_1'
@@ -32,6 +34,9 @@ DATASET_REF_3 = DatasetRef(project=PROJECT_1, dataset='dataset_3')
 VIEW_NAME_1 = 'view_name_1'
 VIEW_NAME_2 = 'view_name_2'
 VIEW_DEFINITION_1 = 'SELECT * FROM view_name_0'
+
+FULL_VIEW_NAME_1 = f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}'
+FULL_VIEW_NAME_2 = f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_2}'
 
 TIMESTAMP_1 = datetime.fromisoformat('2001-01-01T00:00:00+00:00')
 
@@ -101,12 +106,13 @@ class TestGetViewDefinitionMap:
         bq_client: MagicMock,
         iter_dict_from_bq_query_mock: MagicMock
     ):
-        iter_dict_from_bq_query_mock.return_value = iter([{
+        bigquery_result_row: ViewDefinitionBigQueryResultTypedDict = {
             'table_name': VIEW_NAME_1,
             'view_definition': VIEW_DEFINITION_1
-        }])
+        }
+        iter_dict_from_bq_query_mock.return_value = iter([bigquery_result_row])
         expected_result: dict = {
-            VIEW_NAME_1: VIEW_DEFINITION_1
+            FULL_VIEW_NAME_1: VIEW_DEFINITION_1
         }
         assert get_view_definition_map(
             client=bq_client,
@@ -267,7 +273,7 @@ class TestGetViewDependencies:
         get_view_definition_map_mock: MagicMock
     ):
         get_view_definition_map_mock.return_value = {
-            VIEW_NAME_1: VIEW_DEFINITION_1
+            FULL_VIEW_NAME_1: VIEW_DEFINITION_1
         }
         result = get_view_dependencies(
             client=bq_client,
@@ -275,7 +281,7 @@ class TestGetViewDependencies:
             dataset=DATASET_1
         )
         expected_result: dict = {
-            VIEW_NAME_1: get_view_dependencies_from_view_definition(
+            FULL_VIEW_NAME_1: get_view_dependencies_from_view_definition(
                 VIEW_DEFINITION_1
             )
         }
@@ -285,49 +291,42 @@ class TestGetViewDependencies:
 class TestGetFlatViewDependencies:
     def test_should_return_empty_set_for_empty_view_dependencies(self):
         assert get_flat_view_dependencies(
-            {},
-            project=PROJECT_1,
-            dataset=DATASET_1
+            {}
         ) == EMPTY_SET
 
     def test_should_return_full_target_view_name_for_views_without_dependencies(self):
         assert get_flat_view_dependencies(
             {
-                'view_1': set()
-            },
-            project=PROJECT_1,
-            dataset=DATASET_1
-        ) == {f'{PROJECT_1}.{DATASET_1}.view_1'}
+                FULL_VIEW_NAME_1: set()
+            }
+        ) == {FULL_VIEW_NAME_1}
 
     def test_should_find_dependencies_across_multiple_views(self):
         assert get_flat_view_dependencies(
             {
-                'view_1': {'table_1'},
-                'view_2': {'table_2'}
-            },
-            project=PROJECT_1,
-            dataset=DATASET_1
+                FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1},
+                FULL_VIEW_NAME_2: {FULL_TABLE_NAME_2}
+            }
         ) == {
-            f'{PROJECT_1}.{DATASET_1}.view_1',
-            f'{PROJECT_1}.{DATASET_1}.view_2',
-            'table_1',
-            'table_2'
+            FULL_VIEW_NAME_1,
+            FULL_VIEW_NAME_2,
+            FULL_TABLE_NAME_1,
+            FULL_TABLE_NAME_2
         }
 
     def test_should_include_common_dependencies_only_once(self):
+        full_common_table_name = f'{PROJECT_1}.{DATASET_1}.common_table_1'
         assert get_flat_view_dependencies(
             {
-                'view_1': {'table_1', 'common_table_1'},
-                'view_2': {'table_2', 'common_table_1'}
-            },
-            project=PROJECT_1,
-            dataset=DATASET_1
+                FULL_VIEW_NAME_1: {FULL_TABLE_NAME_1, full_common_table_name},
+                FULL_VIEW_NAME_2: {FULL_TABLE_NAME_2, full_common_table_name}
+            }
         ) == {
-            f'{PROJECT_1}.{DATASET_1}.view_1',
-            f'{PROJECT_1}.{DATASET_1}.view_2',
-            'table_1',
-            'table_2',
-            'common_table_1'
+            FULL_VIEW_NAME_1,
+            FULL_VIEW_NAME_2,
+            FULL_TABLE_NAME_1,
+            FULL_TABLE_NAME_2,
+            full_common_table_name
         }
 
 

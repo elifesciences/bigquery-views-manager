@@ -312,6 +312,18 @@ class ViewConfig:
             'table_name': output_table_name
         }
 
+    def get_full_destination_table_name(
+        self,
+        project: str,
+        dataset: str,
+    ) -> str:
+        destination_dataset_and_table_dict = self.get_destination_dataset_and_table_name(
+            dataset=dataset
+        )
+        destination_dataset = destination_dataset_and_table_dict['dataset_name']
+        destination_table_name = destination_dataset_and_table_dict['table_name']
+        return f'{project}.{destination_dataset}.{destination_table_name}'
+
 
 @dataclass(frozen=True)
 class ViewListConfig:

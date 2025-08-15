@@ -21,6 +21,11 @@ class DatasetRef:
     dataset: str
 
 
+class ViewDefinitionBigQueryResultTypedDict(TypedDict):
+    table_name: str
+    view_definition: str
+
+
 def get_view_definition_query(
     project: str,
     dataset: str
@@ -36,15 +41,18 @@ def get_view_definition_map(
     project: str,
     dataset: str
 ) -> Mapping[str, str]:
-    query_result_dict_iterable = bigquery_utils.iter_dict_from_bq_query(
-        client=client,
-        query=get_view_definition_query(
-            project=project,
-            dataset=dataset
+    query_result_dict_iterable = cast(
+        Iterable[ViewDefinitionBigQueryResultTypedDict],
+        bigquery_utils.iter_dict_from_bq_query(
+            client=client,
+            query=get_view_definition_query(
+                project=project,
+                dataset=dataset
+            )
         )
     )
     return {
-        result_dict['table_name']: result_dict['view_definition']
+        f"{project}.{dataset}.{result_dict['table_name']}": result_dict['view_definition']
         for result_dict in query_result_dict_iterable
     }
 
@@ -77,19 +85,14 @@ def get_view_dependencies(
 
 
 def get_flat_view_dependencies(
-    view_dependencies: Mapping[str, Set[str]],
-    project: str,
-    dataset: str
+    view_dependencies: Mapping[str, Set[str]]
 ) -> Set[str]:
     LOGGER.debug('view_dependencies: %r', view_dependencies)
     return {
         value
         for values in view_dependencies.values()
         for value in values
-    } | {
-        f'{project}.{dataset}.{view_name}'
-        for view_name in view_dependencies.keys()
-    }
+    } | set(view_dependencies.keys())
 
 
 class LastModifiedBigQueryResultTypedDict(TypedDict):
