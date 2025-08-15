@@ -453,6 +453,40 @@ class TestMaterializeViewsIfNecessaryWithState:
         )
         assert not result
 
+    def test_should_only_materialize_view_with_dependencies_updated_after_prev_materialisation(
+        self,
+        bq_client: MagicMock
+    ):
+        return_value = materialize_views_if_necessary_with_state(
+            client=bq_client,
+            view_list_config=ViewListConfig([
+                ViewConfig(
+                    view_name=VIEW_NAME_1,
+                    materialize_as=f'{SOURCE_DATASET_1}.{TABLE_NAME_1}'
+                ),
+                ViewConfig(
+                    view_name=VIEW_NAME_2,
+                    materialize_as=f'{SOURCE_DATASET_1}.{TABLE_NAME_2}'
+                )
+            ]),
+            state=MaterializeViewState(
+                project=PROJECT_1,
+                dataset=SOURCE_DATASET_1,
+                full_view_dependencies={
+                    FULL_VIEW_NAME_1: set(),
+                    FULL_VIEW_NAME_2: set()
+                },
+                last_modified_timestamp_map={
+                    FULL_VIEW_NAME_1: TIMESTAMP_2,  # Last modified after materialization
+                    FULL_TABLE_NAME_1: TIMESTAMP_1,  # it is not up-to-date
+                    FULL_VIEW_NAME_2: TIMESTAMP_1,  # Last modified before materialization
+                    FULL_TABLE_NAME_2: TIMESTAMP_2  # it is already up-to-date
+                }
+            )
+        )
+        assert len(return_value.result_list) == 1
+        assert return_value.result_list[0].source_view_name == VIEW_NAME_1
+
 
 class TestMaterializeViewsIfNecessary:
     def test_should_fetch_last_modified_timestamps_for_view_dependencies_and_destination_tables(
