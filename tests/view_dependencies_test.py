@@ -483,3 +483,21 @@ class TestGetLastModifiedTimestampByFullViewOrTableMap:
         ) == {
             f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
         }
+
+    def test_should_not_fail_if_some_table_or_view_names_are_not_in_bq_results(
+        self,
+        bq_client: MagicMock,
+        get_last_modified_timestamp_map_for_dataset_refs_mock: MagicMock
+    ):
+        get_last_modified_timestamp_map_for_dataset_refs_mock.return_value = {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
+        }
+        assert get_last_modified_timestamp_by_full_table_or_view_name_map(
+            client=bq_client,
+            table_or_view_names={
+                f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}',
+                f'{PROJECT_1}.{DATASET_1}.non_existent_table_or_view'
+            }
+        ) == {
+            f'{PROJECT_1}.{DATASET_1}.{VIEW_NAME_1}': TIMESTAMP_1
+        }
