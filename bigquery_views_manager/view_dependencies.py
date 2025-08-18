@@ -174,4 +174,5 @@ def get_last_modified_timestamp_by_full_table_or_view_name_map(
     return {
         table_or_view_name: all_last_modified_timestamp_map[table_or_view_name]
         for table_or_view_name in table_or_view_names
+        if table_or_view_name in all_last_modified_timestamp_map
     }
