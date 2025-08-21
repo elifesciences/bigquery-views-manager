@@ -1,3 +1,3 @@
-google-cloud-bigquery==3.35.1
+google-cloud-bigquery==3.36.0
 crayons==0.4.0
 PyYAML==6.0.2
