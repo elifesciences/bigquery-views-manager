@@ -28,6 +28,9 @@ VIEW_NAME_2 = 'view2'
 TABLE_NAME_1 = 'table1'
 TABLE_NAME_2 = 'table2'
 
+MAX_LENGTH_TABLE_NAME_1 = 't' * 63
+MAX_LENGTH_VIEW_NAME_1 = 'v' * 63
+
 FULL_VIEW_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_NAME_1}'
 FULL_VIEW_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_NAME_2}'
 FULL_TABLE_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_NAME_1}'
@@ -122,7 +125,7 @@ class TestMaterializeView:
         assert (QueryJobConfig.return_value.write_disposition ==
                 bigquery.WriteDisposition.WRITE_TRUNCATE)
 
-    def test_should_call_result_on_query_job(self, bq_client):
+    def test_should_call_result_on_query_job(self, bq_client: MagicMock):
         materialize_view(
             bq_client,
             source_view_name=VIEW_NAME_1,
@@ -133,7 +136,7 @@ class TestMaterializeView:
         )
         bq_client.query.return_value.result.assert_called()
 
-    def test_should_return_results(self, bq_client):
+    def test_should_return_results(self, bq_client: MagicMock):
         return_value = materialize_view(
             bq_client,
             source_view_name=VIEW_NAME_1,
@@ -158,7 +161,10 @@ class TestMaterializeView:
 
 
 class TestMaterializeViews:
-    def test_should_return_empty_list_when_there_is_no_view_to_materialize(self, bq_client):
+    def test_should_return_empty_list_when_there_is_no_view_to_materialize(
+        self,
+        bq_client: MagicMock
+    ):
         return_value = materialize_views(
             client=bq_client,
             materialized_view_dict=OrderedDict[str, DatasetViewDataTypedDict](),
@@ -168,7 +174,7 @@ class TestMaterializeViews:
         assert return_value == MaterializeViewListResult(result_list=[])
         assert not return_value
 
-    def test_should_return_result(self, bq_client):
+    def test_should_return_result(self, bq_client: MagicMock):
         destination_dataset_view_dict: DatasetViewDataTypedDict = {
             'dataset_name': DESTINATION_DATASET_1,
             'table_name': TABLE_NAME_1
@@ -203,6 +209,80 @@ class TestMaterializeViews:
                 total_bytes_billed=ANY
             )]
         )
+
+    def test_should_set_labels_on_query_job(self, bq_client: MagicMock):
+        destination_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': DESTINATION_DATASET_1,
+            'table_name': TABLE_NAME_1,
+        }
+        source_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': SOURCE_DATASET_1,
+            'table_name': VIEW_NAME_1,
+        }
+
+        materialized_view_dict = OrderedDict({
+            'view_template_file_name_1': destination_dataset_view_dict
+        })
+        source_view_dict = OrderedDict({
+            'view_template_file_name_1': source_dataset_view_dict
+        })
+
+        materialize_views(
+            client=bq_client,
+            materialized_view_dict=materialized_view_dict,
+            source_view_dict=source_view_dict,
+            project=PROJECT_1,
+        )
+
+        assert bq_client.query.called
+
+        job_config = bq_client.query.call_args[1]['job_config']
+
+        assert job_config.labels == {
+            'component': 'materialize_views',
+            'owner': 'bigquery_views_manager',
+            'source_dataset': SOURCE_DATASET_1,
+            'source_view': VIEW_NAME_1.lower(),
+            'target_dataset': DESTINATION_DATASET_1,
+            'target_table': TABLE_NAME_1.lower(),
+        }
+
+    def test_should_truncate_labels(self, bq_client: MagicMock):
+        destination_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': DESTINATION_DATASET_1,
+            'table_name': MAX_LENGTH_TABLE_NAME_1 + '_extra_characters_to_exceed_limit'
+        }
+        source_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': SOURCE_DATASET_1,
+            'table_name': MAX_LENGTH_VIEW_NAME_1 + '_extra_characters_to_exceed_limit'
+        }
+
+        materialized_view_dict = OrderedDict({
+            'view_template_file_name_1': destination_dataset_view_dict
+        })
+        source_view_dict = OrderedDict({
+            'view_template_file_name_1': source_dataset_view_dict
+        })
+
+        materialize_views(
+            client=bq_client,
+            materialized_view_dict=materialized_view_dict,
+            source_view_dict=source_view_dict,
+            project=PROJECT_1,
+        )
+
+        assert bq_client.query.called
+
+        job_config = bq_client.query.call_args[1]['job_config']
+
+        assert job_config.labels == {
+            'component': 'materialize_views',
+            'owner': 'bigquery_views_manager',
+            'source_dataset': SOURCE_DATASET_1,
+            'source_view': MAX_LENGTH_VIEW_NAME_1,
+            'target_dataset': DESTINATION_DATASET_1,
+            'target_table': MAX_LENGTH_TABLE_NAME_1,
+        }
 
 
 class TestMaterializeViewState:
@@ -297,7 +377,7 @@ class TestMaterializeViewState:
 
 
 class TestMaterializeViewsIfNecessaryWithState:
-    def test_should_return_empty_list_when_there_is_no_views(self, bq_client):
+    def test_should_return_empty_list_when_there_is_no_views(self, bq_client: MagicMock):
         return_value = materialize_views_if_necessary_with_state(
             client=bq_client,
             view_list_config=ViewListConfig([]),
@@ -311,7 +391,10 @@ class TestMaterializeViewsIfNecessaryWithState:
         assert return_value == MaterializeViewListResult(result_list=[])
         assert not return_value
 
-    def test_should_return_empty_list_when_there_is_no_view_to_materialize(self, bq_client):
+    def test_should_return_empty_list_when_there_is_no_view_to_materialize(
+        self,
+        bq_client: MagicMock
+    ):
         return_value = materialize_views_if_necessary_with_state(
             client=bq_client,
             view_list_config=ViewListConfig([
