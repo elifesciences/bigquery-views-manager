@@ -28,6 +28,9 @@ VIEW_NAME_2 = 'view2'
 TABLE_NAME_1 = 'table1'
 TABLE_NAME_2 = 'table2'
 
+MAX_LENGTH_TABLE_NAME_1 = 't' * 63
+MAX_LENGTH_VIEW_NAME_1 = 'v' * 63
+
 FULL_VIEW_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_NAME_1}'
 FULL_VIEW_NAME_2 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{VIEW_NAME_2}'
 FULL_TABLE_NAME_1 = f'{PROJECT_1}.{SOURCE_DATASET_1}.{TABLE_NAME_1}'
@@ -239,6 +242,43 @@ class TestMaterializeViews:
             'source_view': VIEW_NAME_1.lower(),
             'target_dataset': DESTINATION_DATASET_1,
             'target_table': TABLE_NAME_1.lower(),
+        }
+
+    def test_should_truncate_labels(self, bq_client):
+        destination_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': DESTINATION_DATASET_1,
+            'table_name': MAX_LENGTH_TABLE_NAME_1 + '_extra_characters_to_exceed_limit'
+        }
+        source_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': SOURCE_DATASET_1,
+            'table_name': MAX_LENGTH_VIEW_NAME_1 + '_extra_characters_to_exceed_limit'
+        }
+
+        materialized_view_dict = OrderedDict({
+            'view_template_file_name_1': destination_dataset_view_dict
+        })
+        source_view_dict = OrderedDict({
+            'view_template_file_name_1': source_dataset_view_dict
+        })
+
+        materialize_views(
+            client=bq_client,
+            materialized_view_dict=materialized_view_dict,
+            source_view_dict=source_view_dict,
+            project=PROJECT_1,
+        )
+
+        assert bq_client.query.called
+
+        job_config = bq_client.query.call_args[1]['job_config']
+
+        assert job_config.labels == {
+            'component': 'materialize_views',
+            'owner': 'bigquery_views_manager',
+            'source_dataset': SOURCE_DATASET_1,
+            'source_view': MAX_LENGTH_VIEW_NAME_1,
+            'target_dataset': DESTINATION_DATASET_1,
+            'target_table': MAX_LENGTH_TABLE_NAME_1,
         }
 
 

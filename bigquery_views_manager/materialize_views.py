@@ -81,9 +81,9 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
         'component': 'materialize_views',
         'owner': 'bigquery_views_manager',
         'source_dataset': source_dataset,
-        'source_view': source_view_name.lower(),
+        'source_view': source_view_name.lower()[:63],
         'target_dataset': destination_dataset,
-        'target_table': destination_table_name.lower(),
+        'target_table': destination_table_name.lower()[:63],
     }
     job_config = QueryJobConfig()
     job_config.labels = labels
