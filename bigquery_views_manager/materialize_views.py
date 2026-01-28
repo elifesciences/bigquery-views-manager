@@ -80,10 +80,10 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
     labels = {
         'component': 'materialize_views',
         'owner': 'bigquery_views_manager',
-        'source_view': source_view_name,
         'source_dataset': source_dataset,
-        'destination_dataset': destination_dataset,
-        'destination_table': destination_table_name
+        'source_view': source_view_name.lower(),
+        'target_dataset': destination_dataset,
+        'target_table': destination_table_name.lower(),
     }
     job_config = QueryJobConfig()
     job_config.labels = labels

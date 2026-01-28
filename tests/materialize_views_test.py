@@ -235,10 +235,10 @@ class TestMaterializeViews:
         assert job_config.labels == {
             'component': 'materialize_views',
             'owner': 'bigquery_views_manager',
-            'source_view': VIEW_NAME_1,
             'source_dataset': SOURCE_DATASET_1,
-            'destination_dataset': DESTINATION_DATASET_1,
-            'destination_table': TABLE_NAME_1,
+            'source_view': VIEW_NAME_1.lower(),
+            'target_dataset': DESTINATION_DATASET_1,
+            'target_table': TABLE_NAME_1.lower(),
         }
 
 
