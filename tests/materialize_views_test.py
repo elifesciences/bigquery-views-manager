@@ -204,6 +204,43 @@ class TestMaterializeViews:
             )]
         )
 
+    def test_should_set_labels_on_query_job(self, bq_client):
+        destination_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': DESTINATION_DATASET_1,
+            'table_name': TABLE_NAME_1,
+        }
+        source_dataset_view_dict: DatasetViewDataTypedDict = {
+            'dataset_name': SOURCE_DATASET_1,
+            'table_name': VIEW_NAME_1,
+        }
+
+        materialized_view_dict = OrderedDict({
+            'view_template_file_name_1': destination_dataset_view_dict
+        })
+        source_view_dict = OrderedDict({
+            'view_template_file_name_1': source_dataset_view_dict
+        })
+
+        materialize_views(
+            client=bq_client,
+            materialized_view_dict=materialized_view_dict,
+            source_view_dict=source_view_dict,
+            project=PROJECT_1,
+        )
+
+        assert bq_client.query.called
+
+        job_config = bq_client.query.call_args[1]['job_config']
+
+        assert job_config.labels == {
+            'component': 'materialize_views',
+            'owner': 'bigquery_views_manager',
+            'source_view': VIEW_NAME_1,
+            'source_dataset': SOURCE_DATASET_1,
+            'destination_dataset': DESTINATION_DATASET_1,
+            'destination_table': TABLE_NAME_1,
+        }
+
 
 class TestMaterializeViewState:
     class TestUpdateTimestamp:

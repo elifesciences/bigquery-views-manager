@@ -77,8 +77,16 @@ def materialize_view(  # pylint: disable=too-many-arguments, too-many-locals
     start = time.perf_counter()
     dataset_ref = client.dataset(destination_dataset)
     destination_table_ref = dataset_ref.table(destination_table_name)
-
+    labels = {
+        'component': 'materialize_views',
+        'owner': 'bigquery_views_manager',
+        'source_view': source_view_name,
+        'source_dataset': source_dataset,
+        'destination_dataset': destination_dataset,
+        'destination_table': destination_table_name
+    }
     job_config = QueryJobConfig()
+    job_config.labels = labels
     job_config.destination = destination_table_ref
     job_config.write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE
 
