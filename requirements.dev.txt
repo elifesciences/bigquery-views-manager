@@ -1,5 +1,5 @@
 mypy==1.20.0
-pytest==9.0.2
+pytest==9.0.3
 pytest-watch==4.2.0
 pylint==4.0.5
 flake8==7.3.0
